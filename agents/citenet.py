@@ -313,7 +313,7 @@ class CiteNetAgent:
                 "layer": layer,
                 "citations": cites,
                 "is_isolated": is_isolated,
-                "title": "⚠️ BÀI BÁO ĐỘC LẬP: Không có liên kết trích dẫn trực tiếp trong tập mẫu này" if is_isolated else ""
+                "title": ""
             }
             vis_nodes.append(node_item)
 
@@ -336,32 +336,28 @@ class CiteNetAgent:
 
                 if is_mutual:
                     edge_type = "mutual"
-                    edge_color = {"color": "rgba(245, 158, 11, 0.85)", "highlight": "#F59E0B", "hover": "#FDE047"}
+                    edge_color = {"color": "rgba(245, 158, 11, 0.85)", "highlight": "#F59E0B", "hover": "#F59E0B"}
                     edge_width = 2.6
                     edge_dashes = False
                     arrows = {"to": {"enabled": True, "scaleFactor": 0.95}, "from": {"enabled": True, "scaleFactor": 0.95}}
-                    edge_title = f"🔶 ĐỐI THOẠI HỌC THUẬT 2 CHIỀU:\n[{s_auth} ({s_yr})] ⟷ [{d_auth} ({d_yr})]\n(Hai nhóm nghiên cứu trích dẫn chéo lẫn nhau)"
                 elif is_cross_bridge:
                     edge_type = "cross_bridge"
-                    edge_color = {"color": "rgba(192, 132, 252, 0.88)", "highlight": "#C084FC", "hover": "#E879F9"}
+                    edge_color = {"color": "rgba(192, 132, 252, 0.88)", "highlight": "#C084FC", "hover": "#C084FC"}
                     edge_width = 2.2
                     edge_dashes = [6, 4]
                     arrows = {"to": {"enabled": True, "scaleFactor": 0.95}}
-                    edge_title = f"🔮 BẮC CẦU XUYÊN TẦNG CỘI NGUỒN:\n[{s_auth} ({s_yr})] ➔ [{d_auth} ({d_yr})]\n(Công trình kế thừa neo trực tiếp vào cội nguồn lý thuyết)"
                 elif is_intra:
                     edge_type = "intra_layer"
-                    edge_color = {"color": "rgba(52, 211, 153, 0.80)", "highlight": "#34D399", "hover": "#6EE7B7"}
+                    edge_color = {"color": "rgba(52, 211, 153, 0.80)", "highlight": "#34D399", "hover": "#34D399"}
                     edge_width = 1.6
                     edge_dashes = [3, 3]
                     arrows = {"to": {"enabled": True, "scaleFactor": 0.85}}
-                    edge_title = f"🟢 LIÊN KẾT NỘI BỘ CÙNG PHÂN TẦNG:\n[{s_auth} ({s_yr})] ➔ [{d_auth} ({d_yr})]\n(Đồng phát triển trong cùng thế hệ nghiên cứu)"
                 else:
                     edge_type = "direct"
-                    edge_color = {"color": "rgba(56, 189, 248, 0.70)", "highlight": "#38BDF8", "hover": "#60A5FA"}
+                    edge_color = {"color": "rgba(56, 189, 248, 0.70)", "highlight": "#38BDF8", "hover": "#38BDF8"}
                     edge_width = 1.8
                     edge_dashes = False
                     arrows = {"to": {"enabled": True, "scaleFactor": 0.90}}
-                    edge_title = f"🔷 KẾ THỪA 1 CHIỀU TRỰC TIẾP:\n[{s_auth} ({s_yr})] ➔ [{d_auth} ({d_yr})]\n(Dòng kế thừa tiêu chuẩn từ cội nguồn hoặc bài gốc)"
 
                 vis_edges.append({
                     "id": f"e_{src}_{dst}",
@@ -372,7 +368,7 @@ class CiteNetAgent:
                     "arrows": arrows,
                     "width": edge_width,
                     "dashes": edge_dashes,
-                    "title": edge_title,
+                    "title": "",
                     "smooth": {"type": "curvedCW", "roundness": 0.22 if is_mutual else 0.16}
                 })
 
