@@ -4,6 +4,7 @@ import time
 import os
 import json
 import base64
+import textwrap
 from typing import List, Dict, Any
 import pandas as pd
 
@@ -1371,7 +1372,8 @@ elif "02." in workspace_nav:
         ])
 
         with tab_topo_guide:
-            st.markdown("""<style>
+            topo_guide_html = textwrap.dedent("""
+            <style>
             .topo-hover-container {
                 display: grid;
                 grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -1479,7 +1481,8 @@ elif "02." in workspace_nav:
                         <div style="color:#CBD5E1; font-size:11px; background:rgba(0,0,0,0.35); padding:6px 8px; border-radius:6px;">💡 <b>Ý nghĩa & Ví dụ:</b> Kế thừa phương pháp, dữ liệu hoặc phát hiện thực nghiệm từ công trình nguồn để phát triển nghiên cứu tiếp theo.</div>
                     </div>
                 </div>
-            </div>""", unsafe_allow_html=True)
+            </div>""").strip()
+            st.markdown(topo_guide_html, unsafe_allow_html=True)
 
             # BỘ LỌC GROUP THEO PHÂN LOẠI TOPO
             st.markdown("##### 🔍 Lọc danh mục liên kết theo phân loại Topo:")
