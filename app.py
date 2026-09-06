@@ -127,9 +127,16 @@ def get_svg_icon(name: str, color: str = "currentColor", size: int = 18) -> str:
     return icons.get(name, "")
 
 def get_secret(key: str, default: str = "") -> str:
+    # 1. Ưu tiên biến môi trường
+    val = os.environ.get(key)
+    if val:
+        return str(val)
+    # 2. Truy xuất Streamlit secrets an toàn tuyệt đối
     try:
-        if hasattr(st, "secrets") and key in st.secrets:
-            return st.secrets[key]
+        if hasattr(st, "secrets"):
+            s_val = st.secrets.get(key, None)
+            if s_val is not None:
+                return str(s_val)
     except Exception:
         pass
     return default
