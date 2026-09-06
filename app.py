@@ -518,7 +518,7 @@ with st.sidebar:
                     st.rerun()
 
 # -----------------------------------------------------------------------------
-# THANH ĐIỀU HƯỚNG TRÊN CÙNG (TOP TOOLBAR — TÊN PHẦN MỀM CỐ ĐỊNH BÊN PHẢI)
+# THANH ĐIỀU HƯỚNG TRÊN CÙNG (GLOBAL SYNAPSE ACADEMIC HUD HEADER BAR)
 # -----------------------------------------------------------------------------
 icon_shield_svg = get_svg_icon("shield-check", color="var(--badge-rose-text)", size=13)
 icon_net_svg = get_svg_icon("network", color="var(--badge-blue-text)", size=13)
@@ -526,31 +526,55 @@ icon_spark_svg = get_svg_icon("sparkles", color="var(--badge-green-text)", size=
 
 nav_title = workspace_nav.split('. ', 1)[1] if '. ' in workspace_nav else workspace_nav
 
-mode_chip = '<span class="status-chip blue">💻 Bản Máy Tính (Local Desktop)</span>' if st.session_state.get("display_mode") == "desktop_local" else '<span class="status-chip green">📱 Bản Di Động (Mobile Cloud)</span>'
+# Trích xuất tên đề tài hiện tại
+cur_project_name = "Quantum AI Research Deck"
+if st.session_state.pipeline_results:
+    c_p = st.session_state.pipeline_results.get("citenet", {}).get("seed_paper", {})
+    if c_p and c_p.get("title"):
+        t_clean = str(c_p["title"]).replace('"', '').replace("'", "")
+        cur_project_name = t_clean[:30] + "..." if len(t_clean) > 30 else t_clean
+
+user_display_name = "Scholar Pro"
+if st.session_state.get("auth_user"):
+    u_role = st.session_state.auth_user.get("role", "admin").upper()
+    u_name = st.session_state.auth_user.get("full_name", "TRẦN DUY").split()[0]
+    user_display_name = f"{u_name} ({u_role})"
+
+cur_time_str = time.strftime("%d/%m/%Y | %H:%M:%S")
 
 st.markdown(f"""
-<div class="app-top-toolbar">
-    <div class="toolbar-left">
-        <div class="toolbar-breadcrumb">
-            {get_svg_icon("compass", color="var(--primary-accent)", size=16)}
-            <span class="crumb-root">Không gian nghiên cứu</span>
-            <span class="crumb-slash">/</span>
-            <span class="crumb-active">{nav_title}</span>
-        </div>
-        <div class="status-chip-group">
-            {mode_chip}
-            <span class="status-chip rose">{icon_shield_svg} Scopus Q1/Q2</span>
-            <span class="status-chip blue">{icon_net_svg} OpenAlex Data</span>
-            <span class="status-chip green">{icon_spark_svg} APA 7 & CARS</span>
+<div class="synapse-header-bar">
+    <div class="brand-logo-cluster">
+        <span class="brand-atom-icon">⚛️</span>
+        <div>
+            <div class="brand-title">SYNAPSE ACADEMIC</div>
+            <div class="brand-subtitle">SCHOLARGRAPH PRO // QUANTUM HUD DECK</div>
         </div>
     </div>
-    <div class="toolbar-right-brand">
-        <div class="top-brand-badge">
-            <span class="brand-pulse-dot"></span>
-            <span class="top-brand-text">SCHOLARGRAPH PRO</span>
-            <span class="top-brand-ver">v3.5</span>
+
+    <div class="toolbar-breadcrumb">
+        {get_svg_icon("compass", color="var(--primary-accent)", size=16)}
+        <span class="crumb-root">Workspace</span>
+        <span class="crumb-slash">/</span>
+        <span class="crumb-active">{nav_title}</span>
+    </div>
+
+    <div class="header-meta-cluster">
+        <div class="meta-chip" title="Đề tài nghiên cứu hạt nhân">
+            <span>📁 PROJECT:</span>
+            <b style="color:var(--primary-accent);">{cur_project_name}</b>
         </div>
-        <div class="top-brand-author">Tác giả: TRẦN DUY</div>
+        <div class="meta-chip">
+            <span>👤 USER:</span>
+            <b>{user_display_name}</b>
+        </div>
+        <div class="meta-chip" style="border-color:#10B981; color:#34D399;">
+            <span class="pulse-dot"></span>
+            <span>ACTIVE</span>
+        </div>
+        <div class="meta-chip" style="font-family:'JetBrains Mono', monospace; font-size:11px;">
+            <span>🕒 {cur_time_str}</span>
+        </div>
     </div>
 </div>
 """, unsafe_allow_html=True)

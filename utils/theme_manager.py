@@ -19,6 +19,7 @@ THEMES: Dict[str, Dict[str, Any]] = {
             "bg_surface_card": "#1E222D",
             "border_subtle": "#262B38",
             "border_hover": "#38BDF8",
+            "glow_rgb": "0, 242, 254",
             "text_primary": "#F8FAFC",
             "text_secondary": "#94A3B8",
             "text_muted": "#64748B",
@@ -54,6 +55,7 @@ THEMES: Dict[str, Dict[str, Any]] = {
             "bg_surface_card": "#182C59",
             "border_subtle": "#1E3A75",
             "border_hover": "#60A5FA",
+            "glow_rgb": "2, 132, 199",
             "text_primary": "#F0F6FF",
             "text_secondary": "#93C5FD",
             "text_muted": "#6089BF",
@@ -89,6 +91,7 @@ THEMES: Dict[str, Dict[str, Any]] = {
             "bg_surface_card": "#183D30",
             "border_subtle": "#1F4F3F",
             "border_hover": "#34D399",
+            "glow_rgb": "16, 185, 129",
             "text_primary": "#ECFDF5",
             "text_secondary": "#A7F3D0",
             "text_muted": "#5E9E82",
@@ -124,6 +127,7 @@ THEMES: Dict[str, Dict[str, Any]] = {
             "bg_surface_card": "#3D1A26",
             "border_subtle": "#542233",
             "border_hover": "#FB7185",
+            "glow_rgb": "225, 29, 72",
             "text_primary": "#FFF1F2",
             "text_secondary": "#FECDD3",
             "text_muted": "#A86979",
@@ -159,6 +163,7 @@ THEMES: Dict[str, Dict[str, Any]] = {
             "bg_surface_card": "#242B3B",
             "border_subtle": "#2F384C",
             "border_hover": "#06B6D4",
+            "glow_rgb": "6, 182, 212",
             "text_primary": "#F8FAFC",
             "text_secondary": "#CBD5E1",
             "text_muted": "#7B8FA8",
@@ -194,6 +199,7 @@ THEMES: Dict[str, Dict[str, Any]] = {
             "bg_surface_card": "#362C22",
             "border_subtle": "#4A3D2F",
             "border_hover": "#F59E0B",
+            "glow_rgb": "245, 158, 11",
             "text_primary": "#FFFBEB",
             "text_secondary": "#FDE68A",
             "text_muted": "#A18968",
@@ -229,6 +235,7 @@ THEMES: Dict[str, Dict[str, Any]] = {
             "bg_surface_card": "#E2E8F0",
             "border_subtle": "#CBD5E1",
             "border_hover": "#0284C7",
+            "glow_rgb": "2, 132, 199",
             "text_primary": "#0F172A",
             "text_secondary": "#334155",
             "text_muted": "#475569",
@@ -264,6 +271,7 @@ THEMES: Dict[str, Dict[str, Any]] = {
             "bg_surface_card": "#EAE3D2",
             "border_subtle": "#D5CCA6",
             "border_hover": "#1E3A8A",
+            "glow_rgb": "217, 119, 6",
             "text_primary": "#1C1917",
             "text_secondary": "#44403C",
             "text_muted": "#57534E",
@@ -299,6 +307,7 @@ THEMES: Dict[str, Dict[str, Any]] = {
             "bg_surface_card": "#1E1E36",
             "border_subtle": "#2E2E52",
             "border_hover": "#00F0FF",
+            "glow_rgb": "0, 240, 255",
             "text_primary": "#FFFFFF",
             "text_secondary": "#E0E7FF",
             "text_muted": "#818CF8",
@@ -334,6 +343,7 @@ THEMES: Dict[str, Dict[str, Any]] = {
             "bg_surface_card": "#2B2645",
             "border_subtle": "#3D375E",
             "border_hover": "#F472B6",
+            "glow_rgb": "192, 132, 252",
             "text_primary": "#FDF2F8",
             "text_secondary": "#FBCFE8",
             "text_muted": "#A78BFA",
@@ -370,17 +380,24 @@ def generate_theme_css(theme_id: str) -> str:
     """Tạo CSS tùy biến động theo theme đã chọn, bảo đảm độ tương phản tối đa và không lẫn màu."""
     t = get_theme(theme_id)
     c = t["colors"]
-    is_light = (t["type"] == "light")
-    
-    input_bg = c["bg_surface_elevated"]
-    input_text = c["text_primary"]
-    input_border = c["border_subtle"]
+    glow_rgb = c.get("glow_rgb", "0, 242, 254")
     
     return f"""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap');
     
     :root {{
+        --theme-glow: {c["primary_accent"]};
+        --theme-glow-rgb: {glow_rgb};
+        --theme-bg-base: {c["bg_main"]};
+        --theme-panel-bg: {c["bg_surface"]}E6;
+        --theme-panel-border: rgba({glow_rgb}, 0.32);
+        --theme-accent: {c["primary_accent"]};
+        --theme-accent-hover: {c["border_hover"]};
+        --theme-text-main: {c["text_primary"]};
+        --theme-text-dim: {c["text_secondary"]};
+        --theme-badge-bg: rgba({glow_rgb}, 0.14);
+
         --bg-main: {c["bg_main"]};
         --bg-surface: {c["bg_surface"]};
         --bg-surface-elevated: {c["bg_surface_elevated"]};
@@ -394,7 +411,7 @@ def generate_theme_css(theme_id: str) -> str:
         
         --primary-accent: {c["primary_accent"]};
         --primary-gradient: {c["primary_gradient"]};
-        --accent-glow: {c["accent_glow"]};
+        --accent-glow: rgba({glow_rgb}, 0.28);
         
         --badge-green-bg: {c["badge_green_bg"]};
         --badge-green-text: {c["badge_green_text"]};
@@ -413,6 +430,8 @@ def generate_theme_css(theme_id: str) -> str:
         font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
         color: {c["text_primary"]} !important;
         background-color: {c["bg_main"]} !important;
+        background-image: radial-gradient(circle at 50% 10%, rgba({glow_rgb}, 0.06) 0%, transparent 60%) !important;
+        background-attachment: fixed !important;
         -webkit-font-smoothing: antialiased;
     }}
     
@@ -429,17 +448,20 @@ def generate_theme_css(theme_id: str) -> str:
     h1, h2, h3, h4, h5, h6 {{
         font-family: 'Plus Jakarta Sans', sans-serif !important;
         color: {c["text_primary"]} !important;
-        font-weight: 700 !important;
+        font-weight: 800 !important;
         letter-spacing: -0.015em !important;
     }}
-    h1 {{ font-size: 22px !important; margin-bottom: 8px !important; }}
-    h2 {{ font-size: 18px !important; margin-bottom: 6px !important; }}
-    h3 {{ font-size: 15px !important; margin-bottom: 4px !important; }}
+    h1 {{ font-size: 23px !important; margin-bottom: 8px !important; }}
+    h2 {{ font-size: 18.5px !important; margin-bottom: 6px !important; }}
+    h3 {{ font-size: 15.5px !important; margin-bottom: 4px !important; }}
     
-    /* Khung Sidebar */
+    /* 1. KHUNG SIDEBAR GLASSMORPHISM SCI-FI */
     section[data-testid="stSidebar"] {{
-        background-color: {c["bg_surface"]} !important;
-        border-right: 1px solid {c["border_subtle"]} !important;
+        background: {c["bg_surface"]}E6 !important;
+        backdrop-filter: blur(24px) !important;
+        -webkit-backdrop-filter: blur(24px) !important;
+        border-right: 1px solid rgba({glow_rgb}, 0.28) !important;
+        box-shadow: 0 0 30px rgba({glow_rgb}, 0.08) !important;
         transition: all 0.25s ease-in-out !important;
     }}
     
@@ -452,19 +474,20 @@ def generate_theme_css(theme_id: str) -> str:
     /* Nút mũi tên đóng Sidebar (khi Sidebar đang mở) */
     button[data-testid="stSidebarCollapseButton"] {{
         background: {c["bg_surface_elevated"]} !important;
-        border: 1px solid {c["border_subtle"]} !important;
+        border: 1px solid rgba({glow_rgb}, 0.3) !important;
         border-radius: 8px !important;
-        color: {c["text_primary"]} !important;
+        color: {c["primary_accent"]} !important;
         transition: all 0.2s ease !important;
     }}
     
     button[data-testid="stSidebarCollapseButton"]:hover {{
         background: {c["primary_accent"]} !important;
-        color: #FFFFFF !important;
+        color: #040914 !important;
         border-color: {c["primary_accent"]} !important;
+        box-shadow: 0 0 12px rgba({glow_rgb}, 0.4) !important;
     }}
 
-    /* Nút mũi tên mở lại Sidebar (khi Sidebar đã thu gọn) - Luôn hiển thị nổi bật ở góc trên bên trái */
+    /* Nút mũi tên mở lại Sidebar (khi Sidebar đã thu gọn) */
     div[data-testid="stSidebarCollapsedControl"],
     [data-testid="collapsedControl"] {{
         display: block !important;
@@ -483,7 +506,7 @@ def generate_theme_css(theme_id: str) -> str:
         border-radius: 10px !important;
         color: {c["primary_accent"]} !important;
         padding: 6px 10px !important;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.35) !important;
+        box-shadow: 0 0 16px rgba({glow_rgb}, 0.35) !important;
         cursor: pointer !important;
         transition: all 0.2s ease !important;
     }}
@@ -491,11 +514,12 @@ def generate_theme_css(theme_id: str) -> str:
     div[data-testid="stSidebarCollapsedControl"] button:hover,
     [data-testid="collapsedControl"] button:hover {{
         background: {c["primary_accent"]} !important;
-        color: #FFFFFF !important;
+        color: #040914 !important;
         transform: scale(1.08) !important;
+        box-shadow: 0 0 20px var(--theme-glow) !important;
     }}
     
-    /* Không gian làm việc chính: Căn giữa hoàn hảo, co giãn đối xứng cả khi mở & ẩn Sidebar */
+    /* Không gian làm việc chính */
     .main, [data-testid="stAppViewContainer"] > .main {{
         width: 100% !important;
         max-width: 100% !important;
@@ -509,20 +533,22 @@ def generate_theme_css(theme_id: str) -> str:
         max-width: 100% !important;
         margin-left: auto !important;
         margin-right: auto !important;
-        padding-top: 1.5rem !important;
+        padding-top: 1.2rem !important;
         padding-bottom: 3.5rem !important;
-        padding-left: 2rem !important;
-        padding-right: 2rem !important;
+        padding-left: 1.8rem !important;
+        padding-right: 1.8rem !important;
         box-sizing: border-box !important;
     }}
     
     .sidebar-brand-box {{
         padding: 14px 16px;
         background: {c["bg_surface_elevated"]};
-        border: 1px solid {c["border_subtle"]};
-        border-radius: 12px;
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        border: 1px solid rgba({glow_rgb}, 0.32);
+        border-radius: 14px;
         margin-bottom: 12px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+        box-shadow: 0 0 18px rgba({glow_rgb}, 0.12);
     }}
     
     .sidebar-brand-title {{
@@ -532,26 +558,29 @@ def generate_theme_css(theme_id: str) -> str:
         display: flex;
         align-items: center;
         gap: 8px;
-        letter-spacing: 0.02em;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
     }}
     
     .sidebar-brand-sub {{
-        font-size: 11.5px;
-        color: {c["text_secondary"]};
+        font-size: 11px;
+        color: {c["primary_accent"]};
+        font-weight: 700;
         margin-top: 4px;
-        line-height: 1.45;
+        letter-spacing: 0.08em;
     }}
 
     .developer-pill {{
         display: inline-block;
         font-size: 10.5px;
         font-weight: 700;
-        background: {c["badge_blue_bg"]};
+        background: rgba({glow_rgb}, 0.14);
         color: {c["primary_accent"]};
-        border: 1px solid {c["badge_blue_border"]};
+        border: 1px solid rgba({glow_rgb}, 0.35);
         padding: 2px 8px;
         border-radius: 6px;
         margin-top: 6px;
+        box-shadow: 0 0 8px rgba({glow_rgb}, 0.12);
     }}
     
     .menu-header-badge {{
@@ -559,27 +588,28 @@ def generate_theme_css(theme_id: str) -> str:
         font-weight: 800;
         color: {c["text_muted"]};
         text-transform: uppercase;
-        letter-spacing: 0.08em;
+        letter-spacing: 0.1em;
         margin: 14px 0 6px 4px;
     }}
 
-    /* Menu Chọn Màn Hình Làm Việc Bọc Khối Cao Cấp (Flat Mono Style) */
+    /* Menu Chọn Màn Hình Làm Việc Bọc Khối Cao Cấp (HUD Chips) */
     section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] {{
         display: flex !important;
         flex-direction: column !important;
-        gap: 5px !important;
+        gap: 6px !important;
         background: {c["bg_main"]} !important;
-        border: 1px solid {c["border_subtle"]} !important;
-        border-radius: 12px !important;
+        border: 1px solid rgba({glow_rgb}, 0.22) !important;
+        border-radius: 14px !important;
         padding: 6px !important;
+        box-shadow: inset 0 0 12px rgba({glow_rgb}, 0.05) !important;
     }}
 
     section[data-testid="stSidebar"] div[data-testid="stRadio"] label {{
         display: flex !important;
         align-items: center !important;
         background: {c["bg_surface_elevated"]} !important;
-        border: 1px solid {c["border_subtle"]} !important;
-        border-radius: 8px !important;
+        border: 1px solid rgba({glow_rgb}, 0.18) !important;
+        border-radius: 10px !important;
         padding: 8px 12px !important;
         margin-bottom: 0 !important;
         cursor: pointer !important;
@@ -594,14 +624,16 @@ def generate_theme_css(theme_id: str) -> str:
 
     section[data-testid="stSidebar"] div[data-testid="stRadio"] label:hover {{
         background: {c["sidebar_hover_bg"]} !important;
-        border-color: {c["border_hover"]} !important;
+        border-color: {c["primary_accent"]} !important;
+        box-shadow: 0 0 12px rgba({glow_rgb}, 0.22) !important;
         transform: translateX(2px) !important;
     }}
     
     section[data-testid="stSidebar"] div[data-testid="stRadio"] label:has(input:checked) {{
         background: {c["sidebar_active_bg"]} !important;
-        border-color: {c["border_hover"]} !important;
-        border-left: 3.5px solid {c["border_hover"]} !important;
+        border-color: {c["primary_accent"]} !important;
+        border-left: 4px solid {c["primary_accent"]} !important;
+        box-shadow: 0 0 16px rgba({glow_rgb}, 0.28) !important;
     }}
     
     section[data-testid="stSidebar"] div[data-testid="stRadio"] label div[data-testid="stMarkdownContainer"] p {{
@@ -620,132 +652,92 @@ def generate_theme_css(theme_id: str) -> str:
 
     section[data-testid="stSidebar"] div[data-testid="stRadio"] label:has(input:checked) div[data-testid="stMarkdownContainer"] p {{
         color: {c["text_primary"]} !important;
-        font-weight: 700 !important;
+        font-weight: 800 !important;
     }}
 
-    /* Hàng Điều Khiển Cân Xứng 52px */
-    .symmetrical-action-card {{
+    /* 2. GLOBAL HUD HEADER BAR (THƯƠNG HIỆU LƯỢNG TỬ ĐỒNG BỘ) */
+    .app-top-toolbar, .synapse-header-bar {{
         display: flex;
         align-items: center;
         justify-content: space-between;
-        min-height: 52px;
-        height: 52px;
-        padding: 0 14px;
-        background: {c["bg_surface_elevated"]};
-        border: 1px solid {c["border_subtle"]};
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        box-sizing: border-box;
-        overflow: hidden;
-        gap: 10px;
-        transition: all 0.2s ease;
-    }}
-    .symmetrical-action-card.ready {{
-        border-color: {c["badge_green_border"]};
-        background: {c["badge_green_bg"]};
-    }}
-    .symmetrical-action-card.empty {{
-        border-color: {c["badge_rose_border"]};
-        background: {c["badge_rose_bg"]};
-    }}
-
-    /* Nút điều hướng nhanh đa sắc màu tương phản cao (High-Contrast Quick Navigation Cards) */
-    .quick-nav-card {{
-        padding: 14px 16px;
-        border-radius: 12px;
-        color: #FFFFFF !important;
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        box-shadow: 0 4px 14px rgba(0,0,0,0.22);
-        transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        margin-bottom: 8px;
-        min-height: 98px;
-    }}
-    .quick-nav-card:hover {{
-        transform: translateY(-2px);
-        box-shadow: 0 8px 22px rgba(0,0,0,0.35);
-    }}
-    .qnav-net {{
-        background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%) !important;
-        border: 1.5px solid #38BDF8 !important;
-    }}
-    .qnav-apa {{
-        background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
-        border: 1.5px solid #34D399 !important;
-    }}
-    .qnav-cars {{
-        background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%) !important;
-        border: 1.5px solid #A78BFA !important;
-    }}
-    .qnav-pack {{
-        background: linear-gradient(135deg, #D97706 0%, #B45309 100%) !important;
-        border: 1.5px solid #FBBF24 !important;
-    }}
-
-    .status-text-title {{
-        font-size: 12px;
-        font-weight: 700;
-        line-height: 1.25;
-        margin: 0;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        letter-spacing: 0.02em;
-        color: {c["text_primary"]};
-    }}
-    .status-text-sub {{
-        font-size: 11px;
-        color: {c["text_secondary"]};
-        line-height: 1.2;
-        margin: 2px 0 0 0;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }}
-
-    .doi-tag-badge {{
-        flex-shrink: 0;
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 11px;
-        font-weight: 700;
-        padding: 4px 8px;
-        border-radius: 8px;
-        white-space: nowrap;
-        text-align: center;
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-    }}
-    .doi-tag-badge.ready {{
-        background: {c["badge_green_bg"]};
-        border: 1px solid {c["badge_green_border"]};
-        color: {c["badge_green_text"]};
-    }}
-    .doi-tag-badge.empty {{
-        background: {c["badge_rose_bg"]};
-        border: 1px solid {c["badge_rose_border"]};
-        color: {c["badge_rose_text"]};
-    }}
-
-    /* Thanh điều hướng trên cùng (Top Header Toolbar - Tên phần mềm cố định bên phải) */
-    .app-top-toolbar {{
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 10px 16px;
-        background: {c["bg_surface"]};
-        border: 1px solid {c["border_subtle"]};
-        border-radius: 12px;
-        margin-bottom: 18px;
-        box-shadow: 0 2px 14px rgba(0,0,0,0.06);
+        padding: 8px 18px;
+        background: {c["bg_surface"]}E6;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba({glow_rgb}, 0.32);
+        border-radius: 14px;
+        margin-bottom: 16px;
+        box-shadow: 0 0 24px rgba({glow_rgb}, 0.12);
         gap: 12px;
         flex-wrap: wrap;
         box-sizing: border-box;
         max-width: 100%;
     }}
     
+    .brand-logo-cluster {{
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }}
+    .brand-atom-icon {{
+        font-size: 20px;
+        color: {c["primary_accent"]};
+        text-shadow: 0 0 12px var(--theme-glow);
+        animation: atomSpin 18s linear infinite;
+        display: inline-block;
+    }}
+    @keyframes atomSpin {{
+        from {{ transform: rotate(0deg); }}
+        to {{ transform: rotate(360deg); }}
+    }}
+    .brand-title {{
+        font-size: 14px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        color: {c["text_primary"]};
+        text-transform: uppercase;
+    }}
+    .brand-subtitle {{
+        font-size: 10px;
+        color: {c["primary_accent"]};
+        font-weight: 700;
+        letter-spacing: 0.12em;
+    }}
+
+    .header-meta-cluster {{
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }}
+    .meta-chip {{
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba({glow_rgb}, 0.12);
+        border: 1px solid rgba({glow_rgb}, 0.32);
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 11.5px;
+        font-weight: 600;
+        color: {c["text_primary"]};
+        box-shadow: 0 0 8px rgba({glow_rgb}, 0.08);
+        white-space: nowrap;
+    }}
+    .pulse-dot {{
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #10B981;
+        box-shadow: 0 0 8px #10B981;
+        animation: blink 1.6s infinite ease-in-out;
+        display: inline-block;
+    }}
+    @keyframes blink {{
+        0%, 100% {{ opacity: 1; transform: scale(1); }}
+        50% {{ opacity: 0.4; transform: scale(0.85); }}
+    }}
+
     .toolbar-left {{
         display: flex;
         align-items: center;
@@ -774,113 +766,30 @@ def generate_theme_css(theme_id: str) -> str:
     }}
     .crumb-active {{
         color: {c["primary_accent"]};
-        font-weight: 700;
-    }}
-    
-    .status-chip-group {{
-        display: inline-flex;
-        gap: 6px;
-        align-items: center;
-        flex-wrap: wrap;
-    }}
-    
-    .status-chip {{
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        font-size: 11px;
-        font-weight: 600;
-        padding: 3px 8px;
-        border-radius: 12px;
-        border: 1px solid transparent;
-        white-space: nowrap;
-    }}
-    .status-chip.blue {{
-        background: {c["badge_blue_bg"]};
-        color: {c["badge_blue_text"]};
-        border-color: {c["badge_blue_border"]};
-    }}
-    .status-chip.green {{
-        background: {c["badge_green_bg"]};
-        color: {c["badge_green_text"]};
-        border-color: {c["badge_green_border"]};
-    }}
-    .status-chip.rose {{
-        background: {c["badge_rose_bg"]};
-        color: {c["badge_rose_text"]};
-        border-color: {c["badge_rose_border"]};
-    }}
-
-    .toolbar-right-brand {{
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        flex-shrink: 0;
-        margin-left: auto;
-    }}
-    
-    .top-brand-badge {{
-        display: inline-flex;
-        align-items: center;
-        gap: 7px;
-        background: {c["bg_surface_elevated"]};
-        border: 1px solid {c["border_subtle"]};
-        padding: 4px 10px;
-        border-radius: 18px;
-    }}
-    
-    .brand-pulse-dot {{
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: {c["primary_accent"]};
-        box-shadow: 0 0 8px {c["primary_accent"]};
-        display: inline-block;
-    }}
-    
-    .top-brand-text {{
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        font-size: 12.5px;
         font-weight: 800;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: {c["text_primary"]};
-    }}
-    
-    .top-brand-ver {{
-        font-size: 10px;
-        font-weight: 700;
-        color: {c["primary_accent"]};
-        background: {c["badge_blue_bg"]};
-        border: 1px solid {c["badge_blue_border"]};
-        padding: 1px 5px;
-        border-radius: 4px;
+        text-shadow: 0 0 8px rgba({glow_rgb}, 0.35);
     }}
 
-    .top-brand-author {{
-        font-size: 11px;
-        font-weight: 600;
-        color: {c["text_muted"]};
-        white-space: nowrap;
-    }}
-
-    /* Banner quảng bá phần mềm */
-    .hero-banner-box {{
-        background: {c["bg_surface"]};
-        border: 1px solid {c["border_subtle"]};
-        border-radius: 14px;
-        padding: 18px 22px;
+    /* 3. THẺ BOX, BANNER & CONTAINER GLASSMORPHISM */
+    .hero-banner-box, .manual-hero-banner {{
+        background: {c["bg_surface"]}E6;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba({glow_rgb}, 0.35);
+        border-radius: 16px;
+        padding: 20px 24px;
         margin-bottom: 18px;
-        box-shadow: 0 2px 14px rgba(0,0,0,0.06);
+        box-shadow: 0 0 30px rgba({glow_rgb}, 0.12);
         position: relative;
         overflow: hidden;
     }}
-    .hero-banner-title {{
-        font-size: 18px;
-        font-weight: 800;
+    .hero-banner-title, .manual-app-title {{
+        font-size: 20px;
+        font-weight: 900;
         color: {c["text_primary"]};
         letter-spacing: -0.01em;
         margin-bottom: 6px;
+        text-shadow: 0 0 12px rgba({glow_rgb}, 0.35);
     }}
     .hero-banner-desc {{
         color: {c["text_secondary"]};
@@ -888,127 +797,214 @@ def generate_theme_css(theme_id: str) -> str:
         line-height: 1.6;
         max-width: 900px;
     }}
-    .hero-banner-meta {{
-        display: flex;
-        gap: 10px;
-        align-items: center;
-        margin-top: 12px;
-        flex-wrap: wrap;
+
+    .frame-box, .tab-content-card, .evidence-card, .apa-ref-card {{
+        background: {c["bg_surface"]}E6;
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        border: 1px solid rgba({glow_rgb}, 0.28);
+        border-radius: 14px;
+        padding: 16px 20px;
+        margin-bottom: 14px;
+        box-shadow: 0 0 20px rgba({glow_rgb}, 0.08);
+        transition: all 0.2s ease;
+    }}
+    .frame-box:hover, .tab-content-card:hover, .evidence-card:hover, .apa-ref-card:hover {{
+        border-color: {c["primary_accent"]};
+        box-shadow: 0 0 24px rgba({glow_rgb}, 0.18);
+        transform: translateY(-1px);
     }}
 
-    /* Hiệu ứng Tên chương trình Viết hoa Phát sáng Ấn tượng (SCHOLARGRAPH PRO HERO) */
-    .manual-hero-banner {{
-        background: {c["bg_surface"]};
-        border: 1px solid {c["border_hover"]};
-        border-radius: 16px;
-        padding: 24px 20px;
-        margin-bottom: 20px;
-        text-align: center;
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-        position: relative;
-        overflow: hidden;
+    /* 4. METRIC KPI CARDS SCI-FI */
+    .metric-card-full {{
+        background: {c["bg_surface"]}E6;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba({glow_rgb}, 0.32);
+        border-radius: 14px;
+        padding: 14px 16px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 100%;
+        box-shadow: 0 0 20px rgba({glow_rgb}, 0.10);
+        transition: all 0.2s ease;
     }}
-    .manual-app-title {{
-        font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
-        font-size: 30px;
-        font-weight: 900;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: {c["text_primary"]};
-        margin: 6px 0 8px 0;
+    .metric-card-full:hover {{
+        border-color: {c["primary_accent"]};
+        box-shadow: 0 0 25px rgba({glow_rgb}, 0.22);
+        transform: translateY(-2px);
     }}
-    .manual-app-subtitle {{
-        font-size: 13px;
-        font-weight: 700;
+    .metric-title {{
+        font-size: 11px;
+        font-weight: 800;
         color: {c["primary_accent"]};
-        letter-spacing: 0.05em;
         text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }}
+    .metric-value {{
+        font-size: 24px;
+        font-weight: 900;
+        color: {c["text_primary"]};
+        line-height: 1.15;
+        margin: 4px 0;
+        letter-spacing: -0.02em;
+        text-shadow: 0 0 10px rgba({glow_rgb}, 0.3);
+    }}
+    .metric-sub {{
+        font-size: 11px;
+        color: {c["text_muted"]};
+    }}
+
+    /* 5. FORM CONTROLS & TERMINAL INPUTS */
+    .stTextArea textarea, .stTextInput input, .stSelectbox select {{
+        background-color: {c["bg_surface_elevated"]} !important;
+        color: {c["text_primary"]} !important;
+        border: 1px solid rgba({glow_rgb}, 0.3) !important;
+        border-radius: 10px !important;
+        font-size: 13.5px !important;
+        transition: all 0.2s ease !important;
+    }}
+    .stTextArea textarea:focus, .stTextInput input:focus {{
+        border-color: {c["primary_accent"]} !important;
+        box-shadow: 0 0 16px rgba({glow_rgb}, 0.4) !important;
+        outline: none !important;
+    }}
+
+    .stButton button {{
+        border-radius: 10px !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        height: 46px !important;
+        border: 1px solid rgba({glow_rgb}, 0.32) !important;
+        background: {c["bg_surface_elevated"]} !important;
+        color: {c["text_primary"]} !important;
+        transition: all 0.2s ease !important;
+    }}
+    .stButton button:hover {{
+        background-color: {c["sidebar_hover_bg"]} !important;
+        border-color: {c["primary_accent"]} !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 0 16px rgba({glow_rgb}, 0.35) !important;
+        transform: translateY(-1px) !important;
     }}
     
-    .manual-step-card {{
-        background: {c["bg_surface"]};
-        border: 1px solid {c["border_subtle"]};
-        border-radius: 12px;
-        padding: 16px 20px;
-        margin-bottom: 14px;
-        transition: all 0.18s ease;
+    .stButton button[kind="primary"] {{
+        background: {c["primary_gradient"]} !important;
+        border: 1px solid {c["primary_accent"]} !important;
+        color: #FFFFFF !important;
+        font-size: 13.5px !important;
+        font-weight: 800 !important;
+        box-shadow: 0 0 20px rgba({glow_rgb}, 0.45) !important;
     }}
-    .manual-step-card:hover {{
-        border-color: {c["border_hover"]};
-        transform: translateY(-1px);
-        box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+
+    .stDownloadButton button {{
+        border-radius: 10px !important;
+        font-size: 12.5px !important;
+        font-weight: 700 !important;
+        padding: 6px 14px !important;
+        border: 1px solid rgba({glow_rgb}, 0.32) !important;
+        background: {c["bg_surface_elevated"]} !important;
+        color: {c["text_primary"]} !important;
+        transition: all 0.2s ease !important;
     }}
-    .manual-step-badge {{
+    .stDownloadButton button:hover {{
+        border-color: {c["primary_accent"]} !important;
+        box-shadow: 0 0 14px rgba({glow_rgb}, 0.3) !important;
+    }}
+
+    /* 6. STREAMLIT EXPANDERS & TABS */
+    div[data-testid="stExpander"] {{
+        background: {c["bg_surface"]}E6 !important;
+        backdrop-filter: blur(16px) !important;
+        border: 1px solid rgba({glow_rgb}, 0.28) !important;
+        border-radius: 12px !important;
+        box-shadow: 0 0 16px rgba({glow_rgb}, 0.08) !important;
+    }}
+    div[data-testid="stExpander"] summary {{
+        color: {c["text_primary"]} !important;
+        font-weight: 700 !important;
+    }}
+
+    div[data-baseweb="tab-list"] {{
+        background-color: {c["bg_surface"]} !important;
+        border: 1px solid rgba({glow_rgb}, 0.28) !important;
+        border-radius: 12px !important;
+        padding: 4px !important;
+        gap: 4px !important;
+        box-shadow: 0 0 16px rgba({glow_rgb}, 0.08) !important;
+    }}
+    div[data-baseweb="tab"] {{
+        border-radius: 8px !important;
+        font-weight: 700 !important;
+        font-size: 12.5px !important;
+        color: {c["text_secondary"]} !important;
+        transition: all 0.18s ease !important;
+    }}
+    div[data-baseweb="tab"][aria-selected="true"] {{
+        background: rgba({glow_rgb}, 0.18) !important;
+        color: {c["primary_accent"]} !important;
+        border: 1px solid rgba({glow_rgb}, 0.4) !important;
+        box-shadow: 0 0 12px rgba({glow_rgb}, 0.25) !important;
+    }}
+
+    /* 7. CUSTOM SCI-FI BADGES */
+    .custom-badge {{
         display: inline-flex;
         align-items: center;
-        justify-content: center;
-        width: 26px;
-        height: 26px;
-        border-radius: 50%;
-        background: {c["badge_blue_bg"]};
-        color: {c["primary_accent"]};
-        border: 1px solid {c["badge_blue_border"]};
-        font-weight: 800;
-        font-size: 12px;
-        flex-shrink: 0;
+        gap: 4px;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 3px 8px;
+        border-radius: 8px;
+        box-shadow: 0 0 8px rgba(0,0,0,0.15);
+    }}
+    .custom-badge.badge-blue {{
+        background: rgba(0, 242, 254, 0.14);
+        color: #38BDF8;
+        border: 1px solid rgba(0, 242, 254, 0.4);
+    }}
+    .custom-badge.badge-green {{
+        background: rgba(16, 185, 129, 0.14);
+        color: #34D399;
+        border: 1px solid rgba(16, 185, 129, 0.4);
+    }}
+    .custom-badge.badge-rose {{
+        background: rgba(244, 63, 94, 0.14);
+        color: #FB7185;
+        border: 1px solid rgba(244, 63, 94, 0.4);
+    }}
+    .custom-badge.badge-diamond-seed {{
+        background: rgba(234, 67, 53, 0.22);
+        color: #FF8A80;
+        border: 1px solid rgba(234, 67, 53, 0.5);
+        box-shadow: 0 0 10px rgba(234, 67, 53, 0.3);
+    }}
+    .custom-badge.badge-diamond-root {{
+        background: rgba(124, 58, 237, 0.22);
+        color: #C4B5FD;
+        border: 1px solid rgba(124, 58, 237, 0.5);
+        box-shadow: 0 0 10px rgba(124, 58, 237, 0.3);
+    }}
+    .custom-badge.badge-diamond-frontier {{
+        background: rgba(2, 132, 199, 0.22);
+        color: #38BDF8;
+        border: 1px solid rgba(56, 189, 248, 0.5);
+        box-shadow: 0 0 10px rgba(2, 132, 199, 0.3);
     }}
 
-    /* Khung Box Nội dung */
-    .frame-box, .tab-content-card {{
-        background: {c["bg_surface"]};
-        border: 1px solid {c["border_subtle"]};
-        border-radius: 14px;
-        padding: 18px 22px;
-        margin-bottom: 16px;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-    }}
-
-    .evidence-card {{
-        background: {c["bg_surface_elevated"]};
-        border: 1px solid {c["border_subtle"]};
-        border-radius: 12px;
-        padding: 16px 20px;
-        margin-bottom: 14px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        transition: all 0.18s ease;
-    }}
-    .evidence-card:hover {{
-        border-color: {c["border_hover"]};
-        transform: translateY(-1px);
-    }}
-
-    /* Thẻ Điều Hướng Nhanh (Quick Navigation Cards) - Rực rỡ, Đổ màu nền, Chữ siêu tương phản */
     .quick-nav-card {{
         border-radius: 12px;
         padding: 14px 16px;
         margin-bottom: 8px;
         color: #FFFFFF !important;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+        box-shadow: 0 0 20px rgba({glow_rgb}, 0.16);
         transition: all 0.2s ease;
         border: 1px solid rgba(255, 255, 255, 0.22);
     }}
     .quick-nav-card:hover {{
         transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(0,0,0,0.28);
-    }}
-    .quick-nav-card .qnav-title {{
-        font-size: 14px;
-        font-weight: 800;
-        color: #FFFFFF !important;
-        margin-bottom: 4px;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        letter-spacing: -0.01em;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.4);
-    }}
-    .quick-nav-card .qnav-desc {{
-        font-size: 11.5px;
-        color: rgba(255, 255, 255, 0.92) !important;
-        line-height: 1.4;
-        margin: 0;
-        font-weight: 500;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        box-shadow: 0 0 28px rgba({glow_rgb}, 0.32);
     }}
     .quick-nav-card.qnav-net {{
         background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%);
@@ -1026,327 +1022,21 @@ def generate_theme_css(theme_id: str) -> str:
         background: linear-gradient(135deg, #D97706 0%, #B45309 100%);
         border-left: 5px solid #FBBF24;
     }}
-
-    /* Thẻ Số Liệu (Metric Cards) */
-    .metric-card-full {{
-        background: {c["bg_surface"]};
-        border: 1px solid {c["border_subtle"]};
-        border-radius: 12px;
-        padding: 14px 16px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        height: 100%;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-    }}
-    .metric-title {{
-        font-size: 11px;
-        font-weight: 700;
-        color: {c["text_secondary"]};
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-    }}
-    .metric-value {{
-        font-size: 22px;
+    .quick-nav-card .qnav-title {{
+        font-size: 14px;
         font-weight: 800;
-        color: {c["text_primary"]};
-        line-height: 1.15;
-        margin: 3px 0;
-        letter-spacing: -0.02em;
-    }}
-    .metric-sub {{
-        font-size: 11px;
-        color: {c["text_muted"]};
-    }}
-
-    /* Form Controls */
-    .stTextArea textarea, .stTextInput input, .stSelectbox select {{
-        background-color: {input_bg} !important;
-        color: {input_text} !important;
-        border: 1px solid {input_border} !important;
-        border-radius: 8px !important;
-        font-size: 13px !important;
-    }}
-    .stTextArea textarea:focus, .stTextInput input:focus {{
-        border-color: {c["border_hover"]} !important;
-        box-shadow: 0 0 0 2px {c["accent_glow"]} !important;
-    }}
-
-    .stButton button {{
-        border-radius: 10px !important;
-        font-size: 13px !important;
-        font-weight: 700 !important;
-        height: 48px !important;
-        border: 1px solid {c["border_subtle"]} !important;
-        background-color: {c["bg_surface_elevated"]} !important;
-        color: {c["text_primary"]} !important;
-        transition: all 0.18s ease-in-out !important;
-    }}
-    .stButton button:hover {{
-        background-color: {c["sidebar_hover_bg"]} !important;
-        border-color: {c["border_hover"]} !important;
-        color: {c["text_primary"]} !important;
-    }}
-    
-    .stButton button[kind="primary"] {{
-        background: {c["primary_gradient"]} !important;
-        border: 1px solid {c["border_hover"]} !important;
         color: #FFFFFF !important;
-        font-size: 13.5px !important;
-        font-weight: 700 !important;
-        box-shadow: 0 4px 14px {c["accent_glow"]} !important;
-    }}
-
-    .stDownloadButton button {{
-        border-radius: 8px !important;
-        font-size: 12.5px !important;
-        font-weight: 600 !important;
-        padding: 6px 12px !important;
-        border: 1px solid {c["border_subtle"]} !important;
-        background-color: {c["bg_surface_elevated"]} !important;
-        color: {c["text_primary"]} !important;
-    }}
-
-    /* Streamlit Expanders */
-    div[data-testid="stExpander"] {{
-        background-color: {c["bg_surface"]} !important;
-        border: 1px solid {c["border_subtle"]} !important;
-        border-radius: 10px !important;
-        color: {c["text_primary"]} !important;
-    }}
-    div[data-testid="stExpander"] summary {{
-        color: {c["text_primary"]} !important;
-        font-weight: 600 !important;
-    }}
-    div[data-testid="stExpander"] div[role="region"] {{
-        color: {c["text_primary"]} !important;
-        background-color: {c["bg_surface"]} !important;
-    }}
-
-    /* Streamlit Tabs Styling */
-    div[data-baseweb="tab-list"] {{
-        background-color: {c["bg_surface"]} !important;
-        border: 1px solid {c["border_subtle"]} !important;
-        border-radius: 10px !important;
-        padding: 3px !important;
-        gap: 3px !important;
-    }}
-    /* Custom Badges for Diamond Knowledge Graph */
-    .custom-badge {{
-        display: inline-flex;
+        margin-bottom: 4px;
+        display: flex;
         align-items: center;
-        gap: 4px;
-        font-size: 11px;
-        font-weight: 700;
-        padding: 2px 8px;
-        border-radius: 6px;
+        gap: 6px;
     }}
-    .custom-badge.badge-blue {{
-        background: {c["badge_blue_bg"]};
-        color: {c["badge_blue_text"]};
-        border: 1px solid {c["badge_blue_border"]};
-    }}
-    .custom-badge.badge-green {{
-        background: {c["badge_green_bg"]};
-        color: {c["badge_green_text"]};
-        border: 1px solid {c["badge_green_border"]};
-    }}
-    .custom-badge.badge-rose {{
-        background: {c["badge_rose_bg"]};
-        color: {c["badge_rose_text"]};
-        border: 1px solid {c["badge_rose_border"]};
-    }}
-    .custom-badge.badge-amber {{
-        background: rgba(245, 158, 11, 0.15);
-        color: #F59E0B;
-        border: 1px solid rgba(245, 158, 11, 0.4);
-    }}
-    .custom-badge.badge-purple {{
-        background: rgba(168, 85, 247, 0.15);
-        color: #A855F7;
-        border: 1px solid rgba(168, 85, 247, 0.4);
-    }}
-    .custom-badge.badge-diamond-seed {{
-        background: rgba(234, 67, 53, 0.2);
-        color: #F28B82;
-        border: 1px solid rgba(234, 67, 53, 0.45);
-    }}
-    .custom-badge.badge-diamond-root {{
-        background: rgba(124, 58, 237, 0.2);
-        color: #C4B5FD;
-        border: 1px solid rgba(124, 58, 237, 0.45);
-    }}
-    .custom-badge.badge-diamond-frontier {{
-        background: rgba(2, 132, 199, 0.2);
-        color: #38BDF8;
-        border: 1px solid rgba(56, 189, 248, 0.45);
-    }}
-
-    /* =========================================================================
-       TỐI ƯU HÓA ĐẶC BIỆT CHO THIẾT BỊ DI ĐỘNG & MÁY TÍNH BẢNG (MOBILE & TABLET UX)
-       ========================================================================= */
-    /* Máy tính bảng & Màn hình vừa (Tablet: 769px - 1024px) */
-    @media (min-width: 769px) and (max-width: 1024px) {{
-        .block-container, [data-testid="block-container"] {{
-            padding: 1.2rem 1rem 3rem 1rem !important;
-            max-width: 100% !important;
-        }}
-        .app-top-toolbar {{
-            padding: 10px 14px !important;
-            gap: 10px !important;
-        }}
-        [data-testid="column"] {{
-            min-width: 48% !important;
-            flex: 1 1 48% !important;
-            margin-bottom: 8px !important;
-        }}
-        .manual-app-title {{
-            font-size: 24px !important;
-        }}
-    }}
-
-    @media (max-width: 992px) {{
-        .app-top-toolbar {{
-            flex-direction: column !important;
-            align-items: stretch !important;
-            gap: 10px !important;
-            padding: 10px 12px !important;
-        }}
-        .toolbar-left {{
-            width: 100% !important;
-            justify-content: space-between !important;
-        }}
-        .toolbar-right-brand {{
-            width: 100% !important;
-            justify-content: space-between !important;
-            border-top: 1px dashed {c["border_subtle"]} !important;
-            padding-top: 8px !important;
-            margin-left: 0 !important;
-        }}
-        .manual-app-title {{
-            font-size: 22px !important;
-            letter-spacing: 0.06em !important;
-        }}
-    }}
-
-    /* Điện thoại di động (Smartphones & Small Tablets: <= 768px) */
-    @media (max-width: 768px) {{
-        /* Bố cục vùng đệm toàn trang trên điện thoại */
-        .main .block-container,
-        div[data-testid="stAppViewBlockContainer"],
-        .block-container, [data-testid="block-container"] {{
-            padding: 0.75rem 0.5rem 2.8rem 0.5rem !important;
-            width: 100% !important;
-            max-width: 100% !important;
-        }}
-
-        /* Sidebar tối ưu cho màn hình cảm ứng di động */
-        section[data-testid="stSidebar"][aria-expanded="true"] {{
-            width: 88vw !important;
-            min-width: unset !important;
-            max-width: 340px !important;
-            box-shadow: 0 0 40px rgba(0,0,0,0.88) !important;
-        }}
-
-        /* Thẻ chỉ số Metric: Tự động xếp vừa vặn thay vì bị bẹp */
-        [data-testid="column"] {{
-            min-width: 100% !important;
-            flex: 1 1 100% !important;
-            margin-bottom: 8px !important;
-        }}
-
-        /* Bảng tổng hợp APA 7: Chuyển lưới 2 cột sang 1 cột linh hoạt trên màn hình hẹp */
-        div[style*="grid-template-columns: 1fr 1fr"],
-        div[style*="grid-template-columns: repeat(2, 1fr)"],
-        div[style*="grid-template-columns: repeat(3, 1fr)"],
-        div[style*="grid-template-columns: repeat(4, 1fr)"] {{
-            grid-template-columns: 1fr !important;
-            gap: 8px !important;
-        }}
-
-        /* Hàng điều khiển nút bấm & thanh trạng thái */
-        .symmetrical-action-card {{
-            height: auto !important;
-            min-height: 48px !important;
-            padding: 8px 12px !important;
-            flex-wrap: wrap !important;
-        }}
-
-        /* Bảng dữ liệu & Dataframe cuộn ngang mượt mà */
-        div[data-testid="stTable"], div[data-testid="stDataFrame"], .stDataFrame {{
-            overflow-x: auto !important;
-            -webkit-overflow-scrolling: touch !important;
-            max-width: 100% !important;
-        }}
-        table {{
-            min-width: 100% !important;
-            font-size: 11.5px !important;
-        }}
-
-        /* Hộp thoại Dialog & Popup trên Mobile */
-        div[role="dialog"] {{
-            width: 96vw !important;
-            max-width: 96vw !important;
-            padding: 12px !important;
-            border-radius: 16px !important;
-        }}
-
-        /* Khối mã lệnh / trích dẫn cuộn mượt */
-        pre, code {{
-            font-size: 11.5px !important;
-            white-space: pre-wrap !important;
-            word-break: break-word !important;
-        }}
-
-        /* Thanh Tabs di chuyển ngang mượt mà trên cảm ứng */
-        div[data-baseweb="tab-list"] {{
-            overflow-x: auto !important;
-            overflow-y: hidden !important;
-            flex-wrap: nowrap !important;
-            white-space: nowrap !important;
-            -webkit-overflow-scrolling: touch !important;
-            scrollbar-width: none !important;
-            padding: 4px 4px !important;
-            gap: 4px !important;
-        }}
-        div[data-baseweb="tab-list"]::-webkit-scrollbar {{
-            display: none !important;
-        }}
-        div[data-baseweb="tab"] {{
-            flex-shrink: 0 !important;
-            font-size: 11.5px !important;
-            padding: 7px 10px !important;
-            min-height: 38px !important;
-        }}
-
-        /* Chữ và ô nhập liệu tối ưu không bị tự động phóng to trên iOS Safari */
-        .stTextArea textarea, .stTextInput input, .stSelectbox select {{
-            font-size: 14px !important;
-        }}
-
-        /* Nút bấm cảm ứng to rõ, chống bấm nhầm (Touch Target >= 44px) */
-        .stButton button {{
-            min-height: 44px !important;
-            font-size: 13px !important;
-            width: 100% !important;
-            -webkit-tap-highlight-color: transparent !important;
-        }}
-
-        /* Tiêu đề linh hoạt theo kích thước màn hình */
-        h1 {{ font-size: 19px !important; }}
-        h2 {{ font-size: 16px !important; }}
-        h3 {{ font-size: 14px !important; }}
-
-        /* Khung Hero Banner thu nhỏ vừa vặn */
-        .hero-banner-box {{
-            padding: 14px 16px !important;
-        }}
-        .hero-banner-title {{
-            font-size: 15.5px !important;
-        }}
-        .hero-banner-desc {{
-            font-size: 12.5px !important;
-        }}
+    .quick-nav-card .qnav-desc {{
+        font-size: 11.5px;
+        color: rgba(255, 255, 255, 0.92) !important;
+        line-height: 1.4;
+        margin: 0;
+        font-weight: 500;
     }}
 </style>
 """
