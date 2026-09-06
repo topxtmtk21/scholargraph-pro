@@ -181,6 +181,13 @@ if "display_mode" not in st.session_state:
     st.session_state.display_mode = "desktop_local" if not IS_CLOUD_ENV else "mobile_cloud"
 
 # -----------------------------------------------------------------------------
+# ĐIỀU HƯỚNG MÀN HÌNH AN TOÀN (CANONICAL STREAMLIT SAFE NAVIGATION)
+# -----------------------------------------------------------------------------
+def go_to_screen(target_screen: str):
+    st.session_state["target_nav"] = target_screen
+    st.rerun()
+
+# -----------------------------------------------------------------------------
 # NẠP GIAO DIỆN HỌC THUẬT & THEME ĐỘNG (10 BỘ THEME TƯƠNG PHẢN CAO WCAG AAA)
 # -----------------------------------------------------------------------------
 st.markdown(generate_theme_css(st.session_state.selected_theme), unsafe_allow_html=True)
@@ -420,6 +427,17 @@ with st.sidebar:
     if is_admin_or_super:
         nav_options.append("09. Quản trị hệ thống & Phân quyền")
 
+    # Xử lý điều hướng an toàn trước khi khởi tạo widget radio
+    if st.session_state.get("target_nav"):
+        t_nav = st.session_state["target_nav"]
+        matched_target = None
+        for opt in nav_options:
+            if t_nav.split('.')[0] == opt.split('.')[0] or t_nav.lower() in opt.lower() or opt.lower() in t_nav.lower():
+                matched_target = opt
+                break
+        st.session_state["workspace_nav_radio"] = matched_target if matched_target else t_nav
+        st.session_state["target_nav"] = None
+
     if "workspace_nav_radio" not in st.session_state:
         st.session_state["workspace_nav_radio"] = "01. Khởi tạo & Nhập mã DOI"
         
@@ -553,9 +571,7 @@ if st.session_state.get("display_mode") == "mobile_cloud":
         with q_cols_mobile[q_i]:
             is_cur = (q_val in workspace_nav)
             if st.button(q_txt, type="primary" if is_cur else "secondary", use_container_width=True, key=f"btn_global_qnav_{q_i}"):
-                st.session_state["workspace_nav"] = q_val
-                st.session_state["workspace_nav_radio"] = q_val
-                st.rerun()
+                go_to_screen(q_val)
 
     st.markdown("<div style='height: 4px;'></div>", unsafe_allow_html=True)
 
@@ -726,9 +742,7 @@ if hasattr(st, "dialog"):
         with col_p2:
             if st.button("🌐 XEM MẠNG LƯỚI TRÍCH DẪN ➔", type="primary", use_container_width=True, key="btn_modal_goto_m2"):
                 st.session_state.show_completion_popup = False
-                st.session_state["workspace_nav"] = "02. Mạng lưới trích dẫn khoa học"
-                st.session_state["workspace_nav_radio"] = "02. Mạng lưới trích dẫn khoa học"
-                st.rerun()
+                go_to_screen("02. Mạng lưới trích dẫn khoa học")
         with col_p3:
             if st.button("✕ Đóng", use_container_width=True, key="btn_modal_close"):
                 st.session_state.show_completion_popup = False
@@ -1036,9 +1050,7 @@ if "01." in workspace_nav:
             </div>
             """, unsafe_allow_html=True)
             if st.button("➔ XEM MẠNG LƯỚI TRÍCH DẪN", type="primary", use_container_width=True, key="btn_qnav_m2"):
-                st.session_state["workspace_nav"] = "02. Mạng lưới trích dẫn khoa học"
-                st.session_state["workspace_nav_radio"] = "02. Mạng lưới trích dẫn khoa học"
-                st.rerun()
+                go_to_screen("02. Mạng lưới trích dẫn khoa học")
                 
         with qnav2:
             st.markdown("""
@@ -1048,9 +1060,7 @@ if "01." in workspace_nav:
             </div>
             """, unsafe_allow_html=True)
             if st.button("➔ XEM BẢNG TỔNG HỢP APA 7", use_container_width=True, key="btn_qnav_m3"):
-                st.session_state["workspace_nav"] = "03. Bảng tổng hợp phương pháp (APA 7)"
-                st.session_state["workspace_nav_radio"] = "03. Bảng tổng hợp phương pháp (APA 7)"
-                st.rerun()
+                go_to_screen("03. Bảng tổng hợp phương pháp (APA 7)")
                 
         with qnav3:
             st.markdown("""
@@ -1060,9 +1070,7 @@ if "01." in workspace_nav:
             </div>
             """, unsafe_allow_html=True)
             if st.button("➔ XEM BẢN THẢO CARS", use_container_width=True, key="btn_qnav_m5"):
-                st.session_state["workspace_nav"] = "05. Soạn thảo CARS & Phản biện mô phỏng"
-                st.session_state["workspace_nav_radio"] = "05. Soạn thảo CARS & Phản biện mô phỏng"
-                st.rerun()
+                go_to_screen("05. Soạn thảo CARS & Phản biện mô phỏng")
                 
         with qnav4:
             st.markdown("""
@@ -1072,9 +1080,7 @@ if "01." in workspace_nav:
             </div>
             """, unsafe_allow_html=True)
             if st.button("➔ ĐẾN TRANG TẢI VỀ HỒ SƠ", use_container_width=True, key="btn_qnav_m6"):
-                st.session_state["workspace_nav"] = "06. Tải về trọn bộ hồ sơ & AI Copilot"
-                st.session_state["workspace_nav_radio"] = "06. Tải về trọn bộ hồ sơ & AI Copilot"
-                st.rerun()
+                go_to_screen("06. Tải về trọn bộ hồ sơ & AI Copilot")
 
 # -----------------------------------------------------------------------------
 # MÀN HÌNH 2: SƠ ĐỒ MẠNG LƯỚI TRÍCH DẪN & PHÂN LOẠI QUYỀN TRUY CẬP
@@ -1396,9 +1402,7 @@ elif "02." in workspace_nav:
                 )
         with c_m2_2:
             if st.button("📥 Hoặc nhập mã DOI riêng tại Menu 01 ➔", use_container_width=True, key="btn_m2_goto_m1"):
-                st.session_state["workspace_nav"] = "01. Khởi tạo & Nhập mã DOI"
-                st.session_state["workspace_nav_radio"] = "01. Khởi tạo & Nhập mã DOI"
-                st.rerun()
+                go_to_screen("01. Khởi tạo & Nhập mã DOI")
 
 # -----------------------------------------------------------------------------
 # MÀN HÌNH 3: BẢNG TỔNG HỢP PHƯƠNG PHÁP & KẾT QUẢ (CHUẨN APA 7 — CẤU TRÚC ĐOẠN ĐẸP)
