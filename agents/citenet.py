@@ -176,7 +176,9 @@ class CiteNetAgent:
         nodes: Dict[str, Dict[str, Any]],
         edges: List[Tuple[str, str]],
         height: str = "720px",
-        width: str = "100%"
+        width: str = "100%",
+        standalone_fullscreen: bool = False,
+        hide_bottom_panels: bool = False
     ) -> str:
         """
         Construct interactive HTML graph with commercial Obsidian styling, international bibliometric node sizing,
@@ -185,7 +187,16 @@ class CiteNetAgent:
         - 🔴 F0 (Seed): Ruby Red (#EA4335)
         - 🟣 R1-R3 (Backward Theoretical Roots): Royal Purple (#7C3AED), Indigo (#6366F1), Deep Indigo (#4338CA)
         - 🟢 F1-F3 (Forward Frontier Advances): Sky Cyan (#0284C7), Emerald (#059669), Amber (#D97706)
+        
+        Nếu standalone_fullscreen=True hoặc hide_bottom_panels=True, đồ thị sẽ tự động tối ưu hóa cho màn hình phụ độc lập
+        (chỉ hiển thị Header HUD Bar + Slim Left Dock + Canvas mạng lưới phát sáng 100vh toàn màn hình).
         """
+        is_standalone = standalone_fullscreen or hide_bottom_panels
+        deck_height_css = "height: 100vh; min-height: 100vh;" if is_standalone else "height: 860px; min-height: 860px;"
+        middle_height_css = "height: calc(100vh - 76px); min-height: calc(100vh - 76px);" if is_standalone else "height: 540px; min-height: 480px;"
+        bottom_display_css = "display: none !important;" if is_standalone else "display: grid;"
+        body_min_height_css = "min-height: 100vh;" if is_standalone else "min-height: 860px;"
+        
         # Bảng màu Kim Cương Tri Thức Đa Tầng (Diamond Knowledge Graph Palette)
         color_map = {
             0: {"background": "#EA4335", "border": "#FF8A80", "highlight": "#FFEBEE"},   # F0: Seed Core (Ruby Red)
@@ -511,7 +522,7 @@ class CiteNetAgent:
         html, body {{
             width: 100%;
             height: 100%;
-            min-height: 860px;
+            {body_min_height_css}
             overflow-x: hidden;
             background-color: var(--theme-bg-base);
             font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
@@ -524,8 +535,7 @@ class CiteNetAgent:
             display: flex;
             flex-direction: column;
             width: 100%;
-            height: 860px;
-            min-height: 860px;
+            {deck_height_css}
             box-sizing: border-box;
             padding: 10px;
             gap: 10px;
@@ -610,8 +620,7 @@ class CiteNetAgent:
             display: flex;
             flex: 1;
             gap: 10px;
-            height: 540px;
-            min-height: 480px;
+            {middle_height_css}
             position: relative;
         }}
 
@@ -779,7 +788,7 @@ class CiteNetAgent:
 
         /* 3. BOTTOM EXPANDABLE PANELS DECK (RELATED PAPERS + SELECTED DETAILS) */
         .synapse-bottom-deck {{
-            display: grid;
+            {bottom_display_css}
             grid-template-columns: 1fr 1.25fr;
             gap: 10px;
             height: 250px;
@@ -1844,3 +1853,23 @@ class CiteNetAgent:
             return self.generate_network_html(nodes, edges, height=height, width=width)
             
         return self.generate_network_html(filtered_nodes, filtered_edges, height=height, width=width)
+
+    def generate_standalone_fullscreen_html(
+        self,
+        nodes: Dict[str, Dict[str, Any]],
+        edges: List[Tuple[str, str]],
+        height: str = "100vh",
+        width: str = "100%"
+    ) -> str:
+        """
+        Generate a dedicated viewport HTML with only Synapse Academic HUD & full canvas,
+        completely hiding the bottom Related Papers & Selected Paper panels for maximum research focus.
+        """
+        return self.generate_network_html(
+            nodes=nodes,
+            edges=edges,
+            height=height,
+            width=width,
+            standalone_fullscreen=True,
+            hide_bottom_panels=True
+        )

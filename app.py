@@ -3,6 +3,7 @@ import streamlit.components.v1 as components
 import time
 import os
 import json
+import base64
 from typing import List, Dict, Any
 import pandas as pd
 
@@ -1253,11 +1254,17 @@ elif "02." in workspace_nav:
         if nodes_data and edges_data:
             citenet_agent_inst = CiteNetAgent(email=email_val)
             active_network_html = citenet_agent_inst.generate_network_html(nodes_data, edges_data)
+            active_standalone_html = citenet_agent_inst.generate_standalone_fullscreen_html(nodes_data, edges_data)
             c_res["network_html"] = active_network_html
+            c_res["standalone_html"] = active_standalone_html
         else:
             active_network_html = c_res.get("network_html", "")
+            active_standalone_html = c_res.get("standalone_html", active_network_html)
 
-        col_g1, col_g2 = st.columns([2.5, 1], gap="small")
+        b64_standalone = base64.b64encode(active_standalone_html.encode("utf-8")).decode("utf-8")
+        standalone_data_uri = f"data:text/html;charset=utf-8;base64,{b64_standalone}"
+
+        col_g1, col_g2, col_g3 = st.columns([1.8, 1.3, 0.9], gap="small")
         with col_g1:
             with st.expander("💡 Hướng dẫn & Quy ước Mạng lưới Kim Cương & Dòng Chảy Tri Thức", expanded=False):
                 st.markdown("""
@@ -1273,6 +1280,30 @@ elif "02." in workspace_nav:
                 - **Tương tác Đột phá:** Bấm nút **🧬 Truy Vết** trên thanh công cụ đồ thị rồi nhấp vào bất kỳ bài báo nào để **phát sáng toàn bộ chuỗi phả hệ cội nguồn** và làm mờ các bài không liên quan!
                 """)
         with col_g2:
+            st.markdown(f"""
+            <a href="{standalone_data_uri}" target="_blank" style="
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                padding: 7px 12px;
+                background: linear-gradient(135deg, rgba(0, 242, 254, 0.20) 0%, rgba(79, 70, 229, 0.28) 100%);
+                color: #FFFFFF;
+                border: 1.5px solid rgba(0, 242, 254, 0.65);
+                border-radius: 10px;
+                font-size: 12.5px;
+                font-weight: 800;
+                text-decoration: none;
+                box-shadow: 0 0 16px rgba(0, 242, 254, 0.25);
+                transition: all 0.2s ease;
+                letter-spacing: 0.02em;
+                height: 38px;
+                box-sizing: border-box;
+            " onmouseover="this.style.borderColor='#00F2FE'; this.style.boxShadow='0 0 22px rgba(0,242,254,0.5)';" onmouseout="this.style.borderColor='rgba(0,242,254,0.65)'; this.style.boxShadow='0 0 16px rgba(0,242,254,0.25)';">
+                <span>🌐</span> <span>MÀN HÌNH PHỤ (CỬA SỔ MỚI ↗)</span>
+            </a>
+            """, unsafe_allow_html=True)
+        with col_g3:
             st.download_button(
                 "📥 Tải tệp HTML",
                 data=active_network_html,
