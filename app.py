@@ -185,10 +185,26 @@ if not st.session_state.auth_user:
 
             with tab_login:
                 st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
-                login_email = st.text_input("📧 Địa chỉ Email tài khoản:", value="tranduytno@gmail.com", key="txt_login_email")
-                login_pass = st.text_input("🔑 Mật khẩu truy cập:", type="password", key="txt_login_pass")
                 
-                st.caption("💡 *Tài khoản Super Admin tối cao:* `tranduytno@gmail.com` *(Mật khẩu mặc định: `@123`)*")
+                # Nút chọn nhanh tài khoản Super Admin
+                st.caption("⚡ **Chọn nhanh tài khoản Super Admin (Mật khẩu mặc định: `@123`):**")
+                qc_col1, qc_col2 = st.columns(2)
+                with qc_col1:
+                    if st.button("👑 tranduytno@gmail.com", use_container_width=True, key="btn_fill_tranduy"):
+                        st.session_state["login_email_val"] = "tranduytno@gmail.com"
+                        st.session_state["login_pass_val"] = "@123"
+                        st.rerun()
+                with qc_col2:
+                    if st.button("👑 topxtmtk21@gmail.com", use_container_width=True, key="btn_fill_topxt"):
+                        st.session_state["login_email_val"] = "topxtmtk21@gmail.com"
+                        st.session_state["login_pass_val"] = "@123"
+                        st.rerun()
+
+                def_email = st.session_state.get("login_email_val", "tranduytno@gmail.com")
+                def_pass = st.session_state.get("login_pass_val", "@123")
+
+                login_email = st.text_input("📧 Địa chỉ Email tài khoản:", value=def_email, key="txt_login_email")
+                login_pass = st.text_input("🔑 Mật khẩu truy cập:", value=def_pass, type="password", key="txt_login_pass")
                 
                 if st.button("🚀 ĐĂNG NHẬP VÀO HỆ THỐNG NGAY", type="primary", use_container_width=True, key="btn_do_login"):
                     success, user_obj, msg = authenticate_user(login_email, login_pass)
@@ -203,26 +219,28 @@ if not st.session_state.auth_user:
                 st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
                 st.markdown("""
                 <div style="background:rgba(56, 189, 248, 0.06); border:1px solid rgba(56, 189, 248, 0.2); border-radius:10px; padding:12px 14px; font-size:12.5px; color:var(--text-secondary); margin-bottom:12px;">
-                    🛡️ <b>Quy trình bảo mật kép:</b> Khi yêu cầu đặt lại mật khẩu, một mã Token xác thực 32-ký tự sẽ được hệ thống mã hóa và <b>gửi đồng thời về 2 hòm thư bảo mật tối cao</b>:<br/>
-                    1. <code>topxtmtkt21@gmail.com</code><br/>
+                    🛡️ <b>Quy trình bảo mật kép:</b> Khi yêu cầu đặt lại mật khẩu, một mã Token xác thực bảo mật 32-ký tự sẽ được tạo ra ngay lập tức và định tuyến bảo mật đến 2 hòm thư:<br/>
+                    1. <code>topxtmtk21@gmail.com</code> (hoặc <code>topxtmtkt21@gmail.com</code>)<br/>
                     2. <code>tranduytno@gmail.com</code>
                 </div>
                 """, unsafe_allow_html=True)
                 
-                req_email = st.text_input("Nhập email cần khôi phục:", value=login_email, key="txt_req_reset_email")
-                if st.button("📨 GỬI MÃ PHỤC HỒI ĐẾN EMAIL BẢO MẬT", use_container_width=True, key="btn_send_reset_token"):
+                req_email = st.text_input("Nhập email cần khôi phục mật khẩu:", value=login_email, key="txt_req_reset_email")
+                if st.button("📨 TẠO MÃ KHÔI PHỤC BẢO MẬT", type="primary", use_container_width=True, key="btn_send_reset_token"):
                     ok_r, msg_r, token_val = request_password_reset(req_email)
                     if ok_r:
+                        st.session_state["active_reset_token"] = token_val
                         st.success(msg_r)
                         if token_val:
-                            st.info(f"🔑 **Mã Token Xác Thực (Chỉ hiển thị cho Quản trị viên):** `{token_val}`")
-                            st.caption("👉 Hãy sao chép mã Token này và chuyển sang tab **'3. Nhập Token đặt lại mật khẩu'** để tạo mật khẩu mới.")
+                            st.info(f"🔑 **MÃ TOKEN XÁC THỰC CỦA BẠN:** `{token_val}`")
+                            st.markdown("👉 **Hệ thống đã tự động lưu mã Token này! Bạn hãy chuyển sang Tab 3 'Nhập Token đặt lại mật khẩu' để đặt mật khẩu mới ngay.**")
                     else:
                         st.error(msg_r)
 
             with tab_reset:
                 st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
-                reset_tok_input = st.text_input("Mã Token xác thực (Nhận từ email bảo mật):", key="txt_reset_tok_val")
+                default_tok = st.session_state.get("active_reset_token", "")
+                reset_tok_input = st.text_input("Mã Token xác thực:", value=default_tok, key="txt_reset_tok_val")
                 new_p1 = st.text_input("Mật khẩu mới (Tối thiểu 6 ký tự):", type="password", key="txt_new_p1")
                 new_p2 = st.text_input("Xác nhận lại mật khẩu mới:", type="password", key="txt_new_p2")
 
@@ -233,6 +251,7 @@ if not st.session_state.auth_user:
                         ok_reset, msg_reset = verify_and_reset_password(reset_tok_input, new_p1)
                         if ok_reset:
                             st.success(msg_reset)
+                            st.info("👉 Bạn có thể chuyển sang Tab **'1. Đăng nhập'** để vào hệ thống bằng mật khẩu mới!")
                         else:
                             st.error(msg_reset)
 

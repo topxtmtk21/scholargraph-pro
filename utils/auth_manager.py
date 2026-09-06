@@ -17,8 +17,13 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Any, Optional, Tuple
 
 # Cấu hình địa chỉ Email Quản trị & Bảo mật Tối cao
+SUPER_ADMIN_EMAILS = [
+    "tranduytno@gmail.com",
+    "topxtmtk21@gmail.com",
+    "topxtmtkt21@gmail.com"
+]
 SUPER_ADMIN_EMAIL = "tranduytno@gmail.com"
-SECURITY_RECOVERY_EMAILS = ["topxtmtkt21@gmail.com", "tranduytno@gmail.com"]
+SECURITY_RECOVERY_EMAILS = ["topxtmtk21@gmail.com", "topxtmtkt21@gmail.com", "tranduytno@gmail.com"]
 DEFAULT_SUPER_ADMIN_PASS = "@123"
 
 DB_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
@@ -47,7 +52,7 @@ def _verify_password(password: str, stored_hash: str, salt: str) -> bool:
     return secrets.compare_digest(new_hash, stored_hash)
 
 def init_auth_db():
-    """Khởi tạo cấu trúc bảng xác thực và tài khoản Super Admin mặc định."""
+    """Khởi tạo cấu trúc bảng xác thực và đảm bảo tài khoản Super Admin sẵn sàng."""
     conn = _get_db()
     cur = conn.cursor()
     
@@ -94,23 +99,24 @@ def init_auth_db():
     """)
     conn.commit()
 
-    # Kiểm tra và nạp Super Admin tối cao
-    cur.execute("SELECT * FROM users WHERE email = ?", (SUPER_ADMIN_EMAIL,))
-    admin_row = cur.fetchone()
-    if not admin_row:
-        p_hash, p_salt = _hash_password(DEFAULT_SUPER_ADMIN_PASS)
-        now_str = datetime.now().isoformat()
-        cur.execute("""
-        INSERT INTO users (email, full_name, password_hash, password_salt, role, is_active, must_change_password, created_at, created_by)
-        VALUES (?, ?, ?, ?, ?, 1, 1, ?, 'SYSTEM_INIT')
-        """, (SUPER_ADMIN_EMAIL, "TRẦN DUY (Super Admin)", p_hash, p_salt, "super_admin", now_str))
-        
-        # Log sự kiện khởi tạo
-        cur.execute("""
-        INSERT INTO audit_logs (timestamp, actor_email, action, details)
-        VALUES (?, 'SYSTEM', 'INIT_SUPER_ADMIN', 'Tạo tài khoản Super Admin tối cao tranduytno@gmail.com')
-        """, (now_str,))
-        conn.commit()
+    now_str = datetime.now().isoformat()
+    
+    # Đảm bảo tất cả các tài khoản Quản trị tối cao đều được khởi tạo và sẵn sàng đăng nhập với pass mặc định @123
+    for admin_mail in SUPER_ADMIN_EMAILS:
+        cur.execute("SELECT * FROM users WHERE email = ?", (admin_mail,))
+        row = cur.fetchone()
+        if not row:
+            p_hash, p_salt = _hash_password(DEFAULT_SUPER_ADMIN_PASS)
+            cur.execute("""
+            INSERT INTO users (email, full_name, password_hash, password_salt, role, is_active, must_change_password, created_at, created_by)
+            VALUES (?, ?, ?, ?, 'super_admin', 1, 1, ?, 'SYSTEM_INIT')
+            """, (admin_mail, f"TRẦN DUY ({admin_mail})", p_hash, p_salt, now_str))
+            
+            cur.execute("""
+            INSERT INTO audit_logs (timestamp, actor_email, action, details)
+            VALUES (?, 'SYSTEM', 'INIT_SUPER_ADMIN', ?)
+            """, (now_str, f"Khởi tạo Super Admin {admin_mail}"))
+            conn.commit()
     conn.close()
 
 # Tự động khởi tạo DB khi nạp module
