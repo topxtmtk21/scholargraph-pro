@@ -127,14 +127,58 @@ Hệ thống chuyên nghiệp phải áp dụng ma trận phân quyền chi ti�
 
 ---
 
-## 🛠️ 7. Checklist Vàng Cho Kỹ Sư Phần Mềm (Pre-Commit Golden Checklist)
+## 🕸️ 7. Quy Chuẩn Đồ Thị Tri Thức Học Thuật Đa Bố Cục & Chống Đè Trùng Năm
+
+Khi xây dựng các công cụ trực quan hóa mạng lưới học thuật phức tạp (như CiteSpace, VOSviewer, HistCite):
+
+### A. 10 Chế Độ Bố Cục Học Thuật (10 Academic Layout Engines)
+1. **Linear Timeline (HistCite)**: Trục thời gian ngang $X$, sắp xếp các bài báo theo thứ tự năm xuất bản.
+2. **Concentric Radar Timeline**: Quỹ đạo radar đồng tâm, F0 ở tâm điểm, các vòng tròn tỏa rộng đại diện cho các năm/thế hệ.
+3. **Ishikawa Fishbone Diagram**: Sơ đồ xương cá học thuật, trục sống lưng là thời gian, cội nguồn $R$ chéo xuống dưới, kế thừa $F$ chéo lên trên, bài gốc $F0$ nằm chính giữa.
+4. **Dendrogram Branching Tree**: Cây thư mục phân cấp tỏa nhánh từ bài gốc sang hai phía theo từng tầng.
+5. **CiteSpace DAG Tree**: Cây phả hệ có hướng phân tầng từ cội nguồn đến các phát triển mới.
+6. **Clustered Topic Matrix**: Ma trận lưới cụm chủ đề và phân hạng tạp chí.
+7. **Force-Directed Quantum (VOSviewer)**: Mạng lưới động học lực đẩy-hút tự nhiên.
+8. **Scopus Quartile Lanes (Q1-Q4)**: Phân làn theo xếp hạng chất lượng tạp chí quốc tế.
+9. **Dual-Diamond Horizon**: Mặt phẳng kim cương đối xứng 2 chiều.
+10. **Ancestry Fan Chart**: Quạt nan phả hệ tỏa tròn $180^\circ$.
+
+### B. Thuật Toán Chống Đè Trùng Năm (Same-Year Anti-Collision Mechanism)
+- Khi có nhiều công trình xuất bản cùng một năm trên trục thời gian, **tuyệt đối không để các node bị chồng lấn vị trí**.
+- **Giải pháp**: Gom nhóm theo năm (`yearGroups`), tính chỉ số so le lệch trục (`yOffset = (idxInYr - (totalInYr - 1) / 2) * 95 + ((idxInYr % 2 === 0) ? 14 : -14)`) hoặc phân bổ góc xoay (`angleOffset`), đảm bảo mọi công trình đều hiển thị rõ ràng và tách bạch $100\%$.
+
+---
+
+## ⚓ 8. Nguyên Tắc Bảo Tồn Bài Báo Gốc Neo (Anchor Node Pinning Law)
+
+Trong các giao diện lọc phân tầng tri thức:
+- **Hiện tượng lỗi thường gặp**: Khi người dùng lọc riêng tầng kế thừa ($F_1-F_3$) hoặc cội nguồn ($R_1-R_3$), bài báo gốc $F_0$ bị biến mất, khiến người dùng mất điểm tựa tham chiếu của đề tài.
+- **Quy tắc Vàng**: Trong mọi chế độ lọc kết hợp (`f0_forward`, `f0_backward`, `f0_f1`, `f0_f2`, `f0_r1`, `f0_r2`), **Bài báo gốc $F_0$ LUÔN LUÔN được bảo tồn/ghim làm tâm điểm neo (Anchor Node)** với `matchLayer = True`.
+- **Mũi tên liên kết**: Mọi liên kết giữa $F_0$ và các node trong phân tầng được chọn đều phải hiển thị đầy đủ và phát sáng tương tác khi hover.
+
+---
+
+## 🎨 9. Tiêu Chuẩn Giao Diện Đa Theme Tương Phản Cao & Đổ Bóng Đều Khung
+
+1. **10 Mẫu Giao Diện Tương Phản Cao**:
+   - Bắt buộc cung cấp cả mẫu **Matrix Cyber Green** (nền đen tuyền, xanh Phosphor Matrix) và mẫu **Classic Monochrome Đen - Trắng** (chuẩn in ấn, tương phản tối đa).
+   - Khi chuyển theme, bảng màu của **Node** (Seed $F_0$, Cội nguồn $R$, Kế thừa $F$) và **4 loại Mũi tên** (Direct, Mutual, Cross-bridge, Intra-layer) phải được cập nhật đồng bộ để duy trì độ tương phản vượt trội (WCAG AAA/AA).
+
+2. **Quy Chuẩn Đổ Bóng Đều Khung (Omnidirectional Box-Shadow)**:
+   - Mọi menu, panel, dock, modal, và card nếu có đổ bóng thì **phải đổ bóng đều xung quanh khung** (`box-shadow: 0 0 20px rgba(var(--theme-glow-rgb), 0.20), 0 4px 20px rgba(0, 0, 0, 0.45);`).
+   - **Tuyệt đối không đổ bóng lệch riêng một bên trái** hoặc viền bất đối xứng gây mất cân bằng thị giác.
+
+---
+
+## 🛠️ 10. Checklist Vàng Cho Kỹ Sư Phần Mềm (Pre-Commit Golden Checklist)
 
 Trước khi xác nhận hoàn thành bất kỳ nhiệm vụ nào:
 - [ ] **1. Rà soát tương thích ngược**: Không sửa/xóa chữ ký hàm cũ, không xóa trường dữ liệu cũ.
 - [ ] **2. Kiểm tra chuỗi thoát ký**: Đảm bảo toàn bộ dấu `{`, `}` trong mã nhúng đã được thoát ký chính xác.
-- [ ] **3. Kiểm tra cú pháp toàn diện**: Chạy trình biên dịch bytecode cho 100% file mã nguồn.
-- [ ] **4. Chạy lại 100% bộ Test Suites**: Đảm bảo tất cả các bài kiểm thử cũ và mới đều đạt điểm xanh (All Passed).
-- [ ] **5. Kiểm tra tính an toàn bảo mật Cloud vs Local**: Đảm bảo bản Cloud bảo mật tối cao (không nút bypass, không lộ email dev, RBAC chi tiết) và bản Local không bị ảnh hưởng.
+- [ ] **3. Kiểm tra cú pháp toàn diện**: Chạy trình biên dịch bytecode cho 100% file mã nguồn (`python -m py_compile agents/citenet.py app.py`).
+- [ ] **4. Chạy lại 100% bộ Test Suites**: Đảm bảo tất cả các bài kiểm thử cũ và mới đều đạt điểm xanh (`test_graph_layouts_and_palettes.py`, `test_granular_rbac_security.py`, `test_system_upgrades_pro.py`).
+- [ ] **5. Kiểm tra tính an toàn bảo mật Cloud vs Local**: Đảm bảo bản Cloud bảo mật tối cao và bản Local không bị ảnh hưởng.
 - [ ] **6. Kiểm tra trải nghiệm thực tế**: Thử nghiệm trên màn hình nhỏ (Mobile) và màn hình lớn (Desktop).
 - [ ] **7. Cập nhật tài liệu kỹ thuật & SKILL**: Ghi chú rõ các thay đổi và gắn nhãn commit chuẩn mực.
+
 

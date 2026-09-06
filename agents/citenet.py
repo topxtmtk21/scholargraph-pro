@@ -197,7 +197,7 @@ class CiteNetAgent:
         bottom_display_css = "display: none !important;" if is_standalone else "display: grid;"
         body_min_height_css = "min-height: 100vh;" if is_standalone else "min-height: 860px;"
         
-        # Bảng màu Kim Cương Tri Thức Đa Tầng (Diamond Knowledge Graph Palette)
+        # Bảng màu Kim Cương Tri Thức Đa Tầng Mặc Định (Synapse Cyan Theme)
         color_map = {
             0: {"background": "#EA4335", "border": "#FF8A80", "highlight": "#FFEBEE"},   # F0: Seed Core (Ruby Red)
             -1: {"background": "#7C3AED", "border": "#A78BFA", "highlight": "#EDE9FE"},  # R1: Tham chiếu Nền tảng trực tiếp (Royal Purple)
@@ -261,24 +261,24 @@ class CiteNetAgent:
             
             # Nhãn rút gọn chuẩn học thuật [Tác giả, Năm, Tầng & Số trích dẫn]
             if level == 0 or layer == "seed":
-                short_label = f"★ {first_auth} ({year})\n[F0 • {cites} tc]"
-                full_label = f"★ {first_auth} ({year})\n{truncated_title}\n[F0 • {cites} trích dẫn]"
+                short_label = f"★ {first_auth} ({year})\\n[F0 • {cites} tc]"
+                full_label = f"★ {first_auth} ({year})\\n{truncated_title}\\n[F0 • {cites} trích dẫn]"
             elif level < 0 or layer == "backward":
                 r_tag = f"R{abs(level)}" if level != 0 else "R"
                 if is_isolated:
-                    short_label = f"⚡ {first_auth} ({year})\n[{r_tag} • {cites} tc • Độc lập]"
-                    full_label = f"⚡ {first_auth} ({year})\n{truncated_title}\n[{r_tag} • {cites} tc • Độc lập]"
+                    short_label = f"⚡ {first_auth} ({year})\\n[{r_tag} • {cites} tc • Độc lập]"
+                    full_label = f"⚡ {first_auth} ({year})\\n{truncated_title}\\n[{r_tag} • {cites} tc • Độc lập]"
                 else:
-                    short_label = f"🏛️ {first_auth} ({year})\n[{r_tag} • {cites} tc]"
-                    full_label = f"🏛️ {first_auth} ({year})\n{truncated_title}\n[{r_tag} • {cites} trích dẫn]"
+                    short_label = f"🏛️ {first_auth} ({year})\\n[{r_tag} • {cites} tc]"
+                    full_label = f"🏛️ {first_auth} ({year})\\n{truncated_title}\\n[{r_tag} • {cites} trích dẫn]"
             else:
                 f_tag = f"F{level}" if level != 0 else "F"
                 if is_isolated:
-                    short_label = f"⚡ {first_auth} ({year})\n[{f_tag} • {cites} tc • Độc lập]"
-                    full_label = f"⚡ {first_auth} ({year})\n{truncated_title}\n[{f_tag} • {cites} tc • Độc lập]"
+                    short_label = f"⚡ {first_auth} ({year})\\n[{f_tag} • {cites} tc • Độc lập]"
+                    full_label = f"⚡ {first_auth} ({year})\\n{truncated_title}\\n[{f_tag} • {cites} tc • Độc lập]"
                 else:
-                    short_label = f"🚀 {first_auth} ({year})\n[{f_tag} • {cites} tc]"
-                    full_label = f"🚀 {first_auth} ({year})\n{truncated_title}\n[{f_tag} • {cites} trích dẫn]"
+                    short_label = f"🚀 {first_auth} ({year})\\n[{f_tag} • {cites} tc]"
+                    full_label = f"🚀 {first_auth} ({year})\\n{truncated_title}\\n[{f_tag} • {cites} trích dẫn]"
 
             # Tính tọa độ timeline ban đầu
             try:
@@ -432,81 +432,152 @@ class CiteNetAgent:
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Synapse Academic — Global Citation Network HUD</title>
     <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style type="text/css">
         :root {{
             --theme-glow: #00F2FE;
             --theme-glow-rgb: 0, 242, 254;
             --theme-bg-base: #040914;
-            --theme-panel-bg: rgba(6, 14, 28, 0.82);
+            --theme-panel-bg: rgba(6, 14, 28, 0.84);
             --theme-panel-border: rgba(0, 242, 254, 0.32);
             --theme-accent: #00F2FE;
             --theme-accent-hover: #38BDF8;
             --theme-text-main: #F8FAFC;
             --theme-text-dim: #94A3B8;
             --theme-badge-bg: rgba(0, 242, 254, 0.14);
+            --theme-hud-shadow: 0 0 20px rgba(0, 242, 254, 0.20), 0 4px 20px rgba(0, 0, 0, 0.45);
         }}
 
-        /* 5 THEMES KẾ THỪA ĐỒNG BỘ */
+        /* 10 HIGH-CONTRAST THEMES (BAO GỒM MATRIX & MONOCHROME CLASSIC ĐEN TRẮNG) */
         body.theme-synapse-cyan {{
             --theme-glow: #00F2FE;
             --theme-glow-rgb: 0, 242, 254;
             --theme-bg-base: #040914;
-            --theme-panel-bg: rgba(6, 14, 28, 0.84);
+            --theme-panel-bg: rgba(6, 14, 28, 0.86);
             --theme-panel-border: rgba(0, 242, 254, 0.35);
             --theme-accent: #00F2FE;
             --theme-accent-hover: #38BDF8;
             --theme-text-main: #F8FAFC;
             --theme-text-dim: #94A3B8;
             --theme-badge-bg: rgba(0, 242, 254, 0.14);
+            --theme-hud-shadow: 0 0 22px rgba(0, 242, 254, 0.22), 0 4px 20px rgba(0, 0, 0, 0.50);
+        }}
+        body.theme-emerald-matrix {{
+            --theme-glow: #00FF66;
+            --theme-glow-rgb: 0, 255, 102;
+            --theme-bg-base: #020904;
+            --theme-panel-bg: rgba(2, 22, 10, 0.90);
+            --theme-panel-border: rgba(0, 255, 102, 0.45);
+            --theme-accent: #00FF66;
+            --theme-accent-hover: #33FF88;
+            --theme-text-main: #E6FFE6;
+            --theme-text-dim: #55CC77;
+            --theme-badge-bg: rgba(0, 255, 102, 0.16);
+            --theme-hud-shadow: 0 0 24px rgba(0, 255, 102, 0.28), 0 4px 20px rgba(0, 0, 0, 0.65);
+        }}
+        body.theme-monochrome-classic {{
+            --theme-glow: #FFFFFF;
+            --theme-glow-rgb: 255, 255, 255;
+            --theme-bg-base: #0A0A0A;
+            --theme-panel-bg: rgba(20, 20, 20, 0.94);
+            --theme-panel-border: rgba(255, 255, 255, 0.45);
+            --theme-accent: #FFFFFF;
+            --theme-accent-hover: #D4D4D8;
+            --theme-text-main: #FFFFFF;
+            --theme-text-dim: #A1A1AA;
+            --theme-badge-bg: rgba(255, 255, 255, 0.15);
+            --theme-hud-shadow: 0 0 20px rgba(255, 255, 255, 0.20), 0 4px 20px rgba(0, 0, 0, 0.70);
         }}
         body.theme-nebula-violet {{
             --theme-glow: #C084FC;
             --theme-glow-rgb: 192, 132, 252;
             --theme-bg-base: #090514;
-            --theme-panel-bg: rgba(18, 10, 34, 0.86);
-            --theme-panel-border: rgba(192, 132, 252, 0.35);
+            --theme-panel-bg: rgba(18, 10, 34, 0.88);
+            --theme-panel-border: rgba(192, 132, 252, 0.38);
             --theme-accent: #C084FC;
             --theme-accent-hover: #E879F9;
             --theme-text-main: #FAF5FF;
-            --theme-text-dim: #A8A29E;
+            --theme-text-dim: #C4B5FD;
             --theme-badge-bg: rgba(192, 132, 252, 0.16);
-        }}
-        body.theme-emerald-matrix {{
-            --theme-glow: #10B981;
-            --theme-glow-rgb: 16, 185, 129;
-            --theme-bg-base: #030F0C;
-            --theme-panel-bg: rgba(6, 26, 20, 0.86);
-            --theme-panel-border: rgba(16, 185, 129, 0.35);
-            --theme-accent: #10B981;
-            --theme-accent-hover: #34D399;
-            --theme-text-main: #ECFDF5;
-            --theme-text-dim: #9CA3AF;
-            --theme-badge-bg: rgba(16, 185, 129, 0.16);
+            --theme-hud-shadow: 0 0 22px rgba(192, 132, 252, 0.24), 0 4px 20px rgba(0, 0, 0, 0.50);
         }}
         body.theme-solar-amber {{
             --theme-glow: #F59E0B;
             --theme-glow-rgb: 245, 158, 11;
-            --theme-bg-base: #100A04;
-            --theme-panel-bg: rgba(28, 18, 8, 0.86);
-            --theme-panel-border: rgba(245, 158, 11, 0.38);
+            --theme-bg-base: #120A03;
+            --theme-panel-bg: rgba(30, 18, 6, 0.88);
+            --theme-panel-border: rgba(245, 158, 11, 0.40);
             --theme-accent: #F59E0B;
             --theme-accent-hover: #FCD34D;
             --theme-text-main: #FFFBEB;
-            --theme-text-dim: #A1A1AA;
-            --theme-badge-bg: rgba(245, 158, 11, 0.16);
+            --theme-text-dim: #FDE68A;
+            --theme-badge-bg: rgba(245, 158, 11, 0.18);
+            --theme-hud-shadow: 0 0 22px rgba(245, 158, 11, 0.25), 0 4px 20px rgba(0, 0, 0, 0.55);
         }}
-        body.theme-nordic-light {{
+        body.theme-deep-ocean {{
+            --theme-glow: #38BDF8;
+            --theme-glow-rgb: 56, 189, 248;
+            --theme-bg-base: #03132B;
+            --theme-panel-bg: rgba(6, 28, 58, 0.90);
+            --theme-panel-border: rgba(56, 189, 248, 0.40);
+            --theme-accent: #38BDF8;
+            --theme-accent-hover: #7DD3FC;
+            --theme-text-main: #F0F9FF;
+            --theme-text-dim: #BAE6FD;
+            --theme-badge-bg: rgba(56, 189, 248, 0.16);
+            --theme-hud-shadow: 0 0 22px rgba(56, 189, 248, 0.24), 0 4px 20px rgba(0, 0, 0, 0.55);
+        }}
+        body.theme-crimson-ruby {{
+            --theme-glow: #F43F5E;
+            --theme-glow-rgb: 244, 63, 94;
+            --theme-bg-base: #160408;
+            --theme-panel-bg: rgba(36, 8, 16, 0.90);
+            --theme-panel-border: rgba(244, 63, 94, 0.40);
+            --theme-accent: #F43F5E;
+            --theme-accent-hover: #FB7185;
+            --theme-text-main: #FFF1F2;
+            --theme-text-dim: #FECDD3;
+            --theme-badge-bg: rgba(244, 63, 94, 0.16);
+            --theme-hud-shadow: 0 0 22px rgba(244, 63, 94, 0.25), 0 4px 20px rgba(0, 0, 0, 0.55);
+        }}
+        body.theme-nordic-frost {{
             --theme-glow: #0284C7;
             --theme-glow-rgb: 2, 132, 199;
-            --theme-bg-base: #F0F4F8;
-            --theme-panel-bg: rgba(255, 255, 255, 0.90);
-            --theme-panel-border: rgba(2, 132, 199, 0.35);
+            --theme-bg-base: #F1F5F9;
+            --theme-panel-bg: rgba(255, 255, 255, 0.94);
+            --theme-panel-border: rgba(2, 132, 199, 0.40);
             --theme-accent: #0284C7;
             --theme-accent-hover: #0369A1;
             --theme-text-main: #0F172A;
             --theme-text-dim: #475569;
             --theme-badge-bg: rgba(2, 132, 199, 0.12);
+            --theme-hud-shadow: 0 0 20px rgba(2, 132, 199, 0.16), 0 4px 20px rgba(15, 23, 42, 0.12);
+        }}
+        body.theme-vintage-parchment {{
+            --theme-glow: #B45309;
+            --theme-glow-rgb: 180, 83, 9;
+            --theme-bg-base: #FBF8F1;
+            --theme-panel-bg: rgba(248, 243, 231, 0.95);
+            --theme-panel-border: rgba(180, 83, 9, 0.38);
+            --theme-accent: #B45309;
+            --theme-accent-hover: #92400E;
+            --theme-text-main: #292524;
+            --theme-text-dim: #57534E;
+            --theme-badge-bg: rgba(180, 83, 9, 0.12);
+            --theme-hud-shadow: 0 0 20px rgba(180, 83, 9, 0.14), 0 4px 18px rgba(41, 37, 36, 0.10);
+        }}
+        body.theme-neon-gold {{
+            --theme-glow: #EAB308;
+            --theme-glow-rgb: 234, 179, 8;
+            --theme-bg-base: #0E0C02;
+            --theme-panel-bg: rgba(24, 20, 4, 0.90);
+            --theme-panel-border: rgba(234, 179, 8, 0.42);
+            --theme-accent: #EAB308;
+            --theme-accent-hover: #FACC15;
+            --theme-text-main: #FEFCE8;
+            --theme-text-dim: #FEF08A;
+            --theme-badge-bg: rgba(234, 179, 8, 0.18);
+            --theme-hud-shadow: 0 0 22px rgba(234, 179, 8, 0.26), 0 4px 20px rgba(0, 0, 0, 0.60);
         }}
 
         * {{
@@ -538,7 +609,7 @@ class CiteNetAgent:
             background: radial-gradient(circle at 50% 20%, rgba(var(--theme-glow-rgb), 0.08) 0%, transparent 70%);
         }}
 
-        /* 1. TOP HEADER HUD BAR */
+        /* 1. TOP HEADER HUD BAR (ĐỔ BÓNG ĐỀU TOÀN KHUNG) */
         .synapse-header-bar {{
             display: flex;
             align-items: center;
@@ -549,7 +620,7 @@ class CiteNetAgent:
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--theme-panel-border);
             border-radius: 14px;
-            box-shadow: 0 0 20px rgba(var(--theme-glow-rgb), 0.12);
+            box-shadow: var(--theme-hud-shadow);
             flex-shrink: 0;
         }}
         .brand-logo-cluster {{
@@ -584,7 +655,7 @@ class CiteNetAgent:
         .header-meta-cluster {{
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 14px;
         }}
         .meta-chip {{
             display: flex;
@@ -597,6 +668,7 @@ class CiteNetAgent:
             font-size: 11.5px;
             font-weight: 600;
             color: var(--theme-text-main);
+            box-shadow: 0 0 10px rgba(var(--theme-glow-rgb), 0.08);
         }}
         .pulse-dot {{
             width: 7px;
@@ -620,37 +692,42 @@ class CiteNetAgent:
             position: relative;
         }}
 
-        /* SLIM VERTICAL DOCK BAR */
+        /* SLIM VERTICAL DOCK BAR (ĐỔ BÓNG ĐỀU TOÀN KHUNG) */
         .synapse-vertical-dock {{
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: space-between;
-            padding: 12px 6px;
+            padding: 10px 5px;
             background: var(--theme-panel-bg);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--theme-panel-border);
             border-radius: 14px;
-            box-shadow: 0 0 20px rgba(var(--theme-glow-rgb), 0.10);
-            width: 48px;
+            box-shadow: var(--theme-hud-shadow);
+            width: 52px;
             flex-shrink: 0;
+            overflow-y: auto;
+            scrollbar-width: none;
+        }}
+        .synapse-vertical-dock::-webkit-scrollbar {{
+            display: none;
         }}
         .dock-btn-group {{
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 7px;
             width: 100%;
             align-items: center;
         }}
         .dock-icon-btn {{
-            width: 36px;
-            height: 36px;
+            width: 38px;
+            height: 38px;
             border-radius: 10px;
             background: transparent;
             border: 1px solid transparent;
             color: var(--theme-text-dim);
-            font-size: 16px;
+            font-size: 15px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -661,17 +738,17 @@ class CiteNetAgent:
             color: var(--theme-accent);
             border-color: var(--theme-panel-border);
             background: var(--theme-badge-bg);
-            box-shadow: 0 0 12px rgba(var(--theme-glow-rgb), 0.25);
+            box-shadow: 0 0 14px rgba(var(--theme-glow-rgb), 0.35);
             transform: scale(1.08);
         }}
         .dock-icon-btn.active {{
             color: var(--theme-text-main);
             border-color: var(--theme-accent);
             background: var(--theme-badge-bg);
-            box-shadow: 0 0 14px rgba(var(--theme-glow-rgb), 0.35);
+            box-shadow: 0 0 16px rgba(var(--theme-glow-rgb), 0.45);
         }}
 
-        /* GRAPH CANVAS WRAPPER */
+        /* GRAPH CANVAS WRAPPER (ĐỔ BÓNG ĐỀU TOÀN KHUNG) */
         .synapse-graph-container {{
             position: relative;
             flex: 1;
@@ -681,7 +758,7 @@ class CiteNetAgent:
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--theme-panel-border);
             border-radius: 16px;
-            box-shadow: 0 0 30px rgba(var(--theme-glow-rgb), 0.12);
+            box-shadow: var(--theme-hud-shadow);
             overflow: hidden;
         }}
         #network-container {{
@@ -698,14 +775,14 @@ class CiteNetAgent:
             pointer-events: none;
         }}
         .graph-title {{
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 800;
             letter-spacing: 0.04em;
             color: var(--theme-text-main);
-            text-shadow: 0 0 10px rgba(var(--theme-glow-rgb), 0.4);
+            text-shadow: 0 0 12px rgba(var(--theme-glow-rgb), 0.45);
         }}
         .graph-subtitle {{
-            font-size: 11.5px;
+            font-size: 11px;
             color: var(--theme-accent);
             font-weight: 600;
             letter-spacing: 0.02em;
@@ -720,10 +797,14 @@ class CiteNetAgent:
             align-items: center;
             gap: 6px;
             background: rgba(var(--theme-glow-rgb), 0.08);
-            backdrop-filter: blur(14px);
+            backdrop-filter: blur(16px);
             padding: 4px 8px;
             border-radius: 12px;
             border: 1px solid var(--theme-panel-border);
+            box-shadow: 0 0 16px rgba(var(--theme-glow-rgb), 0.15);
+            max-width: calc(100% - 32px);
+            flex-wrap: wrap;
+            justify-content: flex-end;
         }}
         .hud-mini-btn {{
             background: var(--theme-panel-bg);
@@ -731,7 +812,7 @@ class CiteNetAgent:
             color: var(--theme-text-main);
             padding: 5px 9px;
             border-radius: 8px;
-            font-size: 11.5px;
+            font-size: 11px;
             font-weight: 700;
             cursor: pointer;
             display: inline-flex;
@@ -739,11 +820,12 @@ class CiteNetAgent:
             gap: 4px;
             transition: all 0.18s ease;
             white-space: nowrap;
+            box-shadow: 0 0 8px rgba(var(--theme-glow-rgb), 0.08);
         }}
         .hud-mini-btn:hover {{
             border-color: var(--theme-accent);
             color: #FFFFFF;
-            box-shadow: 0 0 10px rgba(var(--theme-glow-rgb), 0.3);
+            box-shadow: 0 0 14px rgba(var(--theme-glow-rgb), 0.35);
             transform: translateY(-1px);
         }}
         .hud-mini-btn.active {{
@@ -751,7 +833,7 @@ class CiteNetAgent:
             border-color: var(--theme-accent);
             color: #040914;
             font-weight: 800;
-            box-shadow: 0 0 12px var(--theme-glow);
+            box-shadow: 0 0 14px var(--theme-glow);
         }}
 
         /* SPEED SLIDER CLUSTER TRÊN THANH CÔNG CỤ */
@@ -763,15 +845,16 @@ class CiteNetAgent:
             border: 1px solid var(--theme-panel-border);
             padding: 3px 8px;
             border-radius: 8px;
+            box-shadow: 0 0 8px rgba(var(--theme-glow-rgb), 0.08);
         }}
         .speed-slider-input {{
-            width: 65px;
+            width: 60px;
             cursor: pointer;
             accent-color: var(--theme-accent);
             height: 4px;
         }}
 
-        /* SMART HUD HOVER INSPECTOR (CHO NODE - GÓC TRÊN TRÁI) */
+        /* SMART HUD HOVER INSPECTOR (CHO NODE - ĐỔ BÓNG ĐỀU TOÀN KHUNG) */
         .hud-hover-inspector {{
             position: absolute;
             top: 58px;
@@ -779,12 +862,12 @@ class CiteNetAgent:
             z-index: 65;
             width: 330px;
             background: var(--theme-panel-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(22px);
+            -webkit-backdrop-filter: blur(22px);
             border: 1.5px solid var(--theme-accent);
             border-radius: 12px;
             padding: 10px 14px;
-            box-shadow: 0 0 20px rgba(var(--theme-glow-rgb), 0.35);
+            box-shadow: 0 0 24px rgba(var(--theme-glow-rgb), 0.35), 0 4px 20px rgba(0,0,0,0.5);
             pointer-events: none;
             transition: opacity 0.2s ease, transform 0.2s ease;
             opacity: 0;
@@ -820,20 +903,20 @@ class CiteNetAgent:
             padding-top: 4px;
         }}
 
-        /* EDGE EPISTEMIC INSPECTOR (CHO MŨI TÊN - GÓC TRÊN PHẢI VÙNG TRỐNG) */
+        /* EDGE EPISTEMIC INSPECTOR (CHO MŨI TÊN - ĐỔ BÓNG ĐỀU TOÀN KHUNG) */
         .edge-epistemic-inspector {{
             position: absolute;
             top: 58px;
             right: 16px;
             z-index: 65;
-            width: 320px;
-            background: rgba(26, 16, 6, 0.90);
-            backdrop-filter: blur(22px);
-            -webkit-backdrop-filter: blur(22px);
+            width: 330px;
+            background: rgba(26, 16, 6, 0.92);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
             border: 1.5px solid #F59E0B;
             border-radius: 12px;
             padding: 9px 13px;
-            box-shadow: 0 0 22px rgba(245, 158, 11, 0.35);
+            box-shadow: 0 0 24px rgba(245, 158, 11, 0.35), 0 4px 20px rgba(0,0,0,0.5);
             pointer-events: none;
             transition: opacity 0.2s ease, transform 0.2s ease;
             opacity: 0;
@@ -863,19 +946,19 @@ class CiteNetAgent:
             letter-spacing: 0.03em;
         }}
 
-        /* SLIDE-OUT LEGEND DRAWER FROM SLIM DOCK */
+        /* SLIDE-OUT LEGEND DRAWER FROM SLIM DOCK (ĐỔ BÓNG ĐỀU TOÀN KHUNG) */
         .dock-legend-drawer {{
             position: absolute;
-            left: 64px;
+            left: 68px;
             top: 0;
             bottom: 0;
-            width: 320px;
+            width: 350px;
             background: var(--theme-panel-bg);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
+            backdrop-filter: blur(26px);
+            -webkit-backdrop-filter: blur(26px);
             border: 1px solid var(--theme-panel-border);
             border-radius: 14px;
-            box-shadow: 0 0 30px rgba(var(--theme-glow-rgb), 0.25);
+            box-shadow: var(--theme-hud-shadow);
             z-index: 100;
             display: none;
             flex-direction: column;
@@ -915,6 +998,7 @@ class CiteNetAgent:
             border: 1px solid rgba(var(--theme-glow-rgb), 0.15);
             border-radius: 8px;
             margin-bottom: 6px;
+            box-shadow: 0 0 8px rgba(var(--theme-glow-rgb), 0.06);
         }}
         .legend-color-chip {{
             width: 10px;
@@ -924,7 +1008,7 @@ class CiteNetAgent:
             margin-top: 2px;
         }}
 
-        /* 3. BOTTOM EXPANDABLE PANELS DECK (RELATED PAPERS + SELECTED DETAILS) */
+        /* 3. BOTTOM EXPANDABLE PANELS DECK (ĐỔ BÓNG ĐỀU TOÀN KHUNG) */
         .synapse-bottom-deck {{
             {bottom_display_css}
             grid-template-columns: 1fr 1.25fr;
@@ -942,7 +1026,7 @@ class CiteNetAgent:
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--theme-panel-border);
             border-radius: 14px;
-            box-shadow: 0 0 20px rgba(var(--theme-glow-rgb), 0.10);
+            box-shadow: var(--theme-hud-shadow);
             overflow: hidden;
         }}
         .panel-card-header {{
@@ -1071,13 +1155,13 @@ class CiteNetAgent:
                 grid-template-columns: 1fr;
             }}
             .synapse-vertical-dock {{
-                width: 38px;
+                width: 42px;
                 padding: 8px 3px;
                 border-radius: 10px;
             }}
             .dock-icon-btn {{
-                width: 32px;
-                height: 32px;
+                width: 34px;
+                height: 34px;
                 font-size: 13px;
             }}
             .graph-top-tools {{
@@ -1127,8 +1211,19 @@ class CiteNetAgent:
                 <b style="color:var(--theme-accent);">{short_project_name}</b>
             </div>
             <div class="meta-chip">
-                <span>👤 USER:</span>
-                <b>Scholar Pro</b>
+                <span>🎨 THEME:</span>
+                <select id="themeSelector" onchange="changeThemeDirectly(this.value)" style="background:transparent; border:none; color:var(--theme-accent); font-weight:700; font-size:11px; outline:none; cursor:pointer;">
+                    <option value="theme-synapse-cyan">1. Synapse Cyan</option>
+                    <option value="theme-emerald-matrix">2. Matrix Cyber Green</option>
+                    <option value="theme-monochrome-classic">3. Monochrome Đen-Trắng</option>
+                    <option value="theme-nebula-violet">4. Nebula Violet</option>
+                    <option value="theme-solar-amber">5. Solar Amber</option>
+                    <option value="theme-deep-ocean">6. Deep Ocean</option>
+                    <option value="theme-crimson-ruby">7. Crimson Ruby</option>
+                    <option value="theme-nordic-frost">8. Nordic Frost</option>
+                    <option value="theme-vintage-parchment">9. Vintage Parchment</option>
+                    <option value="theme-neon-gold">10. Neon Gold</option>
+                </select>
             </div>
             <div class="meta-chip" style="border-color:#10B981; color:#34D399;">
                 <span class="pulse-dot"></span>
@@ -1142,20 +1237,25 @@ class CiteNetAgent:
 
     <!-- 2. MIDDLE DECK (DOCK + NETWORK CANVAS) -->
     <div class="synapse-middle-deck">
-        <!-- SLIM VERTICAL DOCK -->
+        <!-- SLIM VERTICAL DOCK (10 CHẾ ĐỘ BỐ CỤC HỌC THUẬT) -->
         <nav class="synapse-vertical-dock" style="position:relative;">
             <div class="dock-btn-group">
-                <button class="dock-icon-btn active" id="dockBtnForce" onclick="switchLayoutMode('force')" title="1. Mạng Cụm (VOSviewer)">🕸️</button>
-                <button class="dock-icon-btn" id="dockBtnTimeline" onclick="switchLayoutMode('timeline')" title="2. Dòng Thời Gian (HistCite)">⏳</button>
-                <button class="dock-icon-btn" id="dockBtnConcentric" onclick="switchLayoutMode('concentric')" title="3. Kim Cương 2 Chiều (Diamond)">💎</button>
-                <button class="dock-icon-btn" id="dockBtnHierarchical" onclick="switchLayoutMode('hierarchical')" title="4. Cây Phả Hệ (CiteSpace)">🌳</button>
-                <button class="dock-icon-btn" id="dockBtnQuartile" onclick="switchLayoutMode('quartile')" title="5. Phân Làn Scopus Q1/Q2">📊</button>
+                <button class="dock-icon-btn active" id="dockBtnTimeline" onclick="switchLayoutMode('timeline')" title="1. Dòng Thời Gian Thẳng Ngang (Linear Timeline Evolution)">⏳</button>
+                <button class="dock-icon-btn" id="dockBtnRadar" onclick="switchLayoutMode('radar')" title="2. Quỹ Đạo Radar Đồng Tâm (Concentric Radar Timeline)">📡</button>
+                <button class="dock-icon-btn" id="dockBtnFishbone" onclick="switchLayoutMode('fishbone')" title="3. Sơ Đồ Xương Cá Học Thuật (Ishikawa Fishbone Diagram)">🐟</button>
+                <button class="dock-icon-btn" id="dockBtnDendrogram" onclick="switchLayoutMode('dendrogram')" title="4. Cây Thư Mục Phân Cấp (Dendrogram Branching Tree)">🌿</button>
+                <button class="dock-icon-btn" id="dockBtnHierarchical" onclick="switchLayoutMode('hierarchical')" title="5. Cây Phả Hệ Có Hướng (CiteSpace DAG)">🌳</button>
+                <button class="dock-icon-btn" id="dockBtnMatrix" onclick="switchLayoutMode('matrix')" title="6. Ma Trận Cụm Chủ Đề (Clustered Topic Matrix)">▦</button>
+                <button class="dock-icon-btn" id="dockBtnForce" onclick="switchLayoutMode('force')" title="7. Mạng Động Học Lượng Tử (Force-Directed Quantum)">🕸️</button>
+                <button class="dock-icon-btn" id="dockBtnQuartile" onclick="switchLayoutMode('quartile')" title="8. Phân Làn Thứ Hạng Scopus (Quartile Lanes Q1-Q4)">📊</button>
+                <button class="dock-icon-btn" id="dockBtnDiamond" onclick="switchLayoutMode('diamond')" title="9. Mặt Phẳng Kim Cương Đối Xứng (Dual-Diamond Horizon)">💎</button>
+                <button class="dock-icon-btn" id="dockBtnFanChart" onclick="switchLayoutMode('fanchart')" title="10. Quạt Nan Phả Hệ Tỏa Tròn (Ancestry Fan Chart)">🪭</button>
             </div>
             
-            <div class="dock-btn-group">
-                <button class="dock-icon-btn" id="dockBtnLegend" onclick="toggleLegendDrawer()" title="📖 Ghi chú & Hướng dẫn quy ước mạng lưới">📖</button>
+            <div class="dock-btn-group" style="margin-top:10px; border-top:1px solid rgba(var(--theme-glow-rgb),0.15); padding-top:8px;">
+                <button class="dock-icon-btn" id="dockBtnLegend" onclick="toggleLegendDrawer()" title="📖 Ghi chú, Thuật ngữ & Hướng dẫn 10 Layout & 10 Theme">📖</button>
                 <button class="dock-icon-btn active" id="dockBtnTrace" onclick="toggleLineageMode()" title="🧬 Bật/Tắt Truy Vết Phả Hệ">🧬</button>
-                <button class="dock-icon-btn" onclick="cycleThemes()" title="🎨 Chuyển đổi 5 Mẫu Theme Kính Dạ Quang">🎨</button>
+                <button class="dock-icon-btn" onclick="cycleThemes()" title="🎨 Chuyển đổi 10 Mẫu Theme Đa Sắc & Đơn Sắc">🎨</button>
                 <button class="dock-icon-btn" onclick="openDedicatedViewport()" title="🌐 Mở Màn hình phụ (Cửa sổ mới ↗)">↗️</button>
                 <button class="dock-icon-btn" onclick="fitView()" title="🎯 Căn giữa toàn cảnh">🎯</button>
             </div>
@@ -1163,83 +1263,96 @@ class CiteNetAgent:
             <!-- SLIDE-OUT LEGEND DRAWER TỪ DOCK BÊN TRÁI -->
             <div id="dockLegendDrawer" class="dock-legend-drawer">
                 <div class="drawer-header">
-                    <span>📖 QUY ƯỚC, THUẬT NGỮ & HƯỚNG DẪN MẠNG LƯỚI</span>
+                    <span>📖 QUY ƯỚC, THUẬT NGỮ & 10 CHẾ ĐỘ XEM</span>
                     <button onclick="toggleLegendDrawer()" style="background:none; border:none; color:var(--theme-accent); font-size:14px; cursor:pointer; padding:2px 6px;">✕</button>
                 </div>
                 <!-- Ô TÌM KIẾM THÔNG MINH TRONG HƯỚNG DẪN -->
                 <div style="padding: 8px 12px; background: rgba(0,0,0,0.3); border-bottom: 1px solid var(--theme-panel-border);">
-                    <input type="text" id="guideSearchInput" placeholder="🔍 Tìm kiếm thuật ngữ, quy ước, mũi tên, F1, R1..." oninput="filterGuideDrawer(this.value)" style="width:100%; background:rgba(0,0,0,0.4); border:1px solid var(--theme-panel-border); color:#FFFFFF; border-radius:8px; padding:6px 10px; font-size:11px; outline:none;">
+                    <input type="text" id="guideSearchInput" placeholder="🔍 Tìm kiếm: Xương cá, Radar, F0, F1-F3, Mũi tên..." oninput="filterGuideDrawer(this.value)" style="width:100%; background:rgba(0,0,0,0.4); border:1px solid var(--theme-panel-border); color:#FFFFFF; border-radius:8px; padding:6px 10px; font-size:11px; outline:none;">
                 </div>
                 <div class="drawer-body" id="guideDrawerBody">
                     <div id="guideSearchEmpty" style="display:none; color:#F87171; font-size:11px; text-align:center; padding:12px;">Không tìm thấy thuật ngữ phù hợp!</div>
 
-                    <div class="guide-searchable-item" style="font-weight:800; color:var(--theme-accent); margin-bottom:6px; text-transform:uppercase;">1. Phân Tầng Node & Quy Chuẩn Kích Thước (Price's Law):</div>
+                    <div class="guide-searchable-item" style="font-weight:800; color:var(--theme-accent); margin-bottom:6px; text-transform:uppercase;">1. Cơ Chế Bảo Tồn Bài Báo Gốc F0 (Anchor Pinning) & Phân Tầng:</div>
                     <div class="legend-item-card guide-searchable-item">
                         <span class="legend-color-chip" style="background:#EA4335; box-shadow:0 0 8px #EA4335;"></span>
-                        <div><b>🔴 F0 (Seed Paper - Bài báo gốc):</b> Đặt tại tâm điểm nghiên cứu của đề tài. Node luôn có kích thước lớn nhất và phát sáng nhịp thở liên tục.</div>
+                        <div><b>🔴 F0 (Seed Paper - Tâm Điểm Nghiên Cứu):</b> Luôn luôn được ghim làm tâm điểm neo (Anchor Node) trong mọi chế độ lọc kết hợp (F0 + F1..F3, F0 + R1..R3), không bao giờ bị biến mất để duy trì mạch tri thức.</div>
                     </div>
                     <div class="legend-item-card guide-searchable-item">
                         <span class="legend-color-chip" style="background:#7C3AED; box-shadow:0 0 6px #7C3AED;"></span>
-                        <div><b>🟣 R1-R3 (Backward References - Cội nguồn lý thuyết):</b> Các công trình kinh điển quá khứ mà đề tài gốc kế thừa. Kích thước tỷ lệ thuận với số trích dẫn quốc tế.</div>
+                        <div><b>🟣 R1-R3 (Backward References - Cội nguồn lý thuyết):</b> Các công trình kinh điển quá khứ mà đề tài gốc kế thừa. Kích thước tỷ lệ thuận với số trích dẫn quốc tế (Price's Law).</div>
                     </div>
                     <div class="legend-item-card guide-searchable-item">
                         <span class="legend-color-chip" style="background:#0284C7; box-shadow:0 0 6px #0284C7;"></span>
                         <div><b>🟢 F1-F3 (Forward Citations - Bước tiến tương lai):</b> Các công trình phát triển tiếp nối sau bài gốc, kiểm chứng thực nghiệm hoặc mở rộng mô hình.</div>
                     </div>
+
+                    <div class="guide-searchable-item" style="font-weight:800; color:var(--theme-accent); margin:12px 0 6px 0; text-transform:uppercase;">2. 10 Chế Độ Bố Cục Học Thuật (Layout Engines):</div>
                     <div class="legend-item-card guide-searchable-item">
-                        <span style="font-size:13px;">⚖️</span>
-                        <div><b>Quy tắc Kích Thước Node:</b> Tính toán tự động theo quy luật Logarit số trích dẫn (Price's Law). Công trình có tầm ảnh hưởng lớn (> 200-1000 trích dẫn) sẽ to vượt trội.</div>
+                        <div><b>1. ⏳ Linear Timeline:</b> Bố cục thời gian thẳng ngang (HistCite), các bài cùng năm tự động so le lệch trục để chống đè chồng.</div>
+                    </div>
+                    <div class="legend-item-card guide-searchable-item">
+                        <div><b>2. 📡 Radar Timeline:</b> Quỹ đạo radar đồng tâm, F0 tại tâm điểm, các vòng tròn tỏa rộng đại diện cho các năm/thế hệ.</div>
+                    </div>
+                    <div class="legend-item-card guide-searchable-item">
+                        <div><b>3. 🐟 Ishikawa Fishbone:</b> Sơ đồ xương cá học thuật, trục sống lưng là thời gian, cội nguồn R chéo xuống dưới, kế thừa F chéo lên trên.</div>
+                    </div>
+                    <div class="legend-item-card guide-searchable-item">
+                        <div><b>4. 🌿 Dendrogram:</b> Cây thư mục phân cấp tỏa nhánh từ bài gốc sang hai phía.</div>
+                    </div>
+                    <div class="legend-item-card guide-searchable-item">
+                        <div><b>5. 🌳 CiteSpace DAG:</b> Cây phả hệ có hướng phân tầng từ cội nguồn đến các phát triển mới.</div>
+                    </div>
+                    <div class="legend-item-card guide-searchable-item">
+                        <div><b>6. ▦ Clustered Matrix:</b> Ma trận lưới cụm chủ đề và phân hạng tạp chí.</div>
+                    </div>
+                    <div class="legend-item-card guide-searchable-item">
+                        <div><b>7. 🕸️ Force Quantum:</b> Mạng lưới động học lực đẩy-hút tự nhiên (VOSviewer).</div>
+                    </div>
+                    <div class="legend-item-card guide-searchable-item">
+                        <div><b>8. 📊 Quartile Lanes:</b> Phân làn theo xếp hạng Scopus Q1, Q2, Q3/Q4.</div>
+                    </div>
+                    <div class="legend-item-card guide-searchable-item">
+                        <div><b>9. 💎 Dual-Diamond Horizon:</b> Mặt phẳng kim cương đối xứng 2 chiều.</div>
+                    </div>
+                    <div class="legend-item-card guide-searchable-item">
+                        <div><b>10. 🪭 Ancestry Fan Chart:</b> Quạt nan phả hệ tỏa tròn 180 độ.</div>
                     </div>
 
-                    <div class="guide-searchable-item" style="font-weight:800; color:var(--theme-accent); margin:12px 0 6px 0; text-transform:uppercase;">2. Giải Mã 4 Loại Mũi Tên & Dòng Truyền Tri Thức:</div>
+                    <div class="guide-searchable-item" style="font-weight:800; color:var(--theme-accent); margin:12px 0 6px 0; text-transform:uppercase;">3. Giải Mã 4 Loại Mũi Tên & Dòng Truyền Tri Thức:</div>
                     <div class="legend-item-card guide-searchable-item">
                         <span style="color:#38BDF8; font-weight:800; font-size:14px;">🔷</span>
                         <div>
                             <b>Xanh Sky (1 chiều nét liền): Kế thừa trực tiếp (Direct Citation)</b><br>
-                            <i>Ý nghĩa:</i> Công trình sau trích dẫn và tiếp thu khung lý thuyết / mô hình của công trình trước.<br>
-                            <i>Ví dụ:</i> [Bài B (2024)] ➔ [Bài A (2020)]: B mở rộng phát hiện của A với dữ liệu mới.
+                            <i>Ý nghĩa:</i> Công trình sau trích dẫn và tiếp thu khung lý thuyết / mô hình của công trình trước.
                         </div>
                     </div>
                     <div class="legend-item-card guide-searchable-item">
                         <span style="color:#F59E0B; font-weight:800; font-size:14px;">🔶</span>
                         <div>
                             <b>Vàng Kim (2 đầu mũi tên): Đối thoại học thuật 2 chiều (Reciprocal Debate)</b><br>
-                            <i>Ý nghĩa:</i> Hai nhóm tác giả cùng trích dẫn chéo lẫn nhau, tạo thành trường phái tranh luận đối trọng chuyên sâu.<br>
-                            <i>Ví dụ:</i> Hai bài báo xuất bản cùng giai đoạn phản biện và hoàn thiện khung lý thuyết cho nhau.
+                            <i>Ý nghĩa:</i> Hai nhóm tác giả cùng trích dẫn chéo lẫn nhau, tạo thành trường phái tranh luận đối trọng.
                         </div>
                     </div>
                     <div class="legend-item-card guide-searchable-item">
                         <span style="color:#C084FC; font-weight:800; font-size:14px;">🔮</span>
                         <div>
                             <b>Tím Neon (Đứt nét dài): Bắc cầu xuyên tầng cội nguồn (Cross-Bridge)</b><br>
-                            <i>Ý nghĩa:</i> Công trình tương lai mới ($F_2/F_3$) trích dẫn trực tiếp vào nền tảng kinh điển ban đầu ($R_2/R_3$) mà bỏ qua các bước trung gian.<br>
-                            <i>Ví dụ:</i> Đột phá công nghệ năm 2024 ứng dụng lại nguyên lý toán học kinh điển từ năm 2005.
+                            <i>Ý nghĩa:</i> Công trình mới neo trực tiếp vào nền tảng kinh điển ban đầu mà không qua tầng trung gian.
                         </div>
                     </div>
                     <div class="legend-item-card guide-searchable-item">
                         <span style="color:#34D399; font-weight:800; font-size:14px;">🟢</span>
                         <div>
                             <b>Ngọc Lục (Chấm nhỏ): Đồng phát triển cùng phân tầng (Intra-Layer)</b><br>
-                            <i>Ý nghĩa:</i> Các công trình trong cùng thế hệ nghiên cứu chia sẻ dữ liệu hoặc cùng áp dụng một bối cảnh thực chứng.
+                            <i>Ý nghĩa:</i> Các công trình trong cùng thế hệ nghiên cứu chia sẻ dữ liệu hoặc cùng bối cảnh thực chứng.
                         </div>
                     </div>
 
-                    <div class="guide-searchable-item" style="font-weight:800; color:var(--theme-accent); margin:12px 0 6px 0; text-transform:uppercase;">3. Giải Thích Hiện Tượng Node Độc Lập Khi Lọc:</div>
-                    <div class="legend-item-card guide-searchable-item">
-                        <span style="color:#FDE047; font-size:13px;">⚠️</span>
-                        <div>
-                            <b>Vì sao chọn lọc F1-F3 hoặc R1-R3 lại có node không có mũi tên?</b><br>
-                            Khi bạn lọc riêng phân tầng F1-F3, các mũi tên kết nối với bài gốc F0 hoặc tầng cội nguồn R tạm thời bị ẩn. Node hiển thị độc lập vì các bài trong tập lọc này chưa trích dẫn chéo lẫn nhau, nhưng tất cả đều là nhánh kế thừa hợp lệ của đề tài gốc.
-                        </div>
-                    </div>
-
-                    <div class="guide-searchable-item" style="font-weight:800; color:var(--theme-accent); margin:12px 0 6px 0; text-transform:uppercase;">4. Tương Tác Nhanh & Điều Khiển Lượng Tử:</div>
+                    <div class="guide-searchable-item" style="font-weight:800; color:var(--theme-accent); margin:12px 0 6px 0; text-transform:uppercase;">4. 10 Mẫu Giao Diện / Themes:</div>
                     <div class="guide-searchable-item" style="color:var(--theme-text-dim); font-size:10.5px; line-height:1.55;">
-                        • <b>Chạm/Hover vào Node:</b> Kích hoạt luồng sáng Laser Neon kết nối và mở Smart Inspector ở góc an toàn.<br>
-                        • <b>Chạm/Hover vào Mũi Tên:</b> Xem bảng phân tích Epistemic giải thích độ trễ tiếp thu và vai trò học thuật.<br>
-                        • <b>⚡ Tốc độ Photon:</b> Điều chỉnh tốc độ từ 0x (đứng yên) đến 3x (siêu tốc).<br>
-                        • <b>🧬 Truy Vết Phả Hệ:</b> Nhấp vào bài báo để làm nổi bật toàn bộ chuỗi cội nguồn và phát triển.<br>
-                        • <b>🌐 Cửa Sổ Mới ↗:</b> Mở Màn hình phụ 100vh độc lập qua chuẩn W3C Blob URL.
+                        • Bao gồm <b>Matrix Cyber Green</b> (chuẩn phim Ma Trận) và <b>Monochrome Classic Đen-Trắng</b> (độ tương phản tuyệt đối cho in ấn/trình chiếu), cùng 8 mẫu màu sắc tinh tế khác.<br>
+                        • Toàn bộ khung giao diện áp dụng chuẩn đổ bóng đều xung quanh (Omnidirectional Box-Shadow) mang lại chiều sâu không gian Sci-Fi đồng nhất.
                     </div>
                 </div>
             </div>
@@ -1274,10 +1387,25 @@ class CiteNetAgent:
                 </div>
             </div>
 
-            <!-- TOP RIGHT MINI CONTROLS -->
+            <!-- TOP RIGHT MINI CONTROLS (TÌM KIẾM, LỌC TẦNG KẾT HỢP & BỐ CỤC) -->
             <div class="graph-top-tools">
-                <input type="text" id="nodeSearchInput" placeholder="🔍 Tìm DOI, tác giả, năm, từ khóa..." oninput="searchAndFocusNode(this.value)" style="background:rgba(0,0,0,0.45); border:1px solid var(--theme-panel-border); color:#FFFFFF; border-radius:8px; padding:4px 9px; font-size:11px; outline:none; width:150px;" title="Tìm kiếm thông minh theo DOI, Tác giả viết tắt/đầy đủ, Năm (ví dụ: 2024, >2020), Tên bài báo, Từ khóa...">
+                <input type="text" id="nodeSearchInput" placeholder="🔍 Tìm DOI, tác giả, năm, từ khóa..." oninput="searchAndFocusNode(this.value)" style="background:rgba(0,0,0,0.45); border:1px solid var(--theme-panel-border); color:#FFFFFF; border-radius:8px; padding:4px 9px; font-size:11px; outline:none; width:145px;" title="Tìm kiếm thông minh theo DOI, Tác giả viết tắt/đầy đủ, Năm (ví dụ: 2024, >2020), Tên bài báo, Từ khóa...">
                 
+                <!-- BỘ LỌC TẦNG KẾT HỢP ĐA TẦNG LINH HOẠT VỚI F0 ANCHOR -->
+                <select id="layerFilter" onchange="applyGraphFilters()" style="background:var(--theme-panel-bg); border:1px solid var(--theme-panel-border); color:var(--theme-text-main); border-radius:8px; padding:4px 6px; font-size:11px; font-weight:700; outline:none; cursor:pointer;" title="Lọc kết hợp phân tầng (F0 luôn được bảo tồn làm tâm điểm)">
+                    <option value="all">🌐 Toàn bộ (F0 + R1-R3 + F1-F3)</option>
+                    <option value="f0_forward">🚀 Kế thừa & Bài gốc (F0 + F1-F3)</option>
+                    <option value="f0_backward">🏛️ Cội nguồn & Bài gốc (F0 + R1-R3)</option>
+                    <option value="f0_f1">🌱 Kế thừa trực tiếp (F0 + F1)</option>
+                    <option value="f0_f2">🌿 Kế thừa F1-F2 (F0 + F1 + F2)</option>
+                    <option value="f0_r1">🏺 Cội nguồn trực tiếp (F0 + R1)</option>
+                    <option value="f0_r2">📜 Cội nguồn R1-R2 (F0 + R1 + R2)</option>
+                    <option value="seed_only">★ F0 Tâm điểm duy nhất</option>
+                    <option value="f1_f3">🚀 F1-F3 (Kế thừa mở rộng)</option>
+                    <option value="r1_r3">🏛️ R1-R3 (Cội nguồn mở rộng)</option>
+                </select>
+
+                <!-- BỘ LỌC MŨI TÊN KẾT NỐI -->
                 <select id="edgeFilter" onchange="applyGraphFilters()" style="background:var(--theme-panel-bg); border:1px solid var(--theme-panel-border); color:var(--theme-text-main); border-radius:8px; padding:4px 6px; font-size:11px; font-weight:600; outline:none; cursor:pointer;" title="Lọc loại liên kết mũi tên">
                     <option value="all">⚡ Tất cả mũi tên</option>
                     <option value="direct">🔷 Kế thừa 1 chiều</option>
@@ -1286,18 +1414,25 @@ class CiteNetAgent:
                     <option value="intra_layer">🟢 Cùng phân tầng</option>
                 </select>
 
-                <select id="layerFilter" onchange="applyGraphFilters()" style="background:var(--theme-panel-bg); border:1px solid var(--theme-panel-border); color:var(--theme-text-main); border-radius:8px; padding:4px 6px; font-size:11px; font-weight:600; outline:none; cursor:pointer;" title="Lọc phân tầng tri thức">
-                    <option value="all">🌐 Toàn bộ tầng</option>
-                    <option value="seed">★ F0 Bài gốc</option>
-                    <option value="backward">🏛️ R1-R3 Cội nguồn</option>
-                    <option value="forward">🚀 F1-F3 Kế thừa</option>
+                <!-- BỘ CHỌN 10 BỐ CỤC HỌC THUẬT -->
+                <select id="layoutSelector" onchange="switchLayoutMode(this.value)" style="background:var(--theme-panel-bg); border:1px solid var(--theme-panel-border); color:var(--theme-accent); border-radius:8px; padding:4px 6px; font-size:11px; font-weight:700; outline:none; cursor:pointer;" title="Chọn 1 trong 10 Chế độ Bố Cục Học Thuật">
+                    <option value="timeline">1. ⏳ Linear Timeline (HistCite)</option>
+                    <option value="radar">2. 📡 Concentric Radar Timeline</option>
+                    <option value="fishbone">3. 🐟 Ishikawa Fishbone Diagram</option>
+                    <option value="dendrogram">4. 🌿 Dendrogram Branching Tree</option>
+                    <option value="hierarchical">5. 🌳 CiteSpace DAG Tree</option>
+                    <option value="matrix">6. ▦ Clustered Topic Matrix</option>
+                    <option value="force">7. 🕸️ Force-Directed Quantum</option>
+                    <option value="quartile">8. 📊 Scopus Quartile Lanes</option>
+                    <option value="diamond">9. 💎 Dual-Diamond Horizon</option>
+                    <option value="fanchart">10. 🪭 Ancestry Fan Chart</option>
                 </select>
 
                 <!-- THANH TRƯỢT ĐIỀU TỐC PHOTON & TIA SÁNG HOVER -->
                 <div class="speed-control-cluster" title="Điều chỉnh tốc độ di chuyển hạt Photon & Tia sáng kết nối (0x: Đứng yên -> 3x: Nhanh tối đa)">
                     <span style="font-size:10.5px; font-weight:700; color:var(--theme-accent);">⚡ Tốc độ:</span>
                     <input type="range" id="photonSpeedSlider" class="speed-slider-input" min="0" max="3" step="0.2" value="1.0" oninput="setPhotonSpeed(this.value)">
-                    <span id="photonSpeedVal" style="font-size:10.5px; font-family:'JetBrains Mono', monospace; font-weight:700; color:#FDE047; min-width:26px;">1.0x</span>
+                    <span id="photonSpeedVal" style="font-size:10.5px; font-family:'JetBrains Mono', monospace; font-weight:700; color:#FDE047; min-width:24px;">1.0x</span>
                 </div>
 
                 <button class="hud-mini-btn active" id="labelModeBtn" onclick="cycleLabelMode()" title="Chuyển chế độ nhãn (Gọn / Đầy Đủ / Ẩn)">🏷️ Nhãn: Gọn</button>
@@ -1313,7 +1448,7 @@ class CiteNetAgent:
             </div>
 
             <!-- TIMELINE PLAYBACK BAR (NỔI KHI BẬT) -->
-            <div id="timelinePlaybackBar" style="display:none; position:absolute; bottom:14px; right:16px; z-index:70; background:var(--theme-panel-bg); border:1.5px solid var(--theme-accent); border-radius:12px; padding:6px 12px; align-items:center; gap:8px; box-shadow:0 0 16px rgba(var(--theme-glow-rgb), 0.3);">
+            <div id="timelinePlaybackBar" style="display:none; position:absolute; bottom:14px; right:16px; z-index:70; background:var(--theme-panel-bg); border:1.5px solid var(--theme-accent); border-radius:12px; padding:6px 12px; align-items:center; gap:8px; box-shadow:0 0 20px rgba(var(--theme-glow-rgb), 0.35);">
                 <button id="playbackPlayBtn" class="hud-mini-btn active" onclick="togglePlaybackPlay()">▶️ Phát</button>
                 <span style="font-size:11px; font-weight:700;">NĂM: <b id="playbackYearLabel" style="color:#FDE047;">{max_yr}</b></span>
                 <input type="range" id="playbackYearSlider" min="{min_yr}" max="{max_yr}" value="{max_yr}" step="1" oninput="onPlaybackSliderChange(this.value)" style="cursor:pointer; accent-color:var(--theme-accent); width:110px;">
@@ -1403,19 +1538,136 @@ class CiteNetAgent:
     var playbackIntervalMs = 1200;
     var currentPlaybackYear = maxYrVal;
     var selectedLineageNodeId = null;
-    var currentLayoutMode = 'force';
+    var currentLayoutMode = 'timeline';
     var currentLabelMode = 'short';
     var currentThemeIndex = 0;
-    var themesList = ['theme-synapse-cyan', 'theme-nebula-violet', 'theme-emerald-matrix', 'theme-solar-amber', 'theme-nordic-light'];
+    
+    // 10 THEMES DANH SÁCH TOÀN DIỆN
+    var themesList = [
+        'theme-synapse-cyan',
+        'theme-emerald-matrix',
+        'theme-monochrome-classic',
+        'theme-nebula-violet',
+        'theme-solar-amber',
+        'theme-deep-ocean',
+        'theme-crimson-ruby',
+        'theme-nordic-frost',
+        'theme-vintage-parchment',
+        'theme-neon-gold'
+    ];
+
+    // BẢNG MÀU NODE & MŨI TÊN TƯƠNG PHẢN CAO CHO 10 THEMES
+    var themePalettes = {{
+        'theme-synapse-cyan': {{
+            node_f0: {{ background: '#EA4335', border: '#FF8A80', highlight: '#FFEBEE' }},
+            node_r: {{ background: '#7C3AED', border: '#A78BFA', highlight: '#EDE9FE' }},
+            node_f: {{ background: '#0284C7', border: '#38BDF8', highlight: '#E0F2FE' }},
+            edge_direct: 'rgba(56, 189, 248, 0.75)',
+            edge_mutual: 'rgba(245, 158, 11, 0.88)',
+            edge_cross: 'rgba(192, 132, 252, 0.90)',
+            edge_intra: 'rgba(52, 211, 153, 0.82)',
+            font_color: '#F8FAFC'
+        }},
+        'theme-emerald-matrix': {{
+            node_f0: {{ background: '#00FF66', border: '#FFFFFF', highlight: '#E6FFE6' }},
+            node_r: {{ background: '#008833', border: '#00FF66', highlight: '#CCFFCC' }},
+            node_f: {{ background: '#00CC55', border: '#88FFAA', highlight: '#DDFFEE' }},
+            edge_direct: 'rgba(0, 255, 102, 0.78)',
+            edge_mutual: 'rgba(255, 204, 0, 0.90)',
+            edge_cross: 'rgba(0, 220, 255, 0.90)',
+            edge_intra: 'rgba(100, 255, 150, 0.82)',
+            font_color: '#E6FFE6'
+        }},
+        'theme-monochrome-classic': {{
+            node_f0: {{ background: '#FFFFFF', border: '#000000', highlight: '#F4F4F5' }},
+            node_r: {{ background: '#52525B', border: '#D4D4D8', highlight: '#E4E4E7' }},
+            node_f: {{ background: '#A1A1AA', border: '#FFFFFF', highlight: '#F4F4F5' }},
+            edge_direct: 'rgba(255, 255, 255, 0.75)',
+            edge_mutual: 'rgba(212, 212, 216, 0.90)',
+            edge_cross: 'rgba(161, 161, 170, 0.88)',
+            edge_intra: 'rgba(113, 113, 122, 0.80)',
+            font_color: '#FFFFFF'
+        }},
+        'theme-nebula-violet': {{
+            node_f0: {{ background: '#F43F5E', border: '#FDA4AF', highlight: '#FFF1F2' }},
+            node_r: {{ background: '#7C3AED', border: '#C084FC', highlight: '#FAF5FF' }},
+            node_f: {{ background: '#A855F7', border: '#E879F9', highlight: '#FDF4FF' }},
+            edge_direct: 'rgba(192, 132, 252, 0.78)',
+            edge_mutual: 'rgba(245, 158, 11, 0.90)',
+            edge_cross: 'rgba(244, 63, 94, 0.90)',
+            edge_intra: 'rgba(168, 85, 247, 0.82)',
+            font_color: '#FAF5FF'
+        }},
+        'theme-solar-amber': {{
+            node_f0: {{ background: '#DC2626', border: '#FCA5A5', highlight: '#FEF2F2' }},
+            node_r: {{ background: '#B45309', border: '#FBBF24', highlight: '#FFFBEB' }},
+            node_f: {{ background: '#D97706', border: '#FDE68A', highlight: '#FEF3C7' }},
+            edge_direct: 'rgba(245, 158, 11, 0.78)',
+            edge_mutual: 'rgba(239, 68, 68, 0.90)',
+            edge_cross: 'rgba(168, 85, 247, 0.90)',
+            edge_intra: 'rgba(251, 191, 36, 0.82)',
+            font_color: '#FFFBEB'
+        }},
+        'theme-deep-ocean': {{
+            node_f0: {{ background: '#E11D48', border: '#FDA4AF', highlight: '#FFF1F2' }},
+            node_r: {{ background: '#1D4ED8', border: '#60A5FA', highlight: '#EFF6FF' }},
+            node_f: {{ background: '#0284C7', border: '#38BDF8', highlight: '#F0F9FF' }},
+            edge_direct: 'rgba(56, 189, 248, 0.78)',
+            edge_mutual: 'rgba(245, 158, 11, 0.90)',
+            edge_cross: 'rgba(129, 140, 248, 0.90)',
+            edge_intra: 'rgba(45, 212, 191, 0.82)',
+            font_color: '#F0F9FF'
+        }},
+        'theme-crimson-ruby': {{
+            node_f0: {{ background: '#E11D48', border: '#FFE4E6', highlight: '#FFF1F2' }},
+            node_r: {{ background: '#9F1239', border: '#FB7185', highlight: '#FFE4E6' }},
+            node_f: {{ background: '#BE123C', border: '#FDA4AF', highlight: '#FFF1F2' }},
+            edge_direct: 'rgba(244, 63, 94, 0.78)',
+            edge_mutual: 'rgba(251, 191, 36, 0.90)',
+            edge_cross: 'rgba(192, 132, 252, 0.90)',
+            edge_intra: 'rgba(251, 113, 133, 0.82)',
+            font_color: '#FFF1F2'
+        }},
+        'theme-nordic-frost': {{
+            node_f0: {{ background: '#DC2626', border: '#991B1B', highlight: '#FEE2E2' }},
+            node_r: {{ background: '#0369A1', border: '#075985', highlight: '#E0F2FE' }},
+            node_f: {{ background: '#0D9488', border: '#115E59', highlight: '#CCFBF1' }},
+            edge_direct: 'rgba(2, 132, 199, 0.75)',
+            edge_mutual: 'rgba(217, 119, 6, 0.90)',
+            edge_cross: 'rgba(124, 58, 237, 0.88)',
+            edge_intra: 'rgba(13, 148, 136, 0.80)',
+            font_color: '#0F172A'
+        }},
+        'theme-vintage-parchment': {{
+            node_f0: {{ background: '#991B1B', border: '#7F1D1D', highlight: '#FEF2F2' }},
+            node_r: {{ background: '#78350F', border: '#451A03', highlight: '#FEF3C7' }},
+            node_f: {{ background: '#065F46', border: '#064E3B', highlight: '#ECFDF5' }},
+            edge_direct: 'rgba(180, 83, 9, 0.75)',
+            edge_mutual: 'rgba(185, 28, 28, 0.90)',
+            edge_cross: 'rgba(109, 40, 217, 0.88)',
+            edge_intra: 'rgba(4, 120, 87, 0.80)',
+            font_color: '#292524'
+        }},
+        'theme-neon-gold': {{
+            node_f0: {{ background: '#EF4444', border: '#FCA5A5', highlight: '#FEF2F2' }},
+            node_r: {{ background: '#CA8A04', border: '#FDE047', highlight: '#FEF9C3' }},
+            node_f: {{ background: '#EAB308', border: '#FEF08A', highlight: '#FEFCE8' }},
+            edge_direct: 'rgba(234, 179, 8, 0.78)',
+            edge_mutual: 'rgba(249, 115, 22, 0.90)',
+            edge_cross: 'rgba(168, 85, 247, 0.90)',
+            edge_intra: 'rgba(250, 204, 21, 0.82)',
+            font_color: '#FEFCE8'
+        }}
+    }};
 
     var forceOptions = {{
         nodes: {{
             shadow: {{
                 enabled: true,
                 color: 'rgba(0,0,0,0.5)',
-                size: 8,
-                x: 2,
-                y: 2
+                size: 10,
+                x: 0,
+                y: 0
             }}
         }},
         edges: {{
@@ -1494,7 +1746,6 @@ class CiteNetAgent:
 
     // Select Paper from Table or Canvas
     function selectPaperFromTable(nodeId) {{
-        // Highlight row
         var allRows = document.querySelectorAll('.related-row');
         allRows.forEach(function(r) {{ r.classList.remove('selected'); }});
         var activeRow = document.getElementById('rel_row_' + nodeId);
@@ -1503,14 +1754,12 @@ class CiteNetAgent:
             activeRow.scrollIntoView({{ behavior: 'smooth', block: 'nearest' }});
         }}
 
-        // Focus in Network
         network.selectNodes([nodeId]);
         network.focus(nodeId, {{
             scale: 1.35,
             animation: {{ duration: 350, easingFunction: 'easeInOutQuad' }}
         }});
 
-        // Update Right Pane (Selected Details)
         updateSelectedDetailsPane(nodeId);
 
         if (isLineageTracingOn) {{
@@ -1566,11 +1815,56 @@ class CiteNetAgent:
         }}
     }}
 
-    // Cycle 5 Hologram Themes
+    // Cycle & Apply 10 Themes with Dynamic Contrast Palettes
     function cycleThemes() {{
         currentThemeIndex = (currentThemeIndex + 1) % themesList.length;
         var nextTheme = themesList[currentThemeIndex];
-        document.body.className = nextTheme;
+        changeThemeDirectly(nextTheme);
+    }}
+
+    function changeThemeDirectly(themeName) {{
+        document.body.className = themeName;
+        var selector = document.getElementById('themeSelector');
+        if (selector) selector.value = themeName;
+        currentThemeIndex = themesList.indexOf(themeName);
+        applyThemePalette(themeName);
+    }}
+
+    function applyThemePalette(themeName) {{
+        var pal = themePalettes[themeName] || themePalettes['theme-synapse-cyan'];
+        
+        var nodeUpdates = [];
+        rawNodes.forEach(function(n) {{
+            var isSeed = (n.level === 0 || n.layer === 'seed');
+            var isBack = (n.level < 0 || n.layer === 'backward');
+            var cObj = isSeed ? pal.node_f0 : (isBack ? pal.node_r : pal.node_f);
+            nodeUpdates.push({{
+                id: n.id,
+                color: cObj,
+                font: {{
+                    size: isSeed ? 12 : 11,
+                    color: pal.font_color,
+                    face: 'Plus Jakarta Sans, sans-serif',
+                    strokeWidth: 3.2,
+                    strokeColor: (themeName === 'theme-nordic-frost' || themeName === 'theme-vintage-parchment') ? '#FFFFFF' : '#0B0C0E'
+                }}
+            }});
+        }});
+        nodes.update(nodeUpdates);
+
+        var edgeUpdates = [];
+        rawEdges.forEach(function(e) {{
+            var eColor = pal.edge_direct;
+            if (e.edge_type === 'mutual') eColor = pal.edge_mutual;
+            else if (e.edge_type === 'cross_bridge') eColor = pal.edge_cross;
+            else if (e.edge_type === 'intra_layer') eColor = pal.edge_intra;
+
+            edgeUpdates.push({{
+                id: e.id,
+                color: {{ color: eColor, highlight: eColor, hover: eColor }}
+            }});
+        }});
+        edges.update(edgeUpdates);
     }}
 
     // Network Click & Touch Tap Event (Hỗ trợ cảm ứng hoàn hảo trên Mobile & Tablet)
@@ -1646,9 +1940,9 @@ class CiteNetAgent:
     function openDedicatedViewport() {{
         try {{
             var rawHtml = document.documentElement.outerHTML;
-            var customHtml = rawHtml.replace(/height:\s*860px/g, 'height: 100vh !important')
-                                    .replace(/min-height:\s*860px/g, 'min-height: 100vh !important')
-                                    .replace(/display:\s*grid/g, 'display: none !important');
+            var customHtml = rawHtml.replace(/height:\\s*860px/g, 'height: 100vh !important')
+                                    .replace(/min-height:\\s*860px/g, 'min-height: 100vh !important')
+                                    .replace(/display:\\s*grid/g, 'display: none !important');
             var blob = new Blob([customHtml], {{ type: 'text/html;charset=utf-8' }});
             var blobUrl = URL.createObjectURL(blob);
             var win = window.open(blobUrl, '_blank');
@@ -1768,7 +2062,7 @@ class CiteNetAgent:
         stopPlaybackTimer();
     }}
 
-    // Dynamic Graph Filtering (Edge & Layer Filters)
+    // DYNAMIC MULTI-LAYER COMBINED FILTERING (BẢO TỒN F0 ANCHOR & MŨI TÊN KẾT HỢP)
     function applyGraphFilters() {{
         var edgeEl = document.getElementById('edgeFilter');
         var layerEl = document.getElementById('layerFilter');
@@ -1779,10 +2073,37 @@ class CiteNetAgent:
         var nodeUpdates = [];
 
         rawNodes.forEach(function(n) {{
+            var isSeed = (n.level === 0 || n.layer === 'seed');
+            var lvl = n.level || 0;
             var matchLayer = true;
-            if (layerVal === 'seed') matchLayer = (n.level === 0 || n.layer === 'seed');
-            else if (layerVal === 'backward') matchLayer = (n.level < 0 || n.layer === 'backward');
-            else if (layerVal === 'forward') matchLayer = (n.level > 0 || n.layer === 'forward');
+
+            if (layerVal === 'all') {{
+                matchLayer = true;
+            }} else if (layerVal === 'f0_forward') {{
+                // F0 + Tất cả F1-F3
+                matchLayer = (isSeed || lvl > 0 || n.layer === 'forward');
+            }} else if (layerVal === 'f0_backward') {{
+                // F0 + Tất cả R1-R3
+                matchLayer = (isSeed || lvl < 0 || n.layer === 'backward');
+            }} else if (layerVal === 'f0_f1') {{
+                // F0 + F1
+                matchLayer = (isSeed || lvl === 1);
+            }} else if (layerVal === 'f0_f2') {{
+                // F0 + F1 + F2
+                matchLayer = (isSeed || lvl === 1 || lvl === 2);
+            }} else if (layerVal === 'f0_r1') {{
+                // F0 + R1
+                matchLayer = (isSeed || lvl === -1);
+            }} else if (layerVal === 'f0_r2') {{
+                // F0 + R1 + R2
+                matchLayer = (isSeed || lvl === -1 || lvl === -2);
+            }} else if (layerVal === 'seed_only') {{
+                matchLayer = isSeed;
+            }} else if (layerVal === 'f1_f3') {{
+                matchLayer = (lvl > 0 || n.layer === 'forward');
+            }} else if (layerVal === 'r1_r3') {{
+                matchLayer = (lvl < 0 || n.layer === 'backward');
+            }}
 
             if (matchLayer) visibleNodeIds.add(n.id);
             nodeUpdates.push({{ id: n.id, hidden: !matchLayer }});
@@ -1880,43 +2201,203 @@ class CiteNetAgent:
         edges.update(edgeUpdates);
     }}
 
-    // Switch Layout Modes
+    // 10 ACADEMIC LAYOUT ENGINES VỚI CƠ CHẾ CHỐNG ĐÈ TRÙNG NĂM (SAME-YEAR ANTI-COLLISION)
     function switchLayoutMode(mode) {{
         currentLayoutMode = mode;
-        ['dockBtnForce', 'dockBtnTimeline', 'dockBtnConcentric', 'dockBtnHierarchical', 'dockBtnQuartile'].forEach(function(id) {{
-            var b = document.getElementById(id);
+        var sel = document.getElementById('layoutSelector');
+        if (sel) sel.value = mode;
+
+        var dockMap = {{
+            'timeline': 'dockBtnTimeline',
+            'radar': 'dockBtnRadar',
+            'fishbone': 'dockBtnFishbone',
+            'dendrogram': 'dockBtnDendrogram',
+            'hierarchical': 'dockBtnHierarchical',
+            'matrix': 'dockBtnMatrix',
+            'force': 'dockBtnForce',
+            'quartile': 'dockBtnQuartile',
+            'diamond': 'dockBtnDiamond',
+            'fanchart': 'dockBtnFanChart'
+        }};
+
+        Object.values(dockMap).forEach(function(btnId) {{
+            var b = document.getElementById(btnId);
             if (b) b.classList.remove('active');
+        }});
+        if (dockMap[mode]) {{
+            var activeB = document.getElementById(dockMap[mode]);
+            if (activeB) activeB.classList.add('active');
+        }}
+
+        // Group nodes by year for anti-collision
+        var yearGroups = {{}};
+        rawNodes.forEach(function(n) {{
+            var yr = n.year || 2020;
+            if (!yearGroups[yr]) yearGroups[yr] = [];
+            yearGroups[yr].push(n.id);
         }});
 
         if (mode === 'timeline') {{
-            var db = document.getElementById('dockBtnTimeline');
-            if (db) db.classList.add('active');
+            // 1. DÒNG THỜI GIAN THẲNG NGANG (HISTCITE) - So le trục Y
             network.setOptions({{ physics: {{ enabled: false }}, layout: {{ hierarchical: false }} }});
-            
             var updates = [];
-            var yearGroups = {{}};
             rawNodes.forEach(function(n) {{
                 var yr = n.year || 2020;
-                if (!yearGroups[yr]) yearGroups[yr] = [];
-                yearGroups[yr].push(n.id);
-            }});
-
-            rawNodes.forEach(function(n) {{
-                var yr = n.year || 2020;
-                var listInYear = yearGroups[yr] || [n.id];
-                var indexInYear = listInYear.indexOf(n.id);
-                var totalInYear = listInYear.length;
-                var yOffset = (indexInYear - (totalInYear - 1) / 2) * 95;
+                var listInYr = yearGroups[yr] || [n.id];
+                var idxInYr = listInYr.indexOf(n.id);
+                var totalInYr = listInYr.length;
+                // Staggered Y offset
+                var yOffset = (idxInYr - (totalInYr - 1) / 2) * 95 + ((idxInYr % 2 === 0) ? 14 : -14);
                 updates.push({{ id: n.id, x: n.x_timeline, y: yOffset, physics: false }});
             }});
             nodes.update(updates);
-            setTimeout(fitView, 200);
+            setTimeout(fitView, 220);
 
-        }} else if (mode === 'concentric') {{
-            var db = document.getElementById('dockBtnConcentric');
-            if (db) db.classList.add('active');
+        }} else if (mode === 'radar') {{
+            // 2. QUỸ ĐẠO RADAR ĐỒNG TÂM (CONCENTRIC RADAR)
             network.setOptions({{ physics: {{ enabled: false }}, layout: {{ hierarchical: false }} }});
+            var updates = [];
+            var seedNode = rawNodes.find(function(n) {{ return (n.level === 0 || n.layer === 'seed'); }}) || rawNodes[0];
+            var nonSeeds = rawNodes.filter(function(n) {{ return n.id !== (seedNode ? seedNode.id : ''); }});
+            
+            if (seedNode) {{
+                updates.push({{ id: seedNode.id, x: 0, y: 0, physics: false }});
+            }}
 
+            var yrSpan = Math.max(1, maxYrVal - minYrVal);
+            nonSeeds.forEach(function(n, idx) {{
+                var yr = n.year || 2020;
+                var yrNorm = (yr - minYrVal) / yrSpan;
+                var ringRadius = 180 + yrNorm * 380;
+                
+                var listInYr = yearGroups[yr] || [n.id];
+                var idxInYr = listInYr.indexOf(n.id);
+                var totalInYr = listInYr.length;
+                
+                var baseAngle = ((idx + 0.5) / nonSeeds.length) * 2 * Math.PI;
+                var angleOffset = (idxInYr - (totalInYr - 1) / 2) * (Math.PI / 10);
+                var finalAngle = baseAngle + angleOffset;
+
+                updates.push({{
+                    id: n.id,
+                    x: Math.round(ringRadius * Math.cos(finalAngle)),
+                    y: Math.round(ringRadius * Math.sin(finalAngle)),
+                    physics: false
+                }});
+            }});
+            nodes.update(updates);
+            setTimeout(fitView, 220);
+
+        }} else if (mode === 'fishbone') {{
+            // 3. SƠ ĐỒ XƯƠNG CÁ HỌC THUẬT (ISHIKAWA FISHBONE)
+            network.setOptions({{ physics: {{ enabled: false }}, layout: {{ hierarchical: false }} }});
+            var updates = [];
+            rawNodes.forEach(function(n) {{
+                var yr = n.year || 2020;
+                var xPos = (yr - minYrVal) * 250 - ((maxYrVal - minYrVal) * 125);
+                var isSeed = (n.level === 0 || n.layer === 'seed');
+                var isBack = (n.level < 0 || n.layer === 'backward');
+                
+                var listInYr = yearGroups[yr] || [n.id];
+                var idxInYr = listInYr.indexOf(n.id);
+                var rankDist = 80 + idxInYr * 85;
+
+                if (isSeed) {{
+                    updates.push({{ id: n.id, x: 0, y: 0, physics: false }});
+                }} else if (isBack) {{
+                    // Xương cá dưới (45 độ)
+                    updates.push({{ id: n.id, x: xPos - (rankDist * 0.7), y: rankDist, physics: false }});
+                }} else {{
+                    // Xương cá trên (-45 độ)
+                    updates.push({{ id: n.id, x: xPos + (rankDist * 0.7), y: -rankDist, physics: false }});
+                }}
+            }});
+            nodes.update(updates);
+            setTimeout(fitView, 220);
+
+        }} else if (mode === 'dendrogram') {{
+            // 4. CÂY THƯ MỤC / NHÁNH CÂY PHÂN CẤP (DENDROGRAM TREE)
+            network.setOptions({{ physics: {{ enabled: false }}, layout: {{ hierarchical: false }} }});
+            var updates = [];
+            var seeds = rawNodes.filter(function(n) {{ return (n.level === 0 || n.layer === 'seed'); }});
+            var backwardPapers = rawNodes.filter(function(n) {{ return (n.level < 0 || n.layer === 'backward'); }});
+            var forwardPapers = rawNodes.filter(function(n) {{ return (n.level > 0 || n.layer === 'forward'); }});
+
+            seeds.forEach(function(n, i) {{
+                updates.push({{ id: n.id, x: 0, y: (i * 90) - ((seeds.length - 1) * 45), physics: false }});
+            }});
+
+            backwardPapers.forEach(function(n, i) {{
+                var lvl = Math.abs(n.level || 1);
+                var xPos = - (lvl * 260);
+                var yOffset = (i - (backwardPapers.length - 1) / 2) * 85 + ((i % 2 === 0) ? 12 : -12);
+                updates.push({{ id: n.id, x: xPos, y: yOffset, physics: false }});
+            }});
+
+            forwardPapers.forEach(function(n, j) {{
+                var lvl = Math.abs(n.level || 1);
+                var xPos = (lvl * 260);
+                var yOffset = (j - (forwardPapers.length - 1) / 2) * 85 + ((j % 2 === 0) ? 12 : -12);
+                updates.push({{ id: n.id, x: xPos, y: yOffset, physics: false }});
+            }});
+            nodes.update(updates);
+            setTimeout(fitView, 220);
+
+        }} else if (mode === 'hierarchical') {{
+            // 5. CÂY PHẢ HỆ CÓ HƯỚNG (CITESPACE DAG)
+            var updates = [];
+            rawNodes.forEach(function(n) {{ updates.push({{ id: n.id, physics: true }}); }});
+            nodes.update(updates);
+
+            network.setOptions({{
+                layout: {{ hierarchical: {{ enabled: true, direction: 'UD', sortMethod: 'directed', levelSeparation: 150, nodeSpacing: 180 }} }},
+                physics: {{ hierarchicalRepulsion: {{ nodeDistance: 170 }}, solver: 'hierarchicalRepulsion' }}
+            }});
+            setTimeout(fitView, 350);
+
+        }} else if (mode === 'matrix') {{
+            // 6. MA TRẬN CỤM CHỦ ĐỀ & TẠP CHÍ (CLUSTERED TOPIC MATRIX)
+            network.setOptions({{ physics: {{ enabled: false }}, layout: {{ hierarchical: false }} }});
+            var updates = [];
+            var cols = Math.ceil(Math.sqrt(rawNodes.length));
+            rawNodes.forEach(function(n, idx) {{
+                var row = Math.floor(idx / cols);
+                var col = idx % cols;
+                var xPos = (col - (cols - 1) / 2) * 220;
+                var yPos = (row - (Math.ceil(rawNodes.length / cols) - 1) / 2) * 160;
+                updates.push({{ id: n.id, x: xPos, y: yPos, physics: false }});
+            }});
+            nodes.update(updates);
+            setTimeout(fitView, 220);
+
+        }} else if (mode === 'quartile') {{
+            // 8. PHÂN LÀN SCOPUS Q1-Q4 (QUARTILE LANES)
+            network.setOptions({{ physics: {{ enabled: false }}, layout: {{ hierarchical: false }} }});
+            var lanes = {{ core: [], q1: [], q2: [], other: [] }};
+            rawNodes.forEach(function(n) {{
+                var p = metaDict[n.id] || {{}};
+                var tier = (p.scopus_tier || '').toLowerCase();
+                if (p.level === 0 || p.layer === 'seed') lanes.core.push(n.id);
+                else if (tier.indexOf('q1') !== -1) lanes.q1.push(n.id);
+                else if (tier.indexOf('q2') !== -1) lanes.q2.push(n.id);
+                else lanes.other.push(n.id);
+            }});
+
+            var laneX = {{ core: -440, q1: -150, q2: 150, other: 440 }};
+            var updates = [];
+            ['core', 'q1', 'q2', 'other'].forEach(function(k) {{
+                var list = lanes[k];
+                list.forEach(function(id, idx) {{
+                    var yOffset = (idx - (list.length - 1) / 2) * 95 + ((idx % 2 === 0) ? 14 : -14);
+                    updates.push({{ id: id, x: laneX[k], y: yOffset, physics: false }});
+                }});
+            }});
+            nodes.update(updates);
+            setTimeout(fitView, 220);
+
+        }} else if (mode === 'diamond') {{
+            // 9. MẶT PHẲNG KIM CƯƠNG ĐỐI XỨNG (DUAL-DIAMOND HORIZON)
+            network.setOptions({{ physics: {{ enabled: false }}, layout: {{ hierarchical: false }} }});
             var updates = [];
             var seeds = rawNodes.filter(function(n) {{ return (n.level === 0 || n.layer === 'seed'); }});
             var backwardPapers = rawNodes.filter(function(n) {{ return (n.level < 0 || n.layer === 'backward'); }});
@@ -1941,100 +2422,74 @@ class CiteNetAgent:
                 var angle = -Math.PI / 2 + ((Math.PI * (j + 0.5)) / fCount);
                 updates.push({{ id: n.id, x: Math.round(radius * Math.cos(angle)), y: Math.round(radius * Math.sin(angle)), physics: false }});
             }});
-
             nodes.update(updates);
-            setTimeout(fitView, 200);
+            setTimeout(fitView, 220);
 
-        }} else if (mode === 'hierarchical') {{
-            var db = document.getElementById('dockBtnHierarchical');
-            if (db) db.classList.add('active');
-            var updates = [];
-            rawNodes.forEach(function(n) {{ updates.push({{ id: n.id, physics: true }}); }});
-            nodes.update(updates);
-
-            network.setOptions({{
-                layout: {{ hierarchical: {{ enabled: true, direction: 'UD', sortMethod: 'directed', levelSeparation: 150, nodeSpacing: 180 }} }},
-                physics: {{ hierarchicalRepulsion: {{ nodeDistance: 170 }}, solver: 'hierarchicalRepulsion' }}
-            }});
-            setTimeout(fitView, 350);
-
-        }} else if (mode === 'quartile') {{
-            var db = document.getElementById('dockBtnQuartile');
-            if (db) db.classList.add('active');
+        }} else if (mode === 'fanchart') {{
+            // 10. QUẠT NAN PHẢ HỆ TỎA TRÒN 180 ĐỘ (ANCESTRY FAN CHART)
             network.setOptions({{ physics: {{ enabled: false }}, layout: {{ hierarchical: false }} }});
+            var updates = [];
+            var seeds = rawNodes.filter(function(n) {{ return (n.level === 0 || n.layer === 'seed'); }});
+            var otherPapers = rawNodes.filter(function(n) {{ return !(n.level === 0 || n.layer === 'seed'); }});
 
-            var lanes = {{ core: [], q1: [], q2: [], other: [] }};
-            rawNodes.forEach(function(n) {{
-                var p = metaDict[n.id] || {{}};
-                var tier = (p.scopus_tier || '').toLowerCase();
-                if (p.level === 0 || p.layer === 'seed') lanes.core.push(n.id);
-                else if (tier.indexOf('q1') !== -1) lanes.q1.push(n.id);
-                else if (tier.indexOf('q2') !== -1) lanes.q2.push(n.id);
-                else lanes.other.push(n.id);
+            seeds.forEach(function(n) {{
+                updates.push({{ id: n.id, x: 0, y: 180, physics: false }});
             }});
 
-            var laneX = {{ core: -440, q1: -150, q2: 150, other: 440 }};
-            var updates = [];
-            ['core', 'q1', 'q2', 'other'].forEach(function(k) {{
-                var list = lanes[k];
-                list.forEach(function(id, idx) {{
-                    var yOffset = (idx - (list.length - 1) / 2) * 95;
-                    updates.push({{ id: id, x: laneX[k], y: yOffset, physics: false }});
-                }});
+            otherPapers.forEach(function(n, i) {{
+                var yr = n.year || 2020;
+                var yrSpan = Math.max(1, maxYrVal - minYrVal);
+                var radius = 220 + ((yr - minYrVal) / yrSpan) * 340;
+                var angle = Math.PI + (i / Math.max(1, otherPapers.length - 1)) * Math.PI;
+                updates.push({{ id: n.id, x: Math.round(radius * Math.cos(angle)), y: 180 + Math.round(radius * Math.sin(angle)), physics: false }});
             }});
             nodes.update(updates);
-            setTimeout(fitView, 200);
+            setTimeout(fitView, 220);
 
         }} else {{
-            var db = document.getElementById('dockBtnForce');
-            if (db) db.classList.add('active');
+            // 7. MẠNG LƯỚI ĐỘNG HỌC LƯỢNG TỬ (FORCE-DIRECTED QUANTUM)
             network.setOptions({{ layout: {{ hierarchical: false }} }});
             var updates = [];
             rawNodes.forEach(function(n) {{ updates.push({{ id: n.id, physics: true }}); }});
             nodes.update(updates);
             network.setOptions(forceOptions);
-            setTimeout(fitView, 200);
+            setTimeout(fitView, 220);
         }}
     }}
 
-    // Concentric & Timeline Guides
+    // Canvas Background Guides for Timeline & Radar & Fishbone
     network.on('beforeDrawing', function(ctx) {{
-        if (currentLayoutMode === 'concentric') {{
+        if (currentLayoutMode === 'radar') {{
             ctx.save();
-            ctx.setLineDash([8, 8]);
-            ctx.lineWidth = 1.5;
-            ctx.strokeStyle = 'rgba(124, 58, 237, 0.25)';
-            ctx.beginPath();
-            ctx.arc(0, 0, 240, Math.PI / 2, Math.PI * 1.5, false);
-            ctx.stroke();
-
-            ctx.strokeStyle = 'rgba(2, 132, 199, 0.25)';
-            ctx.beginPath();
-            ctx.arc(0, 0, 260, -Math.PI / 2, Math.PI / 2, false);
-            ctx.stroke();
-
-            ctx.font = 'bold 12px Plus Jakarta Sans, sans-serif';
-            ctx.fillStyle = 'rgba(196, 181, 253, 0.7)';
-            ctx.fillText('🏛️ CỘI NGUỒN LÝ THUYẾT (R)', -340, -280);
-            ctx.fillStyle = 'rgba(56, 189, 248, 0.7)';
-            ctx.fillText('🚀 BƯỚC TIẾN KẾ THỪA (F)', 150, -300);
+            ctx.setLineDash([6, 6]);
+            ctx.lineWidth = 1.2;
+            [180, 290, 400, 520].forEach(function(r, idx) {{
+                ctx.strokeStyle = 'rgba(var(--theme-glow-rgb), 0.20)';
+                ctx.beginPath();
+                ctx.arc(0, 0, r, 0, 2 * Math.PI, false);
+                ctx.stroke();
+            }});
+            ctx.font = 'bold 11px JetBrains Mono, monospace';
+            ctx.fillStyle = 'var(--theme-accent)';
+            ctx.fillText('📡 RADAR RANGE 180px - 520px', 10, -530);
             ctx.restore();
+
         }} else if (currentLayoutMode === 'timeline') {{
             ctx.save();
             for (var y = minYrVal; y <= maxYrVal; y++) {{
                 var xPos = (y - minYrVal) * 260 - ((maxYrVal - minYrVal) * 130);
                 ctx.setLineDash([6, 6]);
                 ctx.lineWidth = 1.0;
-                ctx.strokeStyle = 'rgba(0, 242, 254, 0.18)';
+                ctx.strokeStyle = 'rgba(var(--theme-glow-rgb), 0.18)';
                 ctx.beginPath();
                 ctx.moveTo(xPos, -420);
                 ctx.lineTo(xPos, 420);
                 ctx.stroke();
 
                 ctx.setLineDash([]);
-                ctx.fillStyle = 'rgba(6, 14, 28, 0.85)';
+                ctx.fillStyle = 'var(--theme-panel-bg)';
                 ctx.fillRect(xPos - 44, -435, 88, 24);
-                ctx.strokeStyle = '#00F2FE';
+                ctx.strokeStyle = 'var(--theme-accent)';
                 ctx.strokeRect(xPos - 44, -435, 88, 24);
 
                 ctx.font = 'bold 11px JetBrains Mono, monospace';
@@ -2042,6 +2497,22 @@ class CiteNetAgent:
                 ctx.textAlign = 'center';
                 ctx.fillText('📅 ' + y, xPos, -419);
             }}
+            ctx.restore();
+
+        }} else if (currentLayoutMode === 'fishbone') {{
+            ctx.save();
+            ctx.strokeStyle = 'rgba(var(--theme-glow-rgb), 0.35)';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.moveTo(-650, 0);
+            ctx.lineTo(650, 0);
+            ctx.stroke();
+
+            ctx.font = 'bold 12px Plus Jakarta Sans, sans-serif';
+            ctx.fillStyle = 'rgba(var(--theme-glow-rgb), 0.85)';
+            ctx.fillText('🐟 TRỤC SỐNG LƯNG THỜI GIAN (CHRONO-BACKBONE)', -620, -12);
+            ctx.fillText('🏛️ CỘI NGUỒN (R) ➔', -450, 45);
+            ctx.fillText('🚀 KẾ THỪA (F) ➔', 250, -45);
             ctx.restore();
         }}
     }});
@@ -2109,7 +2580,7 @@ class CiteNetAgent:
         var absEl = document.getElementById('hoverInspectorAbstract');
 
         if (p.level === 0 || p.layer === 'seed') {{
-            if (typeEl) typeEl.innerText = '★ F0 BÀI GỐC';
+            if (typeEl) typeEl.innerText = '★ F0 BÀI GỐC (ANCHOR)';
         }} else if (p.level < 0 || p.layer === 'backward') {{
             if (typeEl) typeEl.innerText = '🏛️ CỘI NGUỒN (R' + Math.abs(p.level || 1) + ')';
         }} else {{
@@ -2130,8 +2601,8 @@ class CiteNetAgent:
         var linkNote = '⚡ <b>Liên kết tổng thể:</b> ' + outC + ' tham chiếu (R) ➔ ' + inC + ' kế thừa (F).';
         if (outC === 0 && inC === 0) {{
             linkNote += '<br><span style="color:#FDE047;">⚠️ Ghi chú: Công trình độc lập trong tập mẫu này.</span>';
-        }} else if (isFilterActive && (layerFilterVal === 'forward' || layerFilterVal === 'backward')) {{
-            linkNote += '<br><span style="color:#93C5FD; font-size:9.5px;">💡 Mẹo: Mũi tên kết nối với bài gốc F0 hoặc tầng khác đang tạm ẩn bởi bộ lọc "' + layerFilterVal.toUpperCase() + '".</span>';
+        }} else if (isFilterActive && layerFilterVal !== 'all') {{
+            linkNote += '<br><span style="color:var(--theme-accent); font-size:9.5px;">💡 Mẹo: F0 luôn được neo giữ để quan sát mạch tri thức chuẩn xác.</span>';
         }}
         if (linksEl) linksEl.innerHTML = linkNote;
 
@@ -2151,7 +2622,7 @@ class CiteNetAgent:
     function searchAndFocusNode(query) {{
         if (!query || !query.trim()) {{
             var resetUpdates = rawNodes.map(function(n) {{
-                return {{ id: n.id, opacity: 1.0, shadow: {{ enabled: true, color: 'rgba(0,0,0,0.5)', size: 8 }} }};
+                return {{ id: n.id, opacity: 1.0, shadow: {{ enabled: true, color: 'rgba(0,0,0,0.5)', size: 8, x:0, y:0 }} }};
             }});
             nodes.update(resetUpdates);
             hideHoverInspector();
@@ -2159,7 +2630,7 @@ class CiteNetAgent:
         }}
 
         var q = query.trim().toLowerCase();
-        var cleanQ = q.replace(/^https?:\/\/doi\.org\//i, '').replace(/^(doi:)/i, '').trim();
+        var cleanQ = q.replace(/^https?:\\/\\/doi\\.org\\//i, '').replace(/^(doi:)/i, '').trim();
 
         var matchedIds = new Set();
         var primaryMatchId = null;
@@ -2177,19 +2648,12 @@ class CiteNetAgent:
             var levelTag = (p.level === 0 ? 'f0' : (p.level < 0 ? 'r' + Math.abs(p.level) : 'f' + p.level)).toLowerCase();
 
             var match = false;
-            // 1. DOI
             if (doi && (doi.indexOf(cleanQ) !== -1 || cleanQ.indexOf(doi) !== -1)) match = true;
-            // 2. Tác giả
             else if (authors.indexOf(q) !== -1 || firstAuth.indexOf(q) !== -1) match = true;
-            // 3. Năm
             else if (year === q || (q.startsWith('>') && parseInt(year) > parseInt(q.slice(1))) || (q.startsWith('<') && parseInt(year) < parseInt(q.slice(1)))) match = true;
-            // 4. Tiêu đề
             else if (title.indexOf(q) !== -1) match = true;
-            // 5. Tạp chí
             else if (venue.indexOf(q) !== -1) match = true;
-            // 6. Phân tầng
             else if (levelTag === q || layer === q) match = true;
-            // 7. Tóm tắt
             else if (abs.indexOf(q) !== -1) match = true;
 
             if (match) {{
@@ -2204,7 +2668,7 @@ class CiteNetAgent:
             updates.push({{
                 id: n.id,
                 opacity: (matchedIds.size > 0 ? (isM ? 1.0 : 0.15) : 1.0),
-                shadow: isM ? {{ enabled: true, color: '#00F2FE', size: 18 }} : {{ enabled: false }}
+                shadow: isM ? {{ enabled: true, color: 'var(--theme-accent)', size: 18, x:0, y:0 }} : {{ enabled: false }}
             }});
         }});
         nodes.update(updates);
@@ -2260,7 +2724,7 @@ class CiteNetAgent:
                 '<div style="color:#E2E8F0; margin-bottom:4px; font-size:10px;">' + dynamicDesc + '</div>' +
                 '<div style="display:flex; justify-content:space-between; border-top:1px solid rgba(245,158,11,0.25); padding-top:4px; color:#A1A1AA; font-size:9.5px;">' +
                     '<span>⏳ Độ trễ tiếp thu: <b>' + (gap === 0 ? 'Cùng năm' : gap + ' năm') + '</b></span>' +
-                    '<span>⚡ Trạng thái: <b>Laser Beam Stream Active</b></span>' +
+                    '<span>⚡ Trạng thái: <b>Laser Stream Active</b></span>' +
                 '</div>';
         }}
         edgeInsp.classList.add('visible');
@@ -2270,7 +2734,7 @@ class CiteNetAgent:
         var nodeInsp = document.getElementById('graphHoverInspector');
         var edgeInsp = document.getElementById('graphEdgeInspector');
         if (nodeInsp) nodeInsp.classList.remove('visible');
-        if (edgeInsp) edgeInsp.classList.remove('visible');
+        if (!edgeInsp) edgeInsp.classList.remove('visible');
     }}
 
     // Đăng ký sự kiện Hover chuẩn của Vis-Network
@@ -2315,8 +2779,8 @@ class CiteNetAgent:
                         grad.addColorStop(0, 'rgba(234, 67, 53, ' + (0.45 + pulse * 0.25) + ')');
                         grad.addColorStop(1, 'rgba(234, 67, 53, 0)');
                     }} else {{
-                        grad.addColorStop(0, 'rgba(0, 242, 254, ' + (0.45 + pulse * 0.25) + ')');
-                        grad.addColorStop(1, 'rgba(0, 242, 254, 0)');
+                        grad.addColorStop(0, 'rgba(var(--theme-glow-rgb), ' + (0.45 + pulse * 0.25) + ')');
+                        grad.addColorStop(1, 'rgba(var(--theme-glow-rgb), 0)');
                     }}
                     ctx.beginPath();
                     ctx.arc(pos.x, pos.y, haloR, 0, 2 * Math.PI, false);
@@ -2345,8 +2809,8 @@ class CiteNetAgent:
                 ctx.save();
                 ctx.beginPath();
                 ctx.arc(x, y, 3.2, 0, 2 * Math.PI, false);
-                ctx.fillStyle = '#00F2FE';
-                ctx.shadowColor = '#00F2FE';
+                ctx.fillStyle = 'var(--theme-accent)';
+                ctx.shadowColor = 'var(--theme-glow)';
                 ctx.shadowBlur = 8;
                 ctx.fill();
                 ctx.restore();
@@ -2374,18 +2838,16 @@ class CiteNetAgent:
                 var p2 = positions[e.to];
                 if (!p1 || !p2) return;
 
-                // Đường sáng Neon rực rỡ toàn bộ cạnh nối
                 ctx.save();
-                ctx.strokeStyle = '#00F2FE';
+                ctx.strokeStyle = 'var(--theme-accent)';
                 ctx.lineWidth = 3.8;
-                ctx.shadowColor = '#00F2FE';
+                ctx.shadowColor = 'var(--theme-glow)';
                 ctx.shadowBlur = 14;
                 ctx.beginPath();
                 ctx.moveTo(p1.x, p1.y);
                 ctx.lineTo(p2.x, p2.y);
                 ctx.stroke();
 
-                // 2 Chùm tia Photon Laser chuyển động liên tục dọc theo cạnh
                 [beamProgress, beamProgress2].forEach(function(bt) {{
                     var bx = p1.x + (p2.x - p1.x) * bt;
                     var by = p1.y + (p2.y - p1.y) * bt;
@@ -2452,8 +2914,9 @@ class CiteNetAgent:
         }}, 250);
     }});
 
-    // Auto-select primary seed on initial load
+    // Auto-select primary seed on initial load & switch to timeline layout
     setTimeout(function() {{
+        switchLayoutMode('timeline');
         if (rawNodes.length > 0) {{
             selectPaperFromTable(rawNodes[0].id);
         }}
