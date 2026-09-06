@@ -436,12 +436,73 @@ def generate_theme_css(theme_id: str) -> str:
     h2 {{ font-size: 18px !important; margin-bottom: 6px !important; }}
     h3 {{ font-size: 15px !important; margin-bottom: 4px !important; }}
     
-    /* Khung Sidebar */
+    /* Khung Sidebar khi Mở (Expanded State) */
     section[data-testid="stSidebar"] {{
         background-color: {c["bg_surface"]} !important;
         border-right: 1px solid {c["border_subtle"]} !important;
-        width: 360px !important;
-        min-width: 340px !important;
+        transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }}
+    
+    section[data-testid="stSidebar"][aria-expanded="true"] {{
+        width: 350px !important;
+        min-width: 320px !important;
+        max-width: 380px !important;
+        visibility: visible !important;
+        display: block !important;
+    }}
+    
+    /* Khung Sidebar khi Thu Gọn / Ẩn (Collapsed State) - Ẩn triệt để 100% */
+    section[data-testid="stSidebar"][aria-expanded="false"] {{
+        width: 0 !important;
+        min-width: 0 !important;
+        max-width: 0 !important;
+        margin-left: -380px !important;
+        padding: 0 !important;
+        border: none !important;
+        overflow: hidden !important;
+        pointer-events: none !important;
+        visibility: hidden !important;
+    }}
+
+    /* Nút mũi tên mở/đóng Sidebar tinh gọn, chuẩn giao diện cao cấp */
+    button[data-testid="stSidebarCollapseButton"],
+    button[data-testid="baseButton-headerNoPadding"],
+    div[data-testid="stSidebarCollapsedControl"] button {{
+        background: {c["bg_surface_elevated"]} !important;
+        border: 1px solid {c["border_subtle"]} !important;
+        border-radius: 8px !important;
+        color: {c["text_primary"]} !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+        transition: all 0.2s ease !important;
+    }}
+    
+    button[data-testid="stSidebarCollapseButton"]:hover,
+    div[data-testid="stSidebarCollapsedControl"] button:hover {{
+        background: {c["primary_accent"]} !important;
+        color: #FFFFFF !important;
+        border-color: {c["primary_accent"]} !important;
+        transform: scale(1.05) !important;
+    }}
+    
+    /* Không gian làm việc bên phải lấp đầy 100% màn hình khi ẩn Sidebar */
+    .main, [data-testid="stAppViewContainer"] > .main {{
+        width: 100% !important;
+        max-width: 100% !important;
+        flex: 1 1 100% !important;
+        transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }}
+    
+    .main .block-container,
+    div[data-testid="stAppViewBlockContainer"],
+    [data-testid="block-container"] {{
+        width: 100% !important;
+        max-width: 100% !important;
+        padding-top: 1.2rem !important;
+        padding-bottom: 3.5rem !important;
+        padding-left: 2.2rem !important;
+        padding-right: 2.2rem !important;
+        box-sizing: border-box !important;
+        transition: padding 0.25s ease !important;
     }}
     
     .sidebar-brand-box {{
@@ -1078,16 +1139,31 @@ def generate_theme_css(theme_id: str) -> str:
     /* Điện thoại di động (Smartphones & Small Tablets: <= 768px) */
     @media (max-width: 768px) {{
         /* Bố cục vùng đệm toàn trang trên điện thoại */
+        .main .block-container,
+        div[data-testid="stAppViewBlockContainer"],
         .block-container, [data-testid="block-container"] {{
             padding: 0.85rem 0.65rem 3rem 0.65rem !important;
+            width: 100% !important;
             max-width: 100% !important;
         }}
 
         /* Sidebar tối ưu cho màn hình cảm ứng di động */
-        section[data-testid="stSidebar"] {{
+        section[data-testid="stSidebar"][aria-expanded="true"] {{
             width: 86vw !important;
             min-width: unset !important;
             max-width: 330px !important;
+            box-shadow: 0 0 35px rgba(0,0,0,0.85) !important;
+            visibility: visible !important;
+            display: block !important;
+        }}
+        
+        section[data-testid="stSidebar"][aria-expanded="false"] {{
+            width: 0 !important;
+            min-width: 0 !important;
+            max-width: 0 !important;
+            margin-left: -100vw !important;
+            padding: 0 !important;
+            visibility: hidden !important;
         }}
 
         /* Thẻ chỉ số Metric: Tự động xếp vừa vặn thay vì bị bẹp */
