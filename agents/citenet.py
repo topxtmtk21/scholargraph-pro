@@ -114,10 +114,19 @@ class CiteNetAgent:
         min_yr = min(years_list) if years_list else 2017
         max_yr = max(years_list) if years_list else 2026
 
+        outgoing_map = {}
+        incoming_map = {}
+        for s, dst in edges:
+            if s in nodes and dst in nodes:
+                outgoing_map[s] = outgoing_map.get(s, 0) + 1
+                incoming_map[dst] = incoming_map.get(dst, 0) + 1
+
         vis_nodes = []
         for node_id, meta in nodes.items():
             gen = meta.get("generation", 2)
             cites = meta.get("citation_count", 0) or 0
+            tot_conn = outgoing_map.get(node_id, 0) + incoming_map.get(node_id, 0)
+            is_isolated = (tot_conn == 0)
             
             # Chuẩn quốc tế: Tính kích cỡ node theo quy luật lũy thừa / logarit số trích dẫn (Price's Law)
             base_size = 16
@@ -133,9 +142,11 @@ class CiteNetAgent:
             first_auth = meta.get("first_author", "Tác giả").split()[-1] if meta.get("first_author") else "Paper"
             year = meta.get("year", "n.d.")
             
-            # Nhãn học thuật kèm trực tiếp số lượt trích dẫn
+            # Nhãn học thuật kèm trực tiếp số lượt trích dẫn & trạng thái độc lập
             if gen == 0:
                 short_label = f"★ {first_auth} ({year})\n[{cites} trích dẫn]"
+            elif is_isolated:
+                short_label = f"⚡ {first_auth} ({year})\n[{cites} trích dẫn • Độc lập]"
             else:
                 short_label = f"{first_auth} ({year})\n[{cites} trích dẫn]"
 
@@ -146,13 +157,14 @@ class CiteNetAgent:
                 yr_int = min_yr
             x_timeline = (yr_int - min_yr) * 240 - ((max_yr - min_yr) * 120)
             
-            vis_nodes.append({
+            node_item = {
                 "id": node_id,
                 "label": short_label,
                 "value": cites + 1,
                 "size": node_size,
                 "color": colors,
-                "borderWidth": 3.5 if gen == 0 else 1.8,
+                "borderWidth": 3.5 if gen == 0 else (2.6 if is_isolated else 1.8),
+                "shapeProperties": {"borderDashes": [4, 4]} if is_isolated else {"borderDashes": False},
                 "font": {
                     "size": 12 if gen == 0 else 11,
                     "color": "#F8FAFC",
@@ -163,8 +175,11 @@ class CiteNetAgent:
                 "shape": "star" if gen == 0 else "dot",
                 "x_timeline": x_timeline,
                 "year": yr_int,
-                "citations": cites
-            })
+                "citations": cites,
+                "is_isolated": is_isolated,
+                "title": "⚠️ BÀI BÁO ĐỘC LẬP: Không có liên kết trích dẫn trực tiếp trong tập mẫu này" if is_isolated else ""
+            }
+            vis_nodes.append(node_item)
 
         vis_edges = []
         for src, dst in edges:
@@ -213,7 +228,8 @@ class CiteNetAgent:
                 "abstract_en": abs_en,
                 "outgoing_ids": outgoing,
                 "incoming_ids": incoming,
-                "total_connections": len(outgoing) + len(incoming)
+                "total_connections": len(outgoing) + len(incoming),
+                "is_isolated": (len(outgoing) + len(incoming) == 0)
             }
 
         nodes_json = json.dumps(vis_nodes, ensure_ascii=False)
@@ -456,26 +472,6 @@ class CiteNetAgent:
             height: 10px;
             border-radius: 50%;
             flex-shrink: 0;
-        }}
-
-        /* Timeline Axis Overlay */
-        #timeline-axis-bar {{
-            display: none;
-            position: absolute;
-            bottom: 54px;
-            left: 20px;
-            right: 20px;
-            z-index: 80;
-            background: rgba(18, 20, 26, 0.9);
-            border: 1px solid #262B38;
-            border-radius: 10px;
-            padding: 6px 14px;
-            display: none;
-            justify-content: space-between;
-            font-size: 11px;
-            color: #94A3B8;
-            font-family: 'JetBrains Mono', monospace;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
         }}
 
         /* Floating Info Card HUD */
@@ -803,18 +799,14 @@ class CiteNetAgent:
         </div>
     </div>
 
-    <!-- Timeline / Mode Axis Marker Bar (Dynamic across modes) -->
-    <div id="timeline-axis-bar">
-        <span>◀ <b>QUÁ KHỨ ({min_yr})</b>: Nền tảng lý thuyết ban đầu</span>
-        <span style="color:#38BDF8;">DÒNG TIẾN HÓA TRÍCH DẪN THEO NĂM XUẤT BẢN</span>
-        <span><b>HIỆN TẠI ({max_yr})</b>: Khám phá mới nhất ▶</span>
-    </div>
-
     <!-- Floating Hover Info Card -->
     <div id="floating-hover-card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
             <div id="hover-badge" style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em;"></div>
             <div id="hover-conn-badge" style="font-size:11px; font-weight:600;"></div>
+        </div>
+        <!-- Thông báo lý do bài báo đứng lẻ loi (chỉ hiện khi 0 liên kết) -->
+        <div id="hover-orphan-notice" style="display:none; background:rgba(245, 158, 11, 0.16); border:1px solid rgba(245, 158, 11, 0.55); border-radius:8px; padding:7px 10px; margin-bottom:8px; font-size:11.5px; color:#FCD34D; line-height:1.45;">
         </div>
         <div id="hover-title" style="font-size:13px; font-weight:700; color:#FFFFFF; line-height:1.4; margin-bottom:6px;"></div>
         <div id="hover-meta" style="font-size:11.5px; color:#94A3B8; line-height:1.5; margin-bottom:8px;"></div>
@@ -968,8 +960,6 @@ class CiteNetAgent:
 
         if (mode === 'timeline') {{
             if (btnTimeline) btnTimeline.className = 'hud-btn active';
-            axisBar.style.display = 'flex';
-            axisBar.innerHTML = '<span>◀ <b>QUÁ KHỨ (' + minYrVal + ')</b>: Nền tảng lý thuyết ban đầu</span><span style="color:#38BDF8; font-weight:700;">DÒNG TIẾN HÓA TRÍCH DẪN THEO NĂM XUẤT BẢN (CHRONOLOGICAL)</span><span><b>HIỆN TẠI (' + maxYrVal + ')</b>: Khám phá mới nhất ▶</span>';
 
             network.setOptions({{ physics: {{ enabled: false }}, layout: {{ hierarchical: false }} }});
             
@@ -999,8 +989,6 @@ class CiteNetAgent:
 
         }} else if (mode === 'concentric') {{
             if (btnConcentric) btnConcentric.className = 'hud-btn active';
-            axisBar.style.display = 'flex';
-            axisBar.innerHTML = '<span>⭐ <b>TÂM ĐIỂM (R=0)</b>: Bài báo gốc</span><span style="color:#38BDF8; font-weight:700;">QUỸ ĐẠO ĐỒNG TÂM: VÒNG TRONG (Gen-1 Trực tiếp) ── VÒNG NGOÀI (Gen-2 Mở rộng)</span><span>🌐 <b>BIÊN GIỚI (R=480)</b>: Chân trời học thuật</span>';
 
             network.setOptions({{ physics: {{ enabled: false }}, layout: {{ hierarchical: false }} }});
 
@@ -1042,8 +1030,6 @@ class CiteNetAgent:
 
         }} else if (mode === 'hierarchical') {{
             if (btnHierarchical) btnHierarchical.className = 'hud-btn active';
-            axisBar.style.display = 'flex';
-            axisBar.innerHTML = '<span>🌳 <b>TẦNG TRÊN (Gốc rễ)</b>: Công trình tiên phong</span><span style="color:#38BDF8; font-weight:700;">CÂY PHẢ HỆ HỌC THUẬT PHÂN TẦNG (HIERARCHICAL DAG TREE)</span><span>🍃 <b>TẦNG DƯỚI (Ngọn cây)</b>: Nghiên cứu kế thừa</span>';
 
             var updates = [];
             rawNodes.forEach(function(n) {{
@@ -1079,8 +1065,6 @@ class CiteNetAgent:
 
         }} else if (mode === 'quartile') {{
             if (btnQuartile) btnQuartile.className = 'hud-btn active';
-            axisBar.style.display = 'flex';
-            axisBar.innerHTML = '<span>⭐ <b>LÀN 1</b>: Bài báo gốc</span><span>🏆 <b>LÀN 2</b>: Scopus Q1 (Top Tier)</span><span>📊 <b>LÀN 3</b>: Scopus Q2 / Q3</span><span>🌐 <b>LÀN 4</b>: Tạp chí khác & Hội thảo</span>';
 
             network.setOptions({{ physics: {{ enabled: false }}, layout: {{ hierarchical: false }} }});
 
@@ -1133,7 +1117,6 @@ class CiteNetAgent:
         }} else {{
             // 'force'
             if (btnForce) btnForce.className = 'hud-btn active';
-            axisBar.style.display = 'none';
 
             network.setOptions({{ layout: {{ hierarchical: false }} }});
             var updates = [];
@@ -1164,8 +1147,21 @@ class CiteNetAgent:
         document.getElementById('hover-badge').innerText = badgeLabel;
         
         var connBadge = document.getElementById('hover-conn-badge');
+        var orphanNotice = document.getElementById('hover-orphan-notice');
         var totalConn = p.total_connections || 0;
-        connBadge.innerHTML = '<span style="color:#38BDF8; background:rgba(56,189,248,0.12); padding:2px 8px; border-radius:6px; border:1px solid rgba(56,189,248,0.3);">🔗 ' + totalConn + ' liên kết • ' + p.citation_count + ' trích dẫn</span>';
+        
+        if (totalConn === 0) {{
+            connBadge.innerHTML = '<span style="color:#F59E0B; background:rgba(245,158,11,0.18); padding:2px 8px; border-radius:6px; border:1px solid rgba(245,158,11,0.4); font-weight:700;">⚠️ 0 LIÊN KẾT (ĐỨNG LẺ LOI)</span>';
+            if (orphanNotice) {{
+                orphanNotice.style.display = 'block';
+                orphanNotice.innerHTML = '⚠️ <b>Bài báo đứng lẻ loi (Không có mũi tên kết nối):</b><br/><span style="color:#E2E8F0;">Công trình này thuộc cùng chủ đề nghiên cứu nhưng không trích dẫn trực tiếp bài báo gốc (Seed) trong tập dữ liệu giới hạn hiện hành, và chưa có bài nào trong mạng lưới trích dẫn lại nó.</span>';
+            }}
+        }} else {{
+            connBadge.innerHTML = '<span style="color:#38BDF8; background:rgba(56,189,248,0.12); padding:2px 8px; border-radius:6px; border:1px solid rgba(56,189,248,0.3);">🔗 ' + totalConn + ' liên kết • ' + p.citation_count + ' trích dẫn</span>';
+            if (orphanNotice) {{
+                orphanNotice.style.display = 'none';
+            }}
+        }}
 
         document.getElementById('hover-title').innerText = p.title;
         document.getElementById('hover-meta').innerHTML = '<b>✍️ Tác giả:</b> ' + p.authors + ' (' + p.year + ')<br/><b>🏛️ Tạp chí:</b> ' + p.venue + ' <span style="color:#38BDF8; font-weight:600;">(' + (p.scopus_tier || 'Scopus Indexed') + ')</span>';
@@ -1274,6 +1270,17 @@ class CiteNetAgent:
         var lineageHtml = '';
         var outList = p.outgoing_ids || [];
         var inList = p.incoming_ids || [];
+
+        if (p.total_connections === 0) {{
+            lineageHtml += '<div style="background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.4); border-radius:10px; padding:12px 14px; margin-top:4px; margin-bottom:10px;">' +
+                '<div style="color:#FCD34D; font-weight:800; font-size:12px; margin-bottom:6px; display:flex; align-items:center; gap:6px;">' +
+                '<span>⚠️</span> <span>LÝ DO BÀI BÁO ĐỨNG LẺ LOI (KHÔNG CÓ MŨI TÊN KẾT NỐI):</span></div>' +
+                '<div style="color:#E2E8F0; font-size:12px; line-height:1.6;">' +
+                '• <b>Giới hạn chuỗi trích dẫn (Citation Boundary):</b> Công trình này được lập chỉ mục Scopus trong cùng chủ đề nhưng tác giả không trực tiếp trích dẫn bài báo gốc (Seed DOI) trong danh mục tham khảo.<br/>' +
+                '• <b>Mối quan hệ nội bộ:</b> Các bài báo khác trong tập mẫu hiện hành cũng chưa ghi nhận trích dẫn đến bài này.<br/>' +
+                '• <b>Giá trị học thuật:</b> Vẫn cung cấp bằng chứng thực nghiệm độc lập và góc nhìn có giá trị cho tổng quan nghiên cứu.' +
+                '</div></div>';
+        }}
 
         if (outList.length > 0) {{
             lineageHtml += '<div style="font-size:11.5px; color:#38BDF8; font-weight:700; margin-bottom:4px;">⬇️ TÀI LIỆU CÔNG TRÌNH NÀY TRÍCH DẪN (' + outList.length + ' bài):</div>';
