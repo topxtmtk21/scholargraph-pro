@@ -177,6 +177,8 @@ if "batch_download_status" not in st.session_state:
     st.session_state.batch_download_status = None
 if "selected_theme" not in st.session_state:
     st.session_state.selected_theme = "obsidian_dark"
+if "display_mode" not in st.session_state:
+    st.session_state.display_mode = "desktop_local" if not IS_CLOUD_ENV else "mobile_cloud"
 
 # -----------------------------------------------------------------------------
 # NẠP GIAO DIỆN HỌC THUẬT & THEME ĐỘNG (10 BỘ THEME TƯƠNG PHẢN CAO WCAG AAA)
@@ -371,6 +373,20 @@ with st.sidebar:
             st.session_state.auth_user = None
             st.rerun()
 
+    # 🖥️/📱 CHUYỂN ĐỔI CHẾ ĐỘ MÁY TÍNH & DI ĐỘNG
+    st.markdown('<div class="menu-header-badge">🖥️/📱 CHẾ ĐỘ THIẾT BỊ HIỂN THỊ</div>', unsafe_allow_html=True)
+    c_m_pc, c_m_mb = st.columns(2)
+    with c_m_pc:
+        is_pc = (st.session_state.display_mode == "desktop_local")
+        if st.button("💻 Máy tính", type="primary" if is_pc else "secondary", use_container_width=True, key="btn_sw_desktop"):
+            st.session_state.display_mode = "desktop_local"
+            st.rerun()
+    with c_m_mb:
+        is_mb = (st.session_state.display_mode == "mobile_cloud")
+        if st.button("📱 Di động", type="primary" if is_mb else "secondary", use_container_width=True, key="btn_sw_mobile"):
+            st.session_state.display_mode = "mobile_cloud"
+            st.rerun()
+
     # 🎨 CHỌN GIAO DIỆN HỌC THUẬT (10 BỘ THEME TƯƠNG PHẢN CAO)
     st.markdown('<div class="menu-header-badge">🎨 GIAO DIỆN & THEME (10 BỘ)</div>', unsafe_allow_html=True)
     all_themes_list = get_theme_list()
@@ -480,6 +496,8 @@ icon_spark_svg = get_svg_icon("sparkles", color="var(--badge-green-text)", size=
 
 nav_title = workspace_nav.split('. ', 1)[1] if '. ' in workspace_nav else workspace_nav
 
+mode_chip = '<span class="status-chip blue">💻 Bản Máy Tính (Local Desktop)</span>' if st.session_state.get("display_mode") == "desktop_local" else '<span class="status-chip green">📱 Bản Di Động (Mobile Cloud)</span>'
+
 st.markdown(f"""
 <div class="app-top-toolbar">
     <div class="toolbar-left">
@@ -490,6 +508,7 @@ st.markdown(f"""
             <span class="crumb-active">{nav_title}</span>
         </div>
         <div class="status-chip-group">
+            {mode_chip}
             <span class="status-chip rose">{icon_shield_svg} Scopus Q1/Q2</span>
             <span class="status-chip blue">{icon_net_svg} OpenAlex Data</span>
             <span class="status-chip green">{icon_spark_svg} APA 7 & CARS</span>
@@ -501,41 +520,41 @@ st.markdown(f"""
             <span class="top-brand-text">SCHOLARGRAPH PRO</span>
             <span class="top-brand-ver">v3.5</span>
         </div>
-<div class="top-brand-author">Tác giả: TRẦN DUY</div>
+        <div class="top-brand-author">Tác giả: TRẦN DUY</div>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# THANH ĐIỀU HƯỚNG NHANH CẢM ỨNG (MOBILE & TABLET QUICK NAV CHIPS)
-# Giúp người dùng điện thoại / máy tính bảng chuyển sang "Mạng lưới trích dẫn" và các chức năng ngay trên màn hình mà không cần mở Sidebar
+# THANH ĐIỀU HƯỚNG NHANH CẢM ỨNG (CHỈ KÍCH HOẠT TRÊN BẢN DI ĐỘNG & CLOUD)
 # -----------------------------------------------------------------------------
-st.markdown("""
-<div style="display:flex; align-items:center; justify-content:space-between; margin: -6px 0 10px 0; padding: 6px 12px; background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: 10px;">
-    <div style="font-size:12px; font-weight:700; color:var(--primary-accent); display:flex; align-items:center; gap:6px;">
-        <span>🧭</span> <span>TRÌNH ĐƠN CHUYỂN NHANH (DI ĐỘNG & MÁY TÍNH BẢNG):</span>
+if st.session_state.get("display_mode") == "mobile_cloud":
+    st.markdown("""
+    <div style="display:flex; align-items:center; justify-content:space-between; margin: -6px 0 10px 0; padding: 6px 12px; background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: 10px;">
+        <div style="font-size:12px; font-weight:700; color:var(--primary-accent); display:flex; align-items:center; gap:6px;">
+            <span>🧭</span> <span>TRÌNH ĐƠN CHUYỂN NHANH (DI ĐỘNG & MÁY TÍNH BẢNG):</span>
+        </div>
+        <div style="font-size:11px; color:var(--text-muted);">Chạm để xem ngay ➔</div>
     </div>
-    <div style="font-size:11px; color:var(--text-muted);">Chạm để xem ngay ➔</div>
-</div>
-""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
-q_cols_mobile = st.columns(4)
-q_quick_targets = [
-    ("🚀 01. Nhập DOI", "01. Khởi tạo & Nhập mã DOI"),
-    ("🌐 02. Mạng Lưới Trích Dẫn", "02. Mạng lưới trích dẫn khoa học"),
-    ("📊 03. Ma Trận APA 7", "03. Bảng tổng hợp phương pháp (APA 7)"),
-    ("✍️ 05. Soạn Thảo CARS", "05. Soạn thảo CARS & Phản biện mô phỏng"),
-]
+    q_cols_mobile = st.columns(4)
+    q_quick_targets = [
+        ("🚀 01. Nhập DOI", "01. Khởi tạo & Nhập mã DOI"),
+        ("🌐 02. Mạng Lưới Trích Dẫn", "02. Mạng lưới trích dẫn khoa học"),
+        ("📊 03. Ma Trận APA 7", "03. Bảng tổng hợp phương pháp (APA 7)"),
+        ("✍️ 05. Soạn Thảo CARS", "05. Soạn thảo CARS & Phản biện mô phỏng"),
+    ]
 
-for q_i, (q_txt, q_val) in enumerate(q_quick_targets):
-    with q_cols_mobile[q_i]:
-        is_cur = (q_val in workspace_nav)
-        if st.button(q_txt, type="primary" if is_cur else "secondary", use_container_width=True, key=f"btn_global_qnav_{q_i}"):
-            st.session_state["workspace_nav"] = q_val
-            st.session_state["workspace_nav_radio"] = q_val
-            st.rerun()
+    for q_i, (q_txt, q_val) in enumerate(q_quick_targets):
+        with q_cols_mobile[q_i]:
+            is_cur = (q_val in workspace_nav)
+            if st.button(q_txt, type="primary" if is_cur else "secondary", use_container_width=True, key=f"btn_global_qnav_{q_i}"):
+                st.session_state["workspace_nav"] = q_val
+                st.session_state["workspace_nav_radio"] = q_val
+                st.rerun()
 
-st.markdown("<div style='height: 4px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height: 4px;'></div>", unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
 # QUY TRÌNH ĐIỀU PHỐI HỌC THUẬT TỰ ĐỘNG (SAFE PIPELINE)
