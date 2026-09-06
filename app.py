@@ -398,11 +398,21 @@ with st.sidebar:
     if is_admin_or_super:
         nav_options.append("09. Quản trị hệ thống & Phân quyền")
 
+    if "workspace_nav" not in st.session_state:
+        st.session_state["workspace_nav"] = "01. Khởi tạo & Nhập mã DOI"
+    if st.session_state["workspace_nav"] not in nav_options:
+        st.session_state["workspace_nav"] = nav_options[0]
+
+    nav_default_index = nav_options.index(st.session_state["workspace_nav"])
+
     workspace_nav = st.radio(
         "Chọn màn hình làm việc:",
         nav_options,
+        index=nav_default_index,
+        key="workspace_nav_radio",
         label_visibility="collapsed"
     )
+    st.session_state["workspace_nav"] = workspace_nav
 
 
     st.markdown("""
@@ -644,19 +654,20 @@ if hasattr(st, "dialog"):
         </div>
         """, unsafe_allow_html=True)
         
-        col_p1, col_p2 = st.columns(2)
+        col_p1, col_p2 = st.columns([1.2, 1.8])
         with col_p1:
             st.download_button(
-                "📦 Tải về trọn bộ song ngữ (.ZIP)",
+                "📦 Tải về trọn bộ (.ZIP)",
                 data=results["zip_bytes"],
                 file_name="ho_so_nghien_cuu_bao_chi_ai_apa7.zip",
                 mime="application/zip",
-                type="primary",
+                type="secondary",
                 use_container_width=True
             )
         with col_p2:
-            if st.button("✕ Đóng và xem kết quả", use_container_width=True):
+            if st.button("🌐 XEM SƠ ĐỒ MẠNG LƯỚI TRÍCH DẪN NGAY ➔", type="primary", use_container_width=True, key="btn_modal_goto_m2"):
                 st.session_state.show_completion_popup = False
+                st.session_state["workspace_nav"] = "02. Mạng lưới trích dẫn khoa học"
                 st.rerun()
 
 # Hiển thị Popup khi hoàn thành
@@ -922,10 +933,41 @@ if "01." in workspace_nav:
             email=email_val
         )
 
+    # Hiển thị bảng điều hướng nhanh khi đã có kết quả phân tích
+    if st.session_state.pipeline_results:
+        st.markdown("<div style='height: 18px;'></div>", unsafe_allow_html=True)
+        st.markdown("""
+        <div style="background:var(--bg-surface-elevated); border:2px solid var(--badge-green-border); border-radius:14px; padding:18px 22px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <div style="color:var(--badge-green-text); font-weight:800; font-size:16px;">
+                    ✓ DỮ LIỆU ĐÃ PHÂN TÍCH XONG & SẴN SÀNG KHÁM PHÁ!
+                </div>
+                <span class="status-chip green">Hoàn tất 100%</span>
+            </div>
+            <p style="color:var(--text-secondary); font-size:13px; margin:0 0 14px 0; line-height:1.5;">
+                Bạn có thể bấm vào các nút bên dưới hoặc chọn trực tiếp trong menu bên trái để xem sơ đồ mạng lưới, bảng bằng chứng APA 7 hoặc bản thảo mở đầu song ngữ:
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        qnav1, qnav2, qnav3 = st.columns(3)
+        with qnav1:
+            if st.button("🌐 1. Xem Sơ đồ Mạng lưới Trích dẫn", type="primary", use_container_width=True, key="btn_qnav_m2"):
+                st.session_state["workspace_nav"] = "02. Mạng lưới trích dẫn khoa học"
+                st.rerun()
+        with qnav2:
+            if st.button("📊 2. Xem Bảng Tổng Hợp APA 7", use_container_width=True, key="btn_qnav_m3"):
+                st.session_state["workspace_nav"] = "03. Bảng tổng hợp phương pháp (APA 7)"
+                st.rerun()
+        with qnav3:
+            if st.button("✍️ 3. Xem Bản Thảo Mở Đầu Song Ngữ", use_container_width=True, key="btn_qnav_m5"):
+                st.session_state["workspace_nav"] = "05. Soạn thảo CARS & Phản biện mô phỏng"
+                st.rerun()
+
 # -----------------------------------------------------------------------------
 # MÀN HÌNH 2: SƠ ĐỒ MẠNG LƯỚI TRÍCH DẪN & PHÂN LOẠI QUYỀN TRUY CẬP
 # -----------------------------------------------------------------------------
-elif "02. Sơ đồ mạng lưới" in workspace_nav:
+elif "02." in workspace_nav:
     if st.session_state.pipeline_results:
         c_res = st.session_state.pipeline_results["citenet"]
         nodes_dict = c_res.get("nodes", {})
