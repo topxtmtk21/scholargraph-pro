@@ -333,11 +333,14 @@ class CiteNetAgent:
             background: rgba(56, 189, 248, 0.08);
         }}
         .hud-content-panel {{
+            display: none;
             padding: 10px 14px 12px 14px;
             border-top: 1px solid rgba(255,255,255,0.08);
-            display: flex;
             flex-direction: column;
             gap: 8px;
+        }}
+        .hud-controls-drawer.is-open .hud-content-panel {{
+            display: flex !important;
         }}
         .hud-btn-row {{
             display: flex;
@@ -392,7 +395,7 @@ class CiteNetAgent:
             box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
         }}
         
-        /* Chú thích bên trái - Mặc định thu gọn gọn gàng (Collapsible Left Legend) */
+        /* Chú thích bên trái - Mặc định ẩn triệt để 100% (Strictly Collapsed Left Legend) */
         .hud-legend-drawer {{
             position: absolute;
             bottom: 14px;
@@ -434,11 +437,14 @@ class CiteNetAgent:
             background: rgba(255,255,255,0.04);
         }}
         .legend-content-panel {{
+            display: none;
             padding: 8px 12px 10px 12px;
             border-top: 1px solid rgba(255,255,255,0.08);
-            display: flex;
             flex-direction: column;
             gap: 6px;
+        }}
+        .hud-legend-drawer.is-open .legend-content-panel {{
+            display: flex !important;
         }}
         .legend-item {{
             display: flex;
@@ -1352,28 +1358,34 @@ class CiteNetAgent:
 
     // Mở / Thu gọn thanh công cụ trên cùng
     function toggleHudDrawer() {{
+        var drawer = document.getElementById('hud-controls-drawer');
         var panel = document.getElementById('hudContentPanel');
         var arrow = document.getElementById('hudArrowIcon');
         if (!panel) return;
         if (panel.style.display === 'none' || panel.style.display === '') {{
             panel.style.display = 'flex';
+            if (drawer) drawer.classList.add('is-open');
             if (arrow) arrow.innerText = '▾';
         }} else {{
             panel.style.display = 'none';
+            if (drawer) drawer.classList.remove('is-open');
             if (arrow) arrow.innerText = '▸';
         }}
     }}
 
     // Mở / Thu gọn chú thích bên trái
     function toggleLegendDrawer() {{
+        var drawer = document.getElementById('hud-legend-wrapper');
         var panel = document.getElementById('legendContentPanel');
         var arrow = document.getElementById('legendArrowIcon');
         if (!panel) return;
         if (panel.style.display === 'none' || panel.style.display === '') {{
             panel.style.display = 'flex';
+            if (drawer) drawer.classList.add('is-open');
             if (arrow) arrow.innerText = '▾';
         }} else {{
             panel.style.display = 'none';
+            if (drawer) drawer.classList.remove('is-open');
             if (arrow) arrow.innerText = '▸';
         }}
     }}

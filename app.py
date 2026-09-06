@@ -1092,16 +1092,17 @@ elif "02." in workspace_nav:
             only_oa=oa_only_filter
         )
 
-        col_g1, col_g2, col_g3 = st.columns([2, 1.2, 1.2], gap="small")
+        col_g1, col_g2, col_g3 = st.columns([1.8, 1.1, 1.1], gap="small")
         with col_g1:
-            st.markdown("""
-            <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.6; display:flex; align-items:center; gap:8px;">
-                <span>💡 <b>Quy chuẩn quốc tế:</b> Kích thước node tỷ lệ thuận với số trích dẫn (Impact). Dùng các nút <b>🔍+ / 🔍- / 🎯 Căn giữa / 🪟 Màn hình phụ</b> trên thanh công cụ để khám phá.</span>
-            </div>
-            """, unsafe_allow_html=True)
+            with st.expander("💡 Hướng dẫn & Quy ước thao tác sơ đồ", expanded=False):
+                st.markdown("""
+                - **Kích cỡ Node:** Tỷ lệ thuận với số lượt trích dẫn Scopus (Academic Impact).
+                - **Màu sắc:** 🔴 Đỏ: Bài báo gốc (Seed) | 🔵 Xanh dương: Tham khảo trực tiếp (Gen-1) | 🟢 Xanh lục: Mở rộng (Gen-2).
+                - **Thao tác:** Bấm nút **🎛️ Bảng công cụ** ở góc trên sơ đồ để phóng to, thu nhỏ, căn giữa, chuyển kiểu nền 3D hoặc bố cục phả hệ.
+                """)
         with col_g2:
             st.download_button(
-                "📥 Tải tệp HTML tương tác",
+                "📥 Tải tệp HTML",
                 data=active_network_html,
                 file_name="so_do_mang_luoi_trich_dan.html",
                 mime="text/html",
