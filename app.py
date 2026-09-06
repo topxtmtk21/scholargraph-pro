@@ -1292,7 +1292,7 @@ elif "02." in workspace_nav:
         standalone_data_uri = f"data:text/html;charset=utf-8;base64,{b64_standalone}"
 
         popout_btn_html = f"""
-        <button onclick="openStandaloneWindow()" style="width:100%; height:38px; background:linear-gradient(135deg, #0284C7 0%, #0369A1 100%); color:#FFFFFF; border:1px solid #38BDF8; border-radius:8px; font-weight:700; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 0 12px rgba(56,189,248,0.35);">
+        <button onclick="openStandaloneWindow()" style="width:100%; height:38px; min-height:38px; background:linear-gradient(135deg, #0284C7 0%, #0369A1 100%); color:#FFFFFF; border:1px solid #38BDF8; border-radius:8px; font-weight:700; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 0 12px rgba(56,189,248,0.35); touch-action:manipulation; -webkit-tap-highlight-color:transparent;">
             <span>🌐</span> <span>MÀN HÌNH PHỤ 100VH ↗</span>
         </button>
         <script>
