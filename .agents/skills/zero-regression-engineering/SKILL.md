@@ -67,7 +67,12 @@ Khi một ngôn ngữ backend (Python, Node.js) sinh ra mã cho một ngôn ng�
   - Dấu ngoặc nhọn `{` và `}` trong CSS (`@media { ... }`) hoặc JavaScript (`function() { ... }`) **bắt buộc phải thoát ký thành `{{` và `}}`**.
   - Không chèn chuỗi chứa ký tự `{...}` chưa thoát (ví dụ: cú pháp LaTeX `\text{Citations}`) trực tiếp vào f-string vì Python sẽ cố phân tích thành biến và gây lỗi `NameError`.
 - **Trong Streamlit Markdown (`st.markdown`)**:
-  - Tuyệt đối không để thụt lề 4 dấu cách (4 spaces) sau một dòng trống trong chuỗi HTML vì bộ phân tích cú pháp Markdown sẽ hiểu nhầm là Code Block (`<pre><code>`) và hiển thị HTML thô ra màn hình.
+  - **Quy tắc dòng trống trong HTML (Empty Line Markdown Parser Breakout)**: Tuyệt đối không để dòng trống (`\n\n`) ngắt quãng giữa các thẻ `<div>` trong chuỗi HTML đa dòng (`unsafe_allow_html=True`). Bộ phân tích Markdown của Python sẽ ngắt chế độ khối HTML và xem các dòng thụt lề tiếp theo là mã nguồn thô (`<pre><code>`), làm rò rỉ mã HTML ra giao diện.
+  - Tuyệt đối không để thụt lề 4 dấu cách (4 spaces) sau một dòng trống trong chuỗi HTML.
+- **Trong Streamlit Radio & Widget Custom CSS**:
+  - Khi dùng `st.radio(..., label_visibility="collapsed")`, Streamlit vẫn tạo ra một thẻ `<label data-testid="stWidgetLabel">` rỗng làm phần tử con đầu tiên của `div[data-testid="stRadio"]`.
+  - **Tuyệt đối không dùng selector chung chung `div[data-testid="stRadio"] label:nth-child(1)`** vì nó sẽ chọn nhầm nhãn rỗng này thay vì phần tử menu thực sự.
+  - **Luôn chỉ định selector chính xác**: `div[data-testid="stRadio"] div[role="radiogroup"] > label` và ẩn nhãn rỗng: `div[data-testid="stRadio"] > label { display: none !important; }`.
 - **Trong Mở Cửa Sổ Trình Duyệt Mới (`window.open`)**:
   - Không sử dụng `data:text/html;base64` cho điều hướng cấp cao (bị trình duyệt chặn bảo mật). Luôn dùng **W3C Blob URL** (`URL.createObjectURL(new Blob(...))`).
 

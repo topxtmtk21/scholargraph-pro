@@ -137,3 +137,92 @@ Trên màn hình cảm ứng di động/tablet (không có sự kiện rê chu�
    - Lọc nhanh các thẻ định nghĩa thuật ngữ, quy ước màu và hướng dẫn sử dụng ngay khi người dùng gõ từ khóa vào ô tìm kiếm của Drawer.
 3. **Diễn Giải Ngữ Cảnh Khi Lọc Dữ Liệu (Filter Context Awareness)**:
    - Khi một đối tượng hiển thị cô lập do bộ lọc (Filter Active), giao diện phải giải thích rõ ràng lý do liên kết bị ẩn để người dùng không bị hiểu lầm là lỗi dữ liệu.
+
+---
+
+## 🧭 9. Quy Chuẩn Thanh Công Cụ 1 Dòng Tinh Gọn & Popover Tự Đóng (Single-Row Toolbar & Click-Outside Popovers)
+
+Khi một giao diện trực quan hóa dữ liệu có hơn 10 nút bấm điều khiển:
+1. **Tuyệt đối không để `flex-wrap: wrap` tràn thành 2 hàng** làm che khuất đồ thị hoặc khung hiển thị chính.
+2. **Kiến trúc phân nhóm điều khiển**:
+   - **Thanh chính (Primary Bar)**: Chỉ giữ lại các thao tác cốt lõi nhất: `👁️ Focus Mode`, `🔍 Tìm kiếm`, `📑 Lọc tầng ▾`, `⚡ Phân loại ▾`, `🕸️ Bố cục ▾`, `⚡ Tốc độ (Slider)`, `🔍+`, `🔍-`, `⛶ Toàn màn hình`.
+   - **Khay Popover Tùy Biến (`✨ Hiệu ứng ▾`)**: Gom toàn bộ các toggle hiệu ứng phụ (Hạt photon, Tia laser, Hào quang nhịp thở, Mũi tên động, Đổi chế độ nhãn, Tua năm, Truy vết phả hệ) vào một Popover dạng kính mờ gọn gàng.
+3. **Cơ chế tự đóng khi nhấp ngoài (Click-Outside Auto-Dismiss)**:
+   - Luôn lắng nghe sự kiện `document.addEventListener('click', ...)` để tự động đóng Popover khi người dùng nhấp chuột vào bất kỳ vị trí nào khác trên canvas.
+
+---
+
+## 📜 10. Triệt Tiêu Thanh Cuộn Lồng Cục Bộ (Zero Nested Inner Scrollbars in Master-Detail Decks)
+
+1. **Hiện tượng lỗi**: Khi khung hiển thị chi tiết (Bottom Deck) đã có chiều cao rộng rãi (ví dụ: $750\text{px}$), nhưng các phần tử con (như Tóm tắt, Nhánh đồng trích dẫn) lại bị gán cứng `max-height: 85px; overflow-y: auto;`, dẫn đến việc xuất hiện các thanh cuộn con xấu xí và chật chội trong khi khoảng trống bên ngoài bị lãng phí.
+2. **Quy tắc Vàng**:
+   - Gỡ bỏ hoàn toàn `max-height` và `overflow-y: auto` trên các khối nội dung con (`#selAbstract`, `#selLineageList`, `.detail-abstract-pane`, `.detail-cocitation-pane`).
+   - Thiết lập `max-height: none; overflow-y: visible;` để văn bản tóm tắt và cây phả hệ mở rộng mượt mà, hòa nhập tự nhiên vào tổng thể khung hiển thị.
+
+---
+
+## 📱 11. Suy Giảm Mượt Mà Cảm Ứng vs Rê Chuột (Hover-to-Inline Touch Graceful Degradation)
+
+1. **Vấn đề trên màn hình cảm ứng (Mobile/Tablet)**: Trên thiết bị di động, thao tác chuột `:hover` không tồn tại, khiến các thẻ giải nghĩa bay (`.topo-tooltip-box`) không thể kích hoạt hoặc bị hiển thị sai lệch/tràn màn hình.
+2. **Giải pháp Responsive tự động chuyển đổi**:
+   ```css
+   /* Desktop: Hover hiện Tooltip bay */
+   @media (min-width: 769px) {
+       .topo-tooltip-box {
+           position: absolute;
+           visibility: hidden;
+           opacity: 0;
+           bottom: 108%;
+           left: 50%;
+           transform: translateX(-50%) translateY(8px);
+           transition: all 0.2s ease-out;
+       }
+       .topo-badge-item:hover .topo-tooltip-box {
+           visibility: visible;
+           opacity: 1;
+           transform: translateX(-50%) translateY(0);
+       }
+   }
+   /* Mobile/Tablet: Tự động chuyển thành khối thẻ mở rộng trực tiếp (Inline Card) */
+   @media (max-width: 768px) {
+       .topo-hover-container {
+           grid-template-columns: 1fr;
+           gap: 10px;
+       }
+       .topo-tooltip-box {
+           position: static;
+           visibility: visible;
+           opacity: 1;
+           transform: none;
+           width: 100%;
+           box-sizing: border-box;
+           margin-top: 8px;
+           pointer-events: auto;
+       }
+   }
+   ```
+
+---
+
+## 🔲 12. Thiết Kế Menu Chuẩn Khung 4 Cạnh & Chữ Tương Phản Cao (4-Sided Perimeter Boxed Menu)
+
+1. **Bo màu toàn bộ 4 cạnh (Perimeter Border)**:
+   - Tránh dùng viền 1 cạnh bất đối xứng (`border-left`) gây cảm giác lệch mép.
+   - Luôn sử dụng viền 4 cạnh hoàn chỉnh: `border: 1.5px solid <Theme Color>; border-radius: 10px;`.
+2. **Màu nền phân định sâu & Hiệu ứng Gradient khi chọn**:
+   - Từng ô menu có màu nền tối sâu thẳm theo sắc tố riêng (`#0B192C`, `#08211B`, `#241A06`, v.v.).
+   - Khi chọn (`:has(input:checked)`), chuyển sang dải màu Gradient phát sáng: `linear-gradient(135deg, rgba(accent_rgb, 0.35) 0%, #bg_dark 100%)`.
+3. **Độ tương phản chữ tuyệt đối**:
+   - Chữ tiêu đề: `color: #FFFFFF !important; font-weight: 700 / 800; font-size: 13px;`
+   - Đổ bóng chữ: `text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);` đảm bảo chữ luôn nổi bật và không bao giờ bị chìm/trộn lẫn vào bất kỳ màu nền nào.
+4. **Căn đều chiều ngang 100% (Equal Width Rule)**:
+   - Thiết lập `width: 100% !important; box-sizing: border-box !important;` cho toàn bộ các ô radio/menu để các khối chữ nhật luôn có bề ngang bằng nhau tuyệt đối.
+
+---
+
+## 📦 13. Hộp Gom Tải Hàng Loạt & Nén ZIP Tức Thời (Batch Asset Aggregator & Instant ZIP Downloader)
+
+Trong các màn hình quản lý tài liệu, soạn thảo hay trích dẫn:
+1. Luôn cung cấp một **Hộp gom nhanh tài liệu có bản toàn văn (Open Access / PDF)** ngay đầu danh mục.
+2. Tích hợp nút kiểm nhanh **"✓ Chọn tất cả"** kết hợp với danh sách lọc đa mục (`st.multiselect`).
+3. Cung cấp nút hành động 1-click **`📦 NÉN & TẢI XUỐNG TẤT CẢ TÀI LIỆU ĐÃ CHỌN (.ZIP)`** thực hiện tải ngầm và đóng gói tệp nén ZIP trong bộ nhớ, cho phép người dùng tải về máy toàn bộ tài liệu nghiên cứu trong một lần bấm duy nhất.
