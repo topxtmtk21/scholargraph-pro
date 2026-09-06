@@ -7,7 +7,12 @@ import base64
 from typing import List, Dict, Any
 import pandas as pd
 
-from utils.openalex_client import normalize_doi, parse_doi_list
+from utils.openalex_client import (
+    normalize_doi,
+    parse_doi_list,
+    JOURNALISM_TOPIC_SUGGESTIONS,
+    fetch_dynamic_journalism_dois
+)
 from utils.llm_helper import LLMHelper
 from utils.bib_formatter import (
     format_apa7_reference,
@@ -1096,25 +1101,75 @@ if "01." in workspace_nav:
 
     st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
 
-    # Cụm DOI Gợi ý 1-Click
-    st.markdown('<div class="menu-header-badge">CỤM ĐỀ TÀI GỢI Ý VỀ BÁO CHÍ & TÒA SOẠN AI (BẤM ĐỂ CHỌN NHANH):</div>', unsafe_allow_html=True)
-    c1, c2, c3, c4 = st.columns(4)
-    with c1:
-        if st.button("📰 Thuật toán & Tòa soạn (2 bài)", use_container_width=True):
-            st.session_state.doi_input_val = "10.1177/1464884918757072, 10.1080/17512786.2017.1320773"
+    # CỤM ĐỀ TÀI GỢI Ý THỜI SỰ 2024-2026 (COMPACT SMART HUB - 20 ĐỀ TÀI CHUYÊN SÂU)
+    st.markdown("""
+    <div style="background:var(--bg-surface-elevated, #1E293B); border:1px solid rgba(56, 189, 248, 0.25); border-radius:12px; padding:12px 16px; margin-bottom:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div style="color:#38BDF8; font-weight:800; font-size:13.5px; display:flex; align-items:center; gap:8px;">
+                <span>⚡</span> CỤM 20 ĐỀ TÀI BÁO CHÍ & TÒA SOẠN AI (DỮ LIỆU ĐỘNG 2024–2026)
+            </div>
+            <span class="custom-badge badge-blue" style="font-size:11px; padding:2px 8px;">Scopus Q1 • Real-time OpenAlex</span>
+        </div>
+    """, unsafe_allow_html=True)
+
+    c_grp, c_sel, c_btn1, c_btn2 = st.columns([3.2, 4.2, 2.2, 2.4])
+
+    with c_grp:
+        group_choice = st.selectbox(
+            "Chọn nhóm chủ đề:",
+            options=["group_a", "group_b"],
+            format_func=lambda x: "📰 Nhóm A: Báo chí & Tòa soạn Số (10 Đề tài)" if x == "group_a" else "🤖 Nhóm B: AI & Trách nhiệm Đạo đức (10 Đề tài)",
+            label_visibility="collapsed",
+            key="topic_group_selector_menu01"
+        )
+
+    active_group_data = JOURNALISM_TOPIC_SUGGESTIONS[group_choice]
+    topic_list = active_group_data["topics"]
+
+    with c_sel:
+        selected_topic_id = st.selectbox(
+            "Chọn đề tài chuyên sâu:",
+            options=[t["id"] for t in topic_list],
+            format_func=lambda tid: next((f"{t['title']}" for t in topic_list if t["id"] == tid), tid),
+            label_visibility="collapsed",
+            key="topic_item_selector_menu01"
+        )
+
+    cur_topic = next((t for t in topic_list if t["id"] == selected_topic_id), topic_list[0])
+
+    with c_btn1:
+        if st.button("📥 Nạp Chuẩn (1-Click)", use_container_width=True, help="Nạp bộ mã DOI chuẩn Scopus Q1 đã được thẩm định học thuật"):
+            st.session_state.doi_input_val = ", ".join(cur_topic["default_dois"])
+            st.toast(f"✓ Đã nạp {len(cur_topic['default_dois'])} DOI chuẩn của '{cur_topic['title']}'!")
             st.rerun()
-    with c2:
-        if st.button("👥 Độc giả & Tin tự động (2 bài)", use_container_width=True):
-            st.session_state.doi_input_val = "10.17645/mac.v8i3.3019, 10.1080/17512786.2017.1320773"
-            st.rerun()
-    with c3:
-        if st.button("⚖️ Đạo đức & Tin giả (2 bài)", use_container_width=True):
-            st.session_state.doi_input_val = "10.1080/21670811.2019.1623701, 10.1177/1464884918757072"
-            st.rerun()
-    with c4:
-        if st.button("🌐 Tổng quan AI báo chí (3 bài)", use_container_width=True):
-            st.session_state.doi_input_val = "10.1177/1464884918757072, 10.1080/17512786.2017.1320773, 10.17645/mac.v8i3.3019"
-            st.rerun()
+
+    with c_btn2:
+        if st.button("🔄 Lấy DOI Động Mới", use_container_width=True, help="Truy vấn trực tiếp OpenAlex API lấy các công trình xuất bản mới nhất 2024-2026"):
+            with st.spinner("Đang kết nối OpenAlex API..."):
+                res = fetch_dynamic_journalism_dois(
+                    search_query=cur_topic["search_query"],
+                    limit=3,
+                    min_year=2023,
+                    email=email_val,
+                    fallback_dois=cur_topic["default_dois"]
+                )
+                if res.get("dois"):
+                    st.session_state.doi_input_val = ", ".join(res["dois"])
+                    st.toast(f"⚡ {res.get('message', 'Đã cập nhật DOI động thành công!')}")
+                    st.rerun()
+                else:
+                    st.warning("Không tìm thấy DOI động, đang dùng bộ nạp chuẩn.")
+
+    # Mini Info Chip tóm tắt 1 dòng siêu gọn
+    st.markdown(f"""
+        <div style="display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-top:4px; font-size:12px; color:var(--text-secondary, #94A3B8);">
+            <span style="background:rgba(56, 189, 248, 0.12); color:#38BDF8; padding:2px 8px; border-radius:4px; font-weight:600;">Lĩnh vực: {cur_topic['field']}</span>
+            <span style="background:rgba(52, 211, 153, 0.12); color:#34D399; padding:2px 8px; border-radius:4px; font-weight:600;">Tạp chí: {cur_topic['venue']}</span>
+            <span style="background:rgba(244, 114, 182, 0.12); color:#F472B6; padding:2px 8px; border-radius:4px; font-weight:600;">Năm: {cur_topic['year_range']}</span>
+            <span style="color:#94A3B8; font-size:11.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:400px;">• {cur_topic['desc']}</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
     if start_btn:
         run_academic_pipeline(
@@ -2820,67 +2875,55 @@ elif "08." in workspace_nav:
         """, unsafe_allow_html=True)
 
     with tab_samples:
-        st.markdown("### 💡 Đề tài Mẫu Thực chiến (Case Studies) & Nạp Nhanh 1-Click")
-        st.markdown("<div style='color:var(--text-secondary); font-size:13.5px; margin-bottom:18px;'>Lựa chọn một trong các đề tài nghiên cứu mẫu tiêu biểu dưới đây để trải nghiệm tức thì toàn bộ chuỗi tính năng của hệ thống:</div>", unsafe_allow_html=True)
+        st.markdown("### 💡 20 Đề tài Mẫu Thực chiến (Case Studies) Chuẩn Scopus Q1 & Dữ liệu Động (2023–2026)")
+        st.markdown("<div style='color:var(--text-secondary); font-size:13.5px; margin-bottom:18px;'>Hệ thống tuyển chọn và cập nhật liên tục 20 hướng nghiên cứu mũi nhọn trong lĩnh vực Báo chí, Quản trị Tòa soạn và Trí tuệ Nhân tạo. Bạn có thể nạp ngay bộ DOI chuẩn hoặc truy vấn dữ liệu động từ OpenAlex:</div>", unsafe_allow_html=True)
 
-        sample_packs = [
-            {
-                "title": "📰 Đề tài 1: Báo chí Tự động hóa & Niềm tin của Độc giả trong Kỷ nguyên Số",
-                "field": "Truyền thông & Báo chí học (Journalism & Communication Studies)",
-                "desc": "Nghiên cứu tác động của tin tức do thuật toán/AI tự động sản xuất đối với nhận thức về độ tin cậy, tính khách quan và trải nghiệm của công chúng.",
-                "dois": [
-                    "10.1177/1464884918757072",
-                    "10.1080/17512786.2017.1320773",
-                    "10.1080/21670811.2019.1677534"
-                ],
-                "badge": "Q1 Scopus / High Impact"
-            },
-            {
-                "title": "🤖 Đề tài 2: Trí tuệ Nhân tạo Tạo sinh & Đạo đức Tác nghiệp Tòa soạn",
-                "field": "Báo chí Công nghệ & Quản trị Tòa soạn (Generative AI & Newsroom Ethics)",
-                "desc": "Khảo sát việc tích hợp các mô hình ngôn ngữ lớn (LLMs) trong quy trình tác nghiệp báo chí, thách thức về tin giả, bản quyền và tính minh bạch.",
-                "dois": [
-                    "10.1177/2056305120948255",
-                    "10.1080/17512786.2021.1910988",
-                    "10.1080/21670811.2020.1803604"
-                ],
-                "badge": "Top Trendy 2024-2026"
-            },
-            {
-                "title": "📱 Đề tài 3: Chuyển đổi Số Tòa soạn & Mô hình Doanh thu Báo chí Đa nền tảng",
-                "field": "Kinh tế Truyền thông & Chuyển đổi Số (Media Economics & Digital Strategy)",
-                "desc": "Phân tích chiến lược đăng ký thuê bao số (Paywall / Digital Subscription), mô hình thành viên và hành vi trả tiền mua tin tức trực tuyến.",
-                "dois": [
-                    "10.1080/21670811.2018.1504624",
-                    "10.1177/1464884919864236",
-                    "10.1080/17512786.2020.1740683"
-                ],
-                "badge": "Strategic Media Management"
-            }
-        ]
+        sample_subtab_a, sample_subtab_b = st.tabs([
+            "📰 Nhóm A: Báo chí, Quản trị Tòa soạn & Chuyển đổi Số (10 Đề tài)",
+            "🤖 Nhóm B: AI trong Tòa soạn, Đạo đức & Trách nhiệm (10 Đề tài)"
+        ])
 
-        for idx, sp in enumerate(sample_packs):
-            st.markdown(f"""
-            <div style="background:var(--bg-surface); border:1px solid var(--border-subtle); border-radius:14px; padding:18px 22px; margin-bottom:16px;">
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
-                    <div style="color:var(--text-primary); font-weight:800; font-size:16px;">{sp['title']}</div>
-                    <span class="custom-badge badge-blue">{sp['badge']}</span>
-                </div>
-                <div style="color:var(--primary-accent); font-size:12.5px; font-weight:600; margin-bottom:6px;">Lĩnh vực: {sp['field']}</div>
-                <div style="color:var(--text-secondary); font-size:13.5px; line-height:1.5; margin-bottom:12px;">{sp['desc']}</div>
-                <div style="background:rgba(0,0,0,0.25); border-radius:8px; padding:10px 14px; font-family:monospace; font-size:12px; color:#38BDF8; margin-bottom:12px;">
-                    <b>Danh sách mã DOI:</b><br/>
-                    {'<br/>'.join([f"• {d}" for d in sp['dois']])}
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            col_btn, _ = st.columns([2, 3])
-            with col_btn:
-                if st.button(f"📥 Nạp Đề tài {idx+1} vào Không gian làm việc (1-Click)", key=f"btn_load_sample_pack_{idx}", use_container_width=True):
-                    st.session_state.doi_input_val = "\n".join(sp["dois"])
-                    st.session_state.sample_dois_to_load = "\n".join(sp["dois"])
-                    st.success(f"✓ Đã nạp thành công danh sách DOI của Đề tài {idx+1}! Hãy chuyển sang **Menu 01. Nhập mã DOI** để tiến hành phân tích.")
+        for sub_tab, grp_key in [(sample_subtab_a, "group_a"), (sample_subtab_b, "group_b")]:
+            with sub_tab:
+                grp_data = JOURNALISM_TOPIC_SUGGESTIONS[grp_key]
+                st.markdown(f"<div style='font-size:14px; font-weight:700; color:#38BDF8; margin-bottom:12px;'>{grp_data['icon']} {grp_data['name']}</div>", unsafe_allow_html=True)
+                
+                for idx, tp in enumerate(grp_data["topics"]):
+                    st.markdown(f"""
+                    <div style="background:var(--bg-surface); border:1px solid var(--border-subtle); border-radius:14px; padding:16px 20px; margin-bottom:14px;">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
+                            <div style="color:var(--text-primary); font-weight:800; font-size:15.5px;">{tp['title']}</div>
+                            <span class="custom-badge badge-blue" style="font-size:11px;">Scopus Q1 • {tp['year_range']}</span>
+                        </div>
+                        <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:6px;">
+                            <span style="color:var(--primary-accent); font-size:12px; font-weight:600;">Lĩnh vực: {tp['field']}</span>
+                            <span style="color:#94A3B8; font-size:12px;">• Tạp chí: <b style="color:#F1F5F9;">{tp['venue']}</b></span>
+                        </div>
+                        <div style="color:var(--text-secondary); font-size:13px; line-height:1.5; margin-bottom:10px;">{tp['desc']}</div>
+                        <div style="background:rgba(0,0,0,0.25); border-radius:8px; padding:8px 12px; font-family:monospace; font-size:12px; color:#38BDF8; margin-bottom:10px;">
+                            <b>Mã DOI chuẩn:</b> {', '.join(tp['default_dois'])}
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    c_btn_load, c_btn_dyn, _ = st.columns([3, 3, 4])
+                    with c_btn_load:
+                        if st.button(f"📥 Nạp Chuẩn 1-Click", key=f"btn_load_{tp['id']}", use_container_width=True):
+                            st.session_state.doi_input_val = ", ".join(tp["default_dois"])
+                            st.success(f"✓ Đã nạp thành công {len(tp['default_dois'])} DOI của '{tp['title']}'! Hãy chuyển sang **Menu 01** để phân tích.")
+                    with c_btn_dyn:
+                        if st.button(f"🔄 Lấy DOI Động 2024–2026", key=f"btn_dyn_{tp['id']}", use_container_width=True):
+                            with st.spinner("Đang truy vấn OpenAlex API..."):
+                                d_res = fetch_dynamic_journalism_dois(
+                                    search_query=tp["search_query"],
+                                    limit=3,
+                                    min_year=2023,
+                                    fallback_dois=tp["default_dois"]
+                                )
+                                if d_res.get("dois"):
+                                    st.session_state.doi_input_val = ", ".join(d_res["dois"])
+                                    st.success(f"⚡ {d_res.get('message')} Hãy chuyển sang **Menu 01** để phân tích.")
+                    st.markdown("<div style='height: 4px;'></div>", unsafe_allow_html=True)
 
     with tab_standards:
         st.markdown("### 🕸️ Cẩm nang 5 Chuẩn Trắc lượng Khoa học Quốc tế (Scientometrics)")

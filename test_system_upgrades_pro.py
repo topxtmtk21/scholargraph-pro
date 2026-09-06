@@ -15,6 +15,7 @@ import sys
 import json
 import zipfile
 import io
+import pytest
 
 def test_module_1_latex_export():
     print("\n=== [1/7] KIỂM TRA MÔ ĐUN XUẤT BẢN LATEX / OVERLEAF (.TEX & .ZIP) ===")
@@ -153,6 +154,7 @@ def test_module_4_comparative_matrix():
 
 def test_module_5_presentation_deck_12_slides():
     print("\n=== [5/7] KIỂM TRA MÔ ĐUN BỘ SLIDE HỘI THẢO QUỐC TẾ (12 SLIDES .PPTX) ===")
+    pytest.importorskip("pptx")
     from utils.slide_generator import create_presentation_deck
     from pptx import Presentation
 
