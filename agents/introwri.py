@@ -27,7 +27,7 @@ class IntroWriAgent:
         """
         seeds = seed_paper if isinstance(seed_paper, list) else [seed_paper]
 
-        citation_pattern = re.compile(r"\[([^\]]+?,\s*\d{4}[^\]]*?)\]|\[([A-Za-z0-9_-]+?\d{4}[A-Za-z0-9_-]*)\]")
+        citation_pattern = re.compile(r"[\(\[]([^\)\]\n]+?,\s*\d{4}[^\)\]\n]*?)[\)\]]|\[([A-Za-z0-9_-]+?\d{4}[A-Za-z0-9_-]*)\]")
         matches = citation_pattern.findall(manuscript_text)
 
         raw_citations = []

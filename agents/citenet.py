@@ -192,10 +192,10 @@ class CiteNetAgent:
         (chỉ hiển thị Header HUD Bar + Slim Left Dock + Canvas mạng lưới phát sáng 100vh toàn màn hình).
         """
         is_standalone = standalone_fullscreen or hide_bottom_panels
-        deck_height_css = "height: 100vh; min-height: 100vh;" if is_standalone else "height: 860px; min-height: 860px;"
-        middle_height_css = "height: calc(100vh - 76px); min-height: calc(100vh - 76px);" if is_standalone else "height: 540px; min-height: 480px;"
+        deck_height_css = "height: 100vh; min-height: 100vh;" if is_standalone else "height: 1560px; min-height: 1500px;"
+        middle_height_css = "height: calc(100vh - 76px); min-height: calc(100vh - 76px);" if is_standalone else "height: 740px; min-height: 700px;"
         bottom_display_css = "display: none !important;" if is_standalone else "display: grid;"
-        body_min_height_css = "min-height: 100vh;" if is_standalone else "min-height: 860px;"
+        body_min_height_css = "min-height: 100vh;" if is_standalone else "min-height: 1560px;"
         
         # Bảng màu Kim Cương Tri Thức Đa Tầng Mặc Định (Synapse Cyan Theme)
         color_map = {
@@ -1272,8 +1272,8 @@ class CiteNetAgent:
             {bottom_display_css}
             grid-template-columns: 1fr 1.25fr;
             gap: 10px;
-            height: 250px;
-            min-height: 230px;
+            height: 750px;
+            min-height: 700px;
             flex-shrink: 0;
             transition: height 0.25s ease;
         }}

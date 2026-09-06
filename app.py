@@ -407,24 +407,25 @@ with st.sidebar:
             st.rerun()
 
     # 🎨 CHỌN GIAO DIỆN HỌC THUẬT (10 BỘ THEME TƯƠNG PHẢN CAO)
-    st.markdown('<div class="menu-header-badge">🎨 GIAO DIỆN & THEME (10 BỘ)</div>', unsafe_allow_html=True)
+    # 🎨 CHỌN GIAO DIỆN HỌC THUẬT (10 BỘ THEME TƯƠNG PHẢN CAO - THU GỌN)
     all_themes_list = get_theme_list()
     theme_name_map = {t["name"]: t["id"] for t in all_themes_list}
     current_t_name = next((t["name"] for t in all_themes_list if t["id"] == st.session_state.selected_theme), all_themes_list[0]["name"])
     
-    sel_theme_choice = st.selectbox(
-        "Chọn giao diện học thuật:",
-        options=list(theme_name_map.keys()),
-        index=list(theme_name_map.keys()).index(current_t_name) if current_t_name in theme_name_map else 0,
-        label_visibility="collapsed",
-        key="sidebar_theme_picker_select"
-    )
-    chosen_theme_id = theme_name_map[sel_theme_choice]
-    if chosen_theme_id != st.session_state.selected_theme:
-        st.session_state.selected_theme = chosen_theme_id
-        st.rerun()
+    with st.expander("🎨 Giao diện & Theme (10 bộ)", expanded=False):
+        sel_theme_choice = st.selectbox(
+            "Chọn giao diện học thuật:",
+            options=list(theme_name_map.keys()),
+            index=list(theme_name_map.keys()).index(current_t_name) if current_t_name in theme_name_map else 0,
+            label_visibility="collapsed",
+            key="sidebar_theme_picker_select"
+        )
+        chosen_theme_id = theme_name_map[sel_theme_choice]
+        if chosen_theme_id != st.session_state.selected_theme:
+            st.session_state.selected_theme = chosen_theme_id
+            st.rerun()
 
-    st.markdown('<div class="menu-header-badge" style="margin-top:12px;">TRÌNH ĐƠN KHÔNG GIAN LÀM VIỆC</div>', unsafe_allow_html=True)
+    st.markdown('<div class="menu-header-badge" style="margin-top:10px;">TRÌNH ĐƠN KHÔNG GIAN LÀM VIỆC</div>', unsafe_allow_html=True)
     
     # Ma trận phân quyền động cho từng module
     nav_options = []
@@ -480,7 +481,6 @@ with st.sidebar:
     )
     st.session_state["workspace_nav"] = workspace_nav
 
-
     st.markdown("""
     <div style="background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 12px; font-size: 12px; margin-top: 14px;">
         <div style="margin-bottom: 6px; display:flex; justify-content:space-between;">
@@ -498,27 +498,41 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
 
-    # QUẢN LÝ ĐỀ TÀI & DỰ ÁN (SQLITE DATABASE)
+    # QUẢN LÝ ĐỀ TÀI & DỰ ÁN (SQLITE DATABASE - THU GỌN)
     can_manage_proj = has_feature_access(cur_auth, "project_save_delete", IS_CLOUD_ENV)
-    st.markdown('<div class="menu-header-badge" style="margin-top:16px;">QUẢN LÝ ĐỀ TÀI & DỰ ÁN (SQLITE)</div>', unsafe_allow_html=True)
-    
-    if st.session_state.pipeline_results and can_manage_proj:
-        with st.expander("💾 Lưu đề tài hiện tại", expanded=False):
+    with st.expander("📁 Quản lý đề tài & Dự án (SQLite)", expanded=False):
+        if st.session_state.pipeline_results and can_manage_proj:
+            st.markdown("<b>💾 Lưu đề tài hiện tại:</b>", unsafe_allow_html=True)
             save_name = st.text_input("Tên đề tài cần lưu:", value=f"Đề tài {time.strftime('%d/%m %H:%M')}", key="save_proj_name_input")
             if st.button("Lưu vào cơ sở dữ liệu", use_container_width=True, key="btn_save_proj"):
                 p_id = save_project(save_name, st.session_state.doi_input_val, st.session_state.pipeline_results)
                 st.success(f"✓ Đã lưu đề tài #{p_id} thành công!")
                 st.rerun()
 
-    saved_projects = list_projects()
-    if saved_projects:
-        proj_map = {f"#{p['id']} • {p['name']} ({p['total_papers']} bài)": p['id'] for p in saved_projects}
-        sel_proj_str = st.selectbox("Chọn đề tài đã lưu:", options=["-- Chọn đề tài để mở lại --"] + list(proj_map.keys()), label_visibility="collapsed")
-        if sel_proj_str != "-- Chọn đề tài để mở lại --":
-            if can_manage_proj:
-                col_open, col_del = st.columns([2, 1])
-                with col_open:
-                    if st.button("📂 Mở đề tài", use_container_width=True, key="btn_open_proj"):
+        saved_projects = list_projects()
+        if saved_projects:
+            proj_map = {f"#{p['id']} • {p['name']} ({p['total_papers']} bài)": p['id'] for p in saved_projects}
+            sel_proj_str = st.selectbox("Chọn đề tài đã lưu:", options=["-- Chọn đề tài để mở lại --"] + list(proj_map.keys()), label_visibility="collapsed")
+            if sel_proj_str != "-- Chọn đề tài để mở lại --":
+                if can_manage_proj:
+                    col_open, col_del = st.columns([2, 1])
+                    with col_open:
+                        if st.button("📂 Mở đề tài", use_container_width=True, key="btn_open_proj"):
+                            target_pid = proj_map[sel_proj_str]
+                            proj_data = load_project(target_pid)
+                            if proj_data and proj_data.get("pipeline_results"):
+                                st.session_state.pipeline_results = proj_data["pipeline_results"]
+                                st.session_state.doi_input_val = proj_data.get("dois_str", "")
+                                st.toast(f"Đã mở đề tài: {proj_data['name']}")
+                                st.rerun()
+                    with col_del:
+                        if st.button("🗑️ Xóa", use_container_width=True, key="btn_del_proj"):
+                            target_pid = proj_map[sel_proj_str]
+                            delete_project(target_pid)
+                            st.toast("Đã xóa đề tài khỏi cơ sở dữ liệu.")
+                            st.rerun()
+                else:
+                    if st.button("📂 Mở xem đề tài", use_container_width=True, key="btn_open_proj_viewer"):
                         target_pid = proj_map[sel_proj_str]
                         proj_data = load_project(target_pid)
                         if proj_data and proj_data.get("pipeline_results"):
@@ -526,21 +540,8 @@ with st.sidebar:
                             st.session_state.doi_input_val = proj_data.get("dois_str", "")
                             st.toast(f"Đã mở đề tài: {proj_data['name']}")
                             st.rerun()
-                with col_del:
-                    if st.button("🗑️ Xóa", use_container_width=True, key="btn_del_proj"):
-                        target_pid = proj_map[sel_proj_str]
-                        delete_project(target_pid)
-                        st.toast("Đã xóa đề tài khỏi cơ sở dữ liệu.")
-                        st.rerun()
-            else:
-                if st.button("📂 Mở xem đề tài", use_container_width=True, key="btn_open_proj_viewer"):
-                    target_pid = proj_map[sel_proj_str]
-                    proj_data = load_project(target_pid)
-                    if proj_data and proj_data.get("pipeline_results"):
-                        st.session_state.pipeline_results = proj_data["pipeline_results"]
-                        st.session_state.doi_input_val = proj_data.get("dois_str", "")
-                        st.toast(f"Đã mở đề tài: {proj_data['name']}")
-                        st.rerun()
+        else:
+            st.caption("Chưa có đề tài nào được lưu trong cơ sở dữ liệu.")
 
 # -----------------------------------------------------------------------------
 # THANH ĐIỀU HƯỚNG TRÊN CÙNG (GLOBAL SYNAPSE ACADEMIC HUD HEADER BAR)
@@ -1390,12 +1391,12 @@ document.getElementById('btnPopout').addEventListener('click', function() {{
             else:
                 st.button("🔒 Tải tệp HTML", disabled=True, use_container_width=True, help="Yêu cầu quyền Researcher/Admin để tải HTML mạng lưới.")
 
-        # Hiển thị sơ đồ tương tác chuẩn quốc tế (HUD Deck cao 890px đầy đủ các panel)
-        components.html(active_network_html, height=890, scrolling=True)
+        # Hiển thị sơ đồ tương tác chuẩn quốc tế (HUD Deck cao 1580px bao gồm bảng dữ liệu 3x)
+        components.html(active_network_html, height=1580, scrolling=True)
 
         st.markdown("<div style='height: 18px;'></div>", unsafe_allow_html=True)
 
-        # Gom nhóm liệt kê phân loại quyền truy cập, Phân tích khoảng trống & Tra cứu chi tiết
+        # Gom nhóm danh mục, Bản đồ khoảng trống & Quyền truy cập tài liệu
         st.markdown("### 📊 Gom nhóm danh mục, Bản đồ khoảng trống & Quyền truy cập tài liệu:")
         
         tab_topo_guide, tab_diamond_layers, tab_oa_group, tab_paywall_group, tab_timeline, tab_burst, tab_heatmap, tab_single_lookup = st.tabs([
@@ -1411,70 +1412,105 @@ document.getElementById('btnPopout').addEventListener('click', function() {{
 
         with tab_topo_guide:
             st.markdown("""
-            <div style="background:var(--bg-surface-elevated); border:1.5px solid var(--primary-accent); border-radius:14px; padding:18px 22px; margin-bottom:14px;">
-                <div style="font-size:16px; font-weight:800; color:var(--primary-accent); margin-bottom:6px;">
-                    📚 HỆ THỐNG THUẬT NGỮ & PHÂN LOẠI TOPO LIÊN KẾT TRÍCH DẪN QUỐC TẾ
+            <style>
+            .topo-hover-container {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+                gap: 12px;
+                margin-bottom: 16px;
+            }
+            .topo-badge-item {
+                position: relative;
+                background: var(--bg-surface-elevated, #1c202a);
+                border: 1px solid var(--border-subtle, rgba(255,255,255,0.1));
+                border-radius: 12px;
+                padding: 14px 16px;
+                cursor: pointer;
+                transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+                backdrop-filter: blur(12px);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            }
+            .topo-badge-item:hover {
+                transform: translateY(-2px);
+                border-color: var(--primary-accent, #38BDF8);
+                box-shadow: 0 8px 25px rgba(56, 189, 248, 0.2);
+            }
+            .topo-tooltip-box {
+                visibility: hidden;
+                opacity: 0;
+                position: absolute;
+                bottom: 108%;
+                left: 50%;
+                transform: translateX(-50%) translateY(8px);
+                width: 290px;
+                background: #0f172a;
+                border: 1px solid #38BDF8;
+                border-radius: 10px;
+                padding: 12px 14px;
+                color: #F8FAFC;
+                font-size: 12px;
+                line-height: 1.55;
+                box-shadow: 0 16px 36px rgba(0,0,0,0.65);
+                transition: all 0.2s ease-out;
+                z-index: 99999;
+                pointer-events: none;
+            }
+            .topo-badge-item:hover .topo-tooltip-box {
+                visibility: visible;
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+            </style>
+
+            <div style="background:var(--bg-surface-elevated); border:1px solid var(--border-subtle); border-radius:12px; padding:12px 18px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <span style="font-weight:800; color:var(--primary-accent); font-size:14px;">📚 HỆ THỐNG THUẬT NGỮ & PHÂN LOẠI TOPO LIÊN KẾT TRÍCH DẪN QUỐC TẾ</span>
+                    <span style="font-size:12.5px; color:var(--text-secondary); margin-left:10px;">(Rê chuột / Hover vào từng thẻ bên dưới để xem định nghĩa, ý nghĩa học thuật & ví dụ thực tế)</span>
                 </div>
-                <div style="font-size:13px; color:var(--text-secondary); line-height:1.6;">
-                    Mô hình <b>Bidirectional Diamond Knowledge Graph</b> phân định 4 loại hình liên kết bản chất tri thức học thuật:
+            </div>
+
+            <div class="topo-hover-container">
+                <div class="topo-badge-item" style="border-left: 4px solid #10B981;">
+                    <div style="font-size:13px; font-weight:800; color:#34D399; margin-bottom:3px;">🟢 CÙNG PHÂN TẦNG (INTRA-LAYER)</div>
+                    <div style="font-size:11.5px; color:var(--text-secondary);">Liên kết đồng thế hệ (F1 ➔ F1, R1 ➔ R1)</div>
+                    <div class="topo-tooltip-box">
+                        <div style="font-weight:800; color:#34D399; margin-bottom:4px;">🟢 CÙNG PHÂN TẦNG (INTRA-LAYER)</div>
+                        <div style="margin-bottom:6px;"><b>Định nghĩa:</b> Trích dẫn giữa các công trình nghiên cứu cùng một thế hệ phân tầng tri thức.</div>
+                        <div style="color:#CBD5E1; font-size:11px; background:rgba(0,0,0,0.35); padding:6px 8px; border-radius:6px;">💡 <b>Ý nghĩa & Ví dụ:</b> Song hành kiểm chứng chéo mô hình hoặc bổ trợ thực chứng trong cùng bối cảnh thời gian. Ví dụ: Hai bài báo 2024 về ứng dụng ChatGPT trong tòa soạn trích dẫn chéo nhau.</div>
+                    </div>
+                </div>
+
+                <div class="topo-badge-item" style="border-left: 4px solid #A855F7;">
+                    <div style="font-size:13px; font-weight:800; color:#C084FC; margin-bottom:3px;">🔮 BẮC CẦU XUYÊN TẦNG (CROSS-BRIDGE)</div>
+                    <div style="font-size:11.5px; color:var(--text-secondary);">Liên kết nhảy cóc (F3 ➔ R1/R2)</div>
+                    <div class="topo-tooltip-box">
+                        <div style="font-weight:800; color:#C084FC; margin-bottom:4px;">🔮 BẮC CẦU XUYÊN TẦNG (CROSS-BRIDGE)</div>
+                        <div style="margin-bottom:6px;"><b>Định nghĩa:</b> Trích dẫn vượt cấp cách xa nhau mà không qua tầng trung gian.</div>
+                        <div style="color:#CBD5E1; font-size:11px; background:rgba(0,0,0,0.35); padding:6px 8px; border-radius:6px;">💡 <b>Ý nghĩa & Ví dụ:</b> Neo trực tiếp vào nền tảng lý thuyết kinh điển ban đầu, tạo bước nhảy vọt tư duy. Ví dụ: Bài báo 2025 về AI Journalism trích dẫn trực tiếp lý thuyết Gatekeeping năm 1950.</div>
+                    </div>
+                </div>
+
+                <div class="topo-badge-item" style="border-left: 4px solid #F59E0B;">
+                    <div style="font-size:13px; font-weight:800; color:#FDE047; margin-bottom:3px;">🔶 ĐỐI THOẠI HAI CHIỀU (RECIPROCAL)</div>
+                    <div style="font-size:11.5px; color:var(--text-secondary);">Trích dẫn song phương tương hỗ (A ↔ B)</div>
+                    <div class="topo-tooltip-box">
+                        <div style="font-weight:800; color:#FDE047; margin-bottom:4px;">🔶 ĐỐI THOẠI HAI CHIỀU (RECIPROCAL)</div>
+                        <div style="margin-bottom:6px;"><b>Định nghĩa:</b> Hai công trình trích dẫn qua lại lẫn nhau (A trích dẫn B và B trích dẫn A).</div>
+                        <div style="color:#CBD5E1; font-size:11px; background:rgba(0,0,0,0.35); padding:6px 8px; border-radius:6px;">💡 <b>Ý nghĩa & Ví dụ:</b> Hai trường phái trực tiếp tranh luận, phản biện chuyên sâu hoặc đồng kiến tạo lý thuyết mới. Ví dụ: Nhóm A đề xuất khung đạo đức, nhóm B phản biện, nhóm A tiếp thu hoàn thiện.</div>
+                    </div>
+                </div>
+
+                <div class="topo-badge-item" style="border-left: 4px solid #0284C7;">
+                    <div style="font-size:13px; font-weight:800; color:#38BDF8; margin-bottom:3px;">🔷 KẾ THỪA MỘT CHIỀU (DIRECT)</div>
+                    <div style="font-size:11.5px; color:var(--text-secondary);">Trích dẫn đơn hướng kế thừa (A ➔ B)</div>
+                    <div class="topo-tooltip-box">
+                        <div style="font-weight:800; color:#38BDF8; margin-bottom:4px;">🔷 KẾ THỪA MỘT CHIỀU (DIRECT)</div>
+                        <div style="margin-bottom:6px;"><b>Định nghĩa:</b> Trích dẫn thông thường đơn hướng theo dòng thời gian.</div>
+                        <div style="color:#CBD5E1; font-size:11px; background:rgba(0,0,0,0.35); padding:6px 8px; border-radius:6px;">💡 <b>Ý nghĩa & Ví dụ:</b> Kế thừa phương pháp, dữ liệu hoặc phát hiện thực nghiệm từ công trình nguồn để phát triển nghiên cứu tiếp theo.</div>
+                    </div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
-
-            topo_c1, topo_c2 = st.columns(2, gap="medium")
-            with topo_c1:
-                st.markdown("""
-                <div style="background:rgba(52, 211, 153, 0.08); border:1px solid #10B981; border-radius:12px; padding:14px 16px; margin-bottom:12px;">
-                    <div style="font-size:13.5px; font-weight:800; color:#34D399; margin-bottom:4px;">
-                        🟢 1. CÙNG PHÂN TẦNG (INTRA-LAYER)
-                    </div>
-                    <div style="font-size:12.5px; color:var(--text-primary); line-height:1.55; margin-bottom:6px;">
-                        <b>Định nghĩa:</b> Liên kết trích dẫn giữa các công trình nghiên cứu thuộc cùng một thế hệ hoặc cùng một phân tầng tri thức (F1 ➔ F1, R1 ➔ R1).
-                    </div>
-                    <div style="font-size:12px; color:var(--text-secondary); line-height:1.5; background:rgba(0,0,0,0.25); padding:8px 10px; border-radius:8px;">
-                        💡 <b>Ý nghĩa & Ví dụ:</b> Các nhóm tác giả song hành kiểm chứng chéo mô hình, chia sẻ tập dữ liệu hoặc bổ trợ thực chứng cho nhau trong cùng bối cảnh lịch sử. Ví dụ: Hai bài báo cùng xuất bản năm 2024 khảo sát việc ứng dụng ChatGPT trong tòa soạn tin tức tại Châu Âu và Châu Á trích dẫn bổ sung cho nhau.
-                    </div>
-                </div>
-
-                <div style="background:rgba(192, 132, 252, 0.08); border:1px solid #A855F7; border-radius:12px; padding:14px 16px; margin-bottom:12px;">
-                    <div style="font-size:13.5px; font-weight:800; color:#C084FC; margin-bottom:4px;">
-                        🔮 2. BẮC CẦU XUYÊN TẦNG (CROSS-BRIDGE)
-                    </div>
-                    <div style="font-size:12.5px; color:var(--text-primary); line-height:1.55; margin-bottom:6px;">
-                        <b>Định nghĩa:</b> Liên kết nhảy cóc giữa các tầng cách xa nhau (ví dụ: F3 trực tiếp trích dẫn R1 hoặc R2 mà không qua các tầng trung gian F1/F0).
-                    </div>
-                    <div style="font-size:12px; color:var(--text-secondary); line-height:1.5; background:rgba(0,0,0,0.25); padding:8px 10px; border-radius:8px;">
-                        💡 <b>Ý nghĩa & Ví dụ:</b> Bước tiến nghiên cứu mới tái khám phá và neo trực tiếp vào nền tảng lý thuyết kinh điển ban đầu, tạo bước nhảy vọt tư duy hoặc phục hưng một trường phái tư tưởng. Ví dụ: Một bài báo năm 2025 về AI Agentic Journalism trích dẫn trực tiếp lý thuyết "Gatekeeping" năm 1950 của David Manning White.
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-
-            with topo_c2:
-                st.markdown("""
-                <div style="background:rgba(245, 158, 11, 0.08); border:1px solid #F59E0B; border-radius:12px; padding:14px 16px; margin-bottom:12px;">
-                    <div style="font-size:13.5px; font-weight:800; color:#FDE047; margin-bottom:4px;">
-                        🔶 3. ĐỐI THOẠI HAI CHIỀU (RECIPROCAL / MUTUAL)
-                    </div>
-                    <div style="font-size:12.5px; color:var(--text-primary); line-height:1.55; margin-bottom:6px;">
-                        <b>Định nghĩa:</b> Liên kết trích dẫn song phương tương hỗ (A trích dẫn B và B trích dẫn A, A ↔ B).
-                    </div>
-                    <div style="font-size:12px; color:var(--text-secondary); line-height:1.5; background:rgba(0,0,0,0.25); padding:8px 10px; border-radius:8px;">
-                        💡 <b>Ý nghĩa & Ví dụ:</b> Hai trường phái hoặc hai nhóm nghiên cứu đang trực tiếp tranh luận, phản biện học thuật chuyên sâu hoặc đồng kiến tạo một lý thuyết mới. Ví dụ: Nhóm tác giả A đề xuất khung đạo đức tin tức AI; nhóm tác giả B phản biện và mở rộng; sau đó nhóm A tiếp thu và hoàn thiện mô hình.
-                    </div>
-                </div>
-
-                <div style="background:rgba(56, 189, 248, 0.08); border:1px solid #0284C7; border-radius:12px; padding:14px 16px; margin-bottom:12px;">
-                    <div style="font-size:13.5px; font-weight:800; color:#38BDF8; margin-bottom:4px;">
-                        🔷 4. KẾ THỪA MỘT CHIỀU (DIRECT CITATION)
-                    </div>
-                    <div style="font-size:12.5px; color:var(--text-primary); line-height:1.55; margin-bottom:6px;">
-                        <b>Định nghĩa:</b> Liên kết trích dẫn thông thường đơn hướng theo thời gian (A ➔ B).
-                    </div>
-                    <div style="font-size:12px; color:var(--text-secondary); line-height:1.5; background:rgba(0,0,0,0.25); padding:8px 10px; border-radius:8px;">
-                        💡 <b>Ý nghĩa & Ví dụ:</b> Công trình đích tiếp thu, kế thừa phương pháp, công cụ hoặc phát hiện thực nghiệm từ công trình nguồn để triển khai nghiên cứu phái sinh tiếp theo.
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
 
             # BỘ LỌC GROUP THEO PHÂN LOẠI TOPO
             st.markdown("##### 🔍 Lọc danh mục liên kết theo phân loại Topo:")
@@ -1875,65 +1911,203 @@ elif "03." in workspace_nav:
 
         st.markdown("<div style='height: 16px;'></div>", unsafe_allow_html=True)
 
-        tab_structured, tab_apa_table, tab_interactive = st.tabs([
-            "🗂️ Trình bày dạng khối chi tiết (Dễ đọc & Chuyên nghiệp)",
-            "📑 Bảng cấu trúc chuẩn APA 7 (Table Format)",
-            "🔍 Bảng dữ liệu tương tác (DataFrame)"
+        tab_oa_group, tab_paywall_group, tab_apa_table, tab_interactive = st.tabs([
+            f"🔓 1. Tài liệu tải full PDF miễn phí ({len([p for p in evidence_pool if p.get('is_oa') or bool(p.get('pdf_url'))])} bài)",
+            f"🔒 2. Tài liệu cần quyền truy cập ({len([p for p in evidence_pool if not (p.get('is_oa') or bool(p.get('pdf_url')))])} bài)",
+            "📑 3. Bảng cấu trúc chuẩn APA 7 (Table Format)",
+            "🔍 4. Bảng dữ liệu tương tác (DataFrame)"
         ])
         
-        with tab_structured:
-            st.markdown('<div class="menu-header-badge">DANH SÁCH BÓC TÁCH 4 CHIỀU HỌC THUẬT TỪNG BÀI BÁO:</div>', unsafe_allow_html=True)
-            for idx, p in enumerate(evidence_pool, 1):
-                is_oa = p.get("is_oa", False) or bool(p.get("pdf_url"))
-                pdf_url = p.get("pdf_url", "")
-                doi_val = p.get("doi", "")
-                auth_str = p.get("authors_formatted") or p.get("first_author") or "N/A"
-                yr_str = str(p.get("year", ""))
-                title_str = p.get("title", "")
-                journal_str = p.get("venue") or p.get("journal") or p.get("host_venue") or p.get("scopus_tier") or "Tạp chí Scopus Q1/Q2"
-                cites = p.get("citation_count", 0)
+        oa_evidence = [p for p in evidence_pool if p.get("is_oa") or bool(p.get("pdf_url"))]
+        paywall_evidence = [p for p in evidence_pool if not (p.get("is_oa") or bool(p.get("pdf_url")))]
+
+        with tab_oa_group:
+            st.markdown(f"""
+            <div style="background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 14px 18px; margin-bottom: 14px;">
+                <div style="color: var(--badge-green-text); font-weight: 800; font-size: 14.5px; margin-bottom: 4px;">
+                    🔓 DANH MỤC CÁC TÀI LIỆU TOÀN VĂN FULL PDF MIỄN PHÍ ({len(oa_evidence)} BÀI)
+                </div>
+                <div style="color: var(--text-secondary); font-size: 13px; line-height: 1.5;">
+                    Bạn có thể chọn / bỏ chọn từng tài liệu hoặc chọn tất cả để tải gói nén ZIP toàn bộ tệp PDF về máy tính chỉ với 1 cú nhấp chuột.
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            if oa_evidence:
+                # Multi-select / Checkbox controls for batch PDF downloading
+                oa_labels_map = {}
+                for idx, p in enumerate(oa_evidence, 1):
+                    p_auth = p.get('first_author', 'Tác giả')
+                    p_yr = str(p.get('year', 'n.d.'))
+                    p_title = clean_academic_text(p.get('title', 'Untitled'))[:60]
+                    lbl = f"#{idx} [{p_yr}] {p_auth}: {p_title}..."
+                    oa_labels_map[lbl] = p
+
+                col_oa_chk1, col_oa_chk2 = st.columns([1.2, 2.8], gap="medium")
+                with col_oa_chk1:
+                    select_all_oa = st.checkbox("✓ Chọn tất cả ({}) bài Open Access".format(len(oa_evidence)), value=True, key="chk_select_all_oa_s3")
                 
-                c_problem = p.get("newsroom_problem") or p.get("context") or p.get("problem") or "Khảo sát và định vị bối cảnh ứng dụng AI trong quy trình sản xuất tin tức."
-                c_method = p.get("ai_methodology") or p.get("methodology") or p.get("methods") or "Phương pháp phân tích thực nghiệm và đối sánh thuật toán học thuật."
-                c_finding = p.get("empirical_finding") or p.get("findings") or p.get("results") or "Đánh giá định lượng tác động và phản hồi của người tiếp nhận thông tin."
-                c_ethics = p.get("ethical_limitation_gap") or p.get("ethics") or p.get("limitations") or "Xem xét tính minh bạch thuật toán và các ranh giới đạo đức học thuật."
-                
-                oa_chip = '<span class="status-chip green" style="font-size:11px; font-weight:700;">🔓 Full PDF Open Access</span>' if is_oa else '<span class="status-chip rose" style="font-size:11px; font-weight:700;">🔒 Cần quyền truy cập</span>'
-                apa_ref_text = p.get("apa7_ref") or format_apa7_reference(p)
-                
-                card_html = (
-                    f'<div class="evidence-card" style="border-left: 4px solid var(--primary-accent); margin-bottom: 16px;">'
-                    f'<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 6px;">'
-                    f'<div style="font-weight: 800; font-size: 15px; color: var(--text-primary);">#{idx}. {title_str}</div>'
-                    f'{oa_chip}'
-                    f'</div>'
-                    f'<div style="font-size: 12.5px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.5;">'
-                    f'<b>Tác giả:</b> {auth_str} ({yr_str}) • <b>Tạp chí:</b> <i>{journal_str}</i> • <b>Trích dẫn:</b> {cites} lượt • <b>DOI:</b> <code>{doi_val}</code>'
-                    f'</div>'
-                    f'<div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">'
-                    f'<div style="background: var(--bg-surface); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-subtle);">'
-                    f'<div style="font-size: 11px; font-weight: 700; color: var(--badge-blue-text); margin-bottom: 3px;">🏛️ BỐI CẢNH & VẤN ĐỀ NGHIÊN CỨU</div>'
-                    f'<div style="font-size: 12.5px; color: var(--text-primary); line-height: 1.5;">{c_problem}</div>'
-                    f'</div>'
-                    f'<div style="background: var(--bg-surface); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-subtle);">'
-                    f'<div style="font-size: 11px; font-weight: 700; color: var(--primary-accent); margin-bottom: 3px;">🔬 PHƯƠNG PHÁP & DỮ LIỆU THỰC NGHIỆM</div>'
-                    f'<div style="font-size: 12.5px; color: var(--text-primary); line-height: 1.5;">{c_method}</div>'
-                    f'</div>'
-                    f'<div style="background: var(--bg-surface); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-subtle);">'
-                    f'<div style="font-size: 11px; font-weight: 700; color: var(--badge-green-text); margin-bottom: 3px;">📊 KẾT QUẢ & PHÁT HIỆN THEN CHỐT</div>'
-                    f'<div style="font-size: 12.5px; color: var(--text-primary); line-height: 1.5;">{c_finding}</div>'
-                    f'</div>'
-                    f'<div style="background: var(--bg-surface); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-subtle);">'
-                    f'<div style="font-size: 11px; font-weight: 700; color: var(--badge-rose-text); margin-bottom: 3px;">⚖️ RANH GIỚI ĐẠO ĐỨC & KHUYẾN NGHỊ</div>'
-                    f'<div style="font-size: 12.5px; color: var(--text-primary); line-height: 1.5;">{c_ethics}</div>'
-                    f'</div>'
-                    f'</div>'
-                    f'<div style="font-size: 12px; color: var(--text-secondary); background: var(--bg-surface); padding: 8px 12px; border-radius: 6px; border-left: 3px solid #64748B;">'
-                    f'<b>Trích dẫn chuẩn APA 7:</b> {apa_ref_text}'
-                    f'</div>'
-                    f'</div>'
-                )
-                st.markdown(card_html, unsafe_allow_html=True)
+                with col_oa_chk2:
+                    default_selected = list(oa_labels_map.keys()) if select_all_oa else []
+                    selected_oa_items = st.multiselect(
+                        "Danh sách bài báo được chọn để tải về máy:",
+                        options=list(oa_labels_map.keys()),
+                        default=default_selected,
+                        key="ms_selected_oa_s3"
+                    )
+
+                c_dl_batch1, c_dl_batch2 = st.columns([2, 2], gap="medium")
+                with c_dl_batch1:
+                    if st.button("📦 NÉN & TẢI XUỐNG TẤT CẢ CÁC FILE ĐƯỢC CHỌN (.ZIP)", type="primary", use_container_width=True, key="btn_prep_zip_oa_s3"):
+                        with st.spinner("⏳ Đang tải các tệp PDF và đóng gói tệp nén ZIP..."):
+                            selected_paper_objs = [oa_labels_map[k] for k in selected_oa_items if k in oa_labels_map]
+                            target_temp_dir = os.path.join(os.getcwd(), "artifacts", "batch_oa_pdfs")
+                            dl_res = batch_download_papers(selected_paper_objs, target_temp_dir, timeout=30)
+                            zip_binary = create_zip_from_downloaded_files(dl_res.get("successful_downloads", []))
+                            st.session_state["oa_batch_zip_bytes"] = zip_binary
+                            st.toast(f"✓ Đã nén thành công {dl_res.get('success_count', 0)}/{len(selected_paper_objs)} tệp PDF!")
+
+                with c_dl_batch2:
+                    if st.session_state.get("oa_batch_zip_bytes"):
+                        st.download_button(
+                            label="💾 BẤM ĐỂ LƯU TỆP ZIP VỀ THIẾT BỊ NGAY ⬇",
+                            data=st.session_state["oa_batch_zip_bytes"],
+                            file_name="cac_tai_lieu_open_access_apa7.zip",
+                            mime="application/zip",
+                            type="secondary",
+                            use_container_width=True,
+                            key="btn_save_zip_oa_s3"
+                        )
+
+                st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
+
+                # Render sanitized APA 7 cards
+                for idx, p in enumerate(oa_evidence, 1):
+                    pdf_url = p.get("pdf_url", "")
+                    doi_val = p.get("doi", "")
+                    auth_str = p.get("authors_formatted") or p.get("first_author") or "N/A"
+                    yr_str = str(p.get("year", ""))
+                    title_str = clean_academic_text(p.get("title", ""))
+                    journal_str = clean_academic_text(p.get("venue") or p.get("journal") or p.get("host_venue") or p.get("scopus_tier") or "Tạp chí Scopus Q1/Q2")
+                    cites = p.get("citation_count", 0)
+                    
+                    c_problem = clean_academic_text(p.get("newsroom_problem") or p.get("context") or p.get("problem") or "Khảo sát và định vị bối cảnh ứng dụng AI trong quy trình sản xuất tin tức.")
+                    c_method = clean_academic_text(p.get("ai_methodology") or p.get("methodology") or p.get("methods") or "Phương pháp phân tích thực nghiệm và đối sánh thuật toán học thuật.")
+                    c_finding = clean_academic_text(p.get("empirical_finding") or p.get("findings") or p.get("results") or "Đánh giá định lượng tác động và phản hồi của người tiếp nhận thông tin.")
+                    c_ethics = clean_academic_text(p.get("ethical_limitation_gap") or p.get("ethics") or p.get("limitations") or "Xem xét tính minh bạch thuật toán và các ranh giới đạo đức học thuật.")
+                    
+                    apa_ref_text = format_apa7_reference(p)
+                    doi_anchor = f"<a href='https://doi.org/{doi_val}' target='_blank' style='color:#38BDF8; font-weight:700; text-decoration:none;'>https://doi.org/{doi_val} ↗</a>" if doi_val else "N/A"
+                    
+                    card_html = (
+                        f'<div class="evidence-card" style="border-left: 4px solid var(--badge-green-text); margin-bottom: 16px;">'
+                        f'<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 6px;">'
+                        f'<div style="font-weight: 800; font-size: 15px; color: var(--text-primary);">#{idx}. {title_str}</div>'
+                        f'<span class="status-chip green" style="font-size:11px; font-weight:700;">🔓 Full PDF Open Access</span>'
+                        f'</div>'
+                        f'<div style="font-size: 12.5px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.5;">'
+                        f'<b>Tác giả:</b> {auth_str} ({yr_str}) • <b>Tạp chí:</b> <i>{journal_str}</i> • <b>Trích dẫn:</b> {cites} lượt • <b>DOI:</b> {doi_anchor}'
+                        f'</div>'
+                        f'<div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">'
+                        f'<div style="background: var(--bg-surface); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-subtle);">'
+                        f'<div style="font-size: 11px; font-weight: 700; color: var(--badge-blue-text); margin-bottom: 3px;">🏛️ BỐI CẢNH & VẤN ĐỀ NGHIÊN CỨU</div>'
+                        f'<div style="font-size: 12.5px; color: var(--text-primary); line-height: 1.5;">{c_problem}</div>'
+                        f'</div>'
+                        f'<div style="background: var(--bg-surface); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-subtle);">'
+                        f'<div style="font-size: 11px; font-weight: 700; color: var(--primary-accent); margin-bottom: 3px;">🔬 PHƯƠNG PHÁP & DỮ LIỆU THỰC NGHIỆM</div>'
+                        f'<div style="font-size: 12.5px; color: var(--text-primary); line-height: 1.5;">{c_method}</div>'
+                        f'</div>'
+                        f'<div style="background: var(--bg-surface); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-subtle);">'
+                        f'<div style="font-size: 11px; font-weight: 700; color: var(--badge-green-text); margin-bottom: 3px;">📊 KẾT QUẢ & PHÁT HIỆN THEN CHỐT</div>'
+                        f'<div style="font-size: 12.5px; color: var(--text-primary); line-height: 1.5;">{c_finding}</div>'
+                        f'</div>'
+                        f'<div style="background: var(--bg-surface); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-subtle);">'
+                        f'<div style="font-size: 11px; font-weight: 700; color: var(--badge-rose-text); margin-bottom: 3px;">⚖️ RANH GIỚI ĐẠO ĐỨC & KHUYẾN NGHỊ</div>'
+                        f'<div style="font-size: 12.5px; color: var(--text-primary); line-height: 1.5;">{c_ethics}</div>'
+                        f'</div>'
+                        f'</div>'
+                        f'<div style="font-size: 12px; color: var(--text-secondary); background: var(--bg-surface); padding: 8px 12px; border-radius: 6px; border-left: 3px solid #10B981; margin-bottom: 8px;">'
+                        f'<b>Trích dẫn chuẩn APA 7:</b> {apa_ref_text}'
+                        f'</div>'
+                        f'</div>'
+                    )
+                    st.markdown(card_html, unsafe_allow_html=True)
+                    if pdf_url:
+                        st.link_button(f"🔓 Tải Full PDF bài #{idx} ({auth_str}) ↗", url=pdf_url, type="primary", use_container_width=True)
+                    elif doi_val:
+                        st.link_button(f"🔗 Mở liên kết DOI ({doi_val}) ↗", url=f"https://doi.org/{doi_val}", use_container_width=True)
+                    st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
+            else:
+                st.info("Không có tài liệu nào thuộc nhóm Open Access trong tập dữ liệu hiện tại.")
+
+        with tab_paywall_group:
+            st.markdown(f"""
+            <div style="background: rgba(251, 113, 133, 0.08); border: 1px solid rgba(251, 113, 133, 0.3); border-radius: 12px; padding: 14px 18px; margin-bottom: 14px;">
+                <div style="color: #FB7185; font-weight: 800; font-size: 14.5px; margin-bottom: 4px;">
+                    🔒 DANH MỤC CÁC TÀI LIỆU CẦN QUYỀN TRUY CẬP / BẢN QUYỀN ({len(paywall_evidence)} BÀI)
+                </div>
+                <div style="color: #94A3B8; font-size: 13px; line-height: 1.5;">
+                    Để tải toàn văn các tài liệu này, vui lòng truy cập qua mạng nội bộ viện trường (VPN / EZProxy) hoặc đăng nhập tài khoản thư viện liên kết với nhà xuất bản (Elsevier, Springer, Taylor & Francis, SAGE, IEEE).
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            if paywall_evidence:
+                for idx, p in enumerate(paywall_evidence, 1):
+                    doi_val = p.get("doi", "")
+                    landing_u = p.get("landing_url") or (f"https://doi.org/{doi_val}" if doi_val else "")
+                    auth_str = p.get("authors_formatted") or p.get("first_author") or "N/A"
+                    yr_str = str(p.get("year", ""))
+                    title_str = clean_academic_text(p.get("title", ""))
+                    journal_str = clean_academic_text(p.get("venue") or p.get("journal") or p.get("host_venue") or p.get("scopus_tier") or "Tạp chí Scopus Q1/Q2")
+                    cites = p.get("citation_count", 0)
+                    
+                    c_problem = clean_academic_text(p.get("newsroom_problem") or p.get("context") or p.get("problem") or "Khảo sát và định vị bối cảnh ứng dụng AI trong quy trình sản xuất tin tức.")
+                    c_method = clean_academic_text(p.get("ai_methodology") or p.get("methodology") or p.get("methods") or "Phương pháp phân tích thực nghiệm và đối sánh thuật toán học thuật.")
+                    c_finding = clean_academic_text(p.get("empirical_finding") or p.get("findings") or p.get("results") or "Đánh giá định lượng tác động và phản hồi của người tiếp nhận thông tin.")
+                    c_ethics = clean_academic_text(p.get("ethical_limitation_gap") or p.get("ethics") or p.get("limitations") or "Xem xét tính minh bạch thuật toán và các ranh giới đạo đức học thuật.")
+                    
+                    apa_ref_text = format_apa7_reference(p)
+                    doi_anchor = f"<a href='https://doi.org/{doi_val}' target='_blank' style='color:#38BDF8; font-weight:700; text-decoration:none;'>https://doi.org/{doi_val} ↗</a>" if doi_val else "N/A"
+
+                    card_html = (
+                        f'<div class="evidence-card" style="border-left: 4px solid #FB7185; margin-bottom: 16px;">'
+                        f'<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 6px;">'
+                        f'<div style="font-weight: 800; font-size: 15px; color: var(--text-primary);">#{idx}. {title_str}</div>'
+                        f'<span class="status-chip rose" style="font-size:11px; font-weight:700;">🔒 Cần quyền truy cập</span>'
+                        f'</div>'
+                        f'<div style="font-size: 12.5px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.5;">'
+                        f'<b>Tác giả:</b> {auth_str} ({yr_str}) • <b>Tạp chí:</b> <i>{journal_str}</i> • <b>Trích dẫn:</b> {cites} lượt • <b>DOI:</b> {doi_anchor}'
+                        f'</div>'
+                        f'<div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">'
+                        f'<div style="background: var(--bg-surface); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-subtle);">'
+                        f'<div style="font-size: 11px; font-weight: 700; color: var(--badge-blue-text); margin-bottom: 3px;">🏛️ BỐI CẢNH & VẤN ĐỀ NGHIÊN CỨU</div>'
+                        f'<div style="font-size: 12.5px; color: var(--text-primary); line-height: 1.5;">{c_problem}</div>'
+                        f'</div>'
+                        f'<div style="background: var(--bg-surface); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-subtle);">'
+                        f'<div style="font-size: 11px; font-weight: 700; color: var(--primary-accent); margin-bottom: 3px;">🔬 PHƯƠNG PHÁP & DỮ LIỆU THỰC NGHIỆM</div>'
+                        f'<div style="font-size: 12.5px; color: var(--text-primary); line-height: 1.5;">{c_method}</div>'
+                        f'</div>'
+                        f'<div style="background: var(--bg-surface); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-subtle);">'
+                        f'<div style="font-size: 11px; font-weight: 700; color: var(--badge-green-text); margin-bottom: 3px;">📊 KẾT QUẢ & PHÁT HIỆN THEN CHỐT</div>'
+                        f'<div style="font-size: 12.5px; color: var(--text-primary); line-height: 1.5;">{c_finding}</div>'
+                        f'</div>'
+                        f'<div style="background: var(--bg-surface); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-subtle);">'
+                        f'<div style="font-size: 11px; font-weight: 700; color: var(--badge-rose-text); margin-bottom: 3px;">⚖️ RANH GIỚI ĐẠO ĐỨC & KHUYẾN NGHỊ</div>'
+                        f'<div style="font-size: 12.5px; color: var(--text-primary); line-height: 1.5;">{c_ethics}</div>'
+                        f'</div>'
+                        f'</div>'
+                        f'<div style="font-size: 12px; color: var(--text-secondary); background: var(--bg-surface); padding: 8px 12px; border-radius: 6px; border-left: 3px solid #FB7185; margin-bottom: 8px;">'
+                        f'<b>Trích dẫn chuẩn APA 7:</b> {apa_ref_text}'
+                        f'</div>'
+                        f'</div>'
+                    )
+                    st.markdown(card_html, unsafe_allow_html=True)
+                    if landing_u:
+                        st.link_button(f"🔗 Mở trang nhà xuất bản ({doi_val or 'DOI'}) ↗", url=landing_u, use_container_width=True)
+                    st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
+            else:
+                st.info("Không có tài liệu nào thuộc nhóm cần quyền truy cập trong tập dữ liệu.")
                 
         with tab_apa_table:
             st.markdown(s_res.get("evidence_table_apa7_md", generate_apa7_evidence_table_markdown(evidence_pool)))
@@ -2206,6 +2380,37 @@ elif "05." in workspace_nav:
 {p_res_data['review_report_md']}
                 </div>
                 """, unsafe_allow_html=True)
+
+        st.markdown("<div style='height: 16px;'></div>", unsafe_allow_html=True)
+        st.markdown("### 🔗 Danh mục tài liệu đã trích dẫn trong bản thảo (Tải nhanh toàn văn PDF):")
+        
+        cited_c1, cited_c2 = st.columns(2, gap="medium")
+        for c_idx, p in enumerate(evidence_pool):
+            target_col = cited_c1 if c_idx % 2 == 0 else cited_c2
+            pdf_url = p.get("pdf_url", "")
+            doi_val = p.get("doi", "")
+            is_oa = p.get("is_oa", False) or bool(pdf_url)
+            p_title = clean_academic_text(p.get("title", "Untitled"))
+            p_auth = p.get("first_author", "Tác giả")
+            p_yr = str(p.get("year", ""))
+            
+            with target_col:
+                oa_status_tag = '<span class="status-chip green" style="font-size:10.5px;">🔓 Có bản PDF mở</span>' if is_oa else '<span class="status-chip rose" style="font-size:10.5px;">🔒 Cần quyền truy cập</span>'
+                st.markdown(f"""
+                <div class="apa-ref-card" style="border-left: 3px solid {'#10B981' if is_oa else '#FB7185'}; margin-bottom:8px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                        <span style="font-size:12px; font-weight:700; color:var(--primary-accent);">#{c_idx+1} • {p_auth} ({p_yr})</span>
+                        {oa_status_tag}
+                    </div>
+                    <div style="font-size:12px; font-weight:600; color:var(--text-primary); margin-bottom:6px;">{p_title[:75]}...</div>
+                    <div style="font-size:11.5px; color:var(--text-secondary); margin-bottom:6px;">{format_apa7_reference(p)}</div>
+                </div>
+                """, unsafe_allow_html=True)
+                if pdf_url:
+                    st.link_button(f"🔓 Tải ngay Full PDF bài #{c_idx+1} ↗", url=pdf_url, type="primary", use_container_width=True)
+                elif doi_val:
+                    st.link_button(f"🔗 Mở liên kết DOI ({doi_val}) ↗", url=f"https://doi.org/{doi_val}", use_container_width=True)
+                st.markdown("<div style='height: 4px;'></div>", unsafe_allow_html=True)
     else:
         st.info("💡 Vui lòng phân tích bài báo từ Menu 1 để tạo bản thảo mở đầu và báo cáo kiểm tra dẫn chứng song ngữ.")
 

@@ -25,6 +25,96 @@ def clean_academic_text(val: Any) -> str:
     txt = re.sub(r"\s+", " ", txt)
     return html.escape(txt.strip())
 
+def format_author_in_text_apa7(paper: Dict[str, Any], lang: str = "vi") -> str:
+    """
+    Format narrative in-text citation according to APA 7th Edition:
+    - 1 author: 'Bruns (2018)'
+    - 2 authors: 'Bruns và Burgess (2018)' (VI) / 'Bruns & Burgess (2018)' (EN)
+    - 3+ authors: 'Bruns và cộng sự (2018)' (VI) / 'Bruns et al. (2018)' (EN)
+    No 'Nghiên cứu của', strictly author surname(s) and year.
+    """
+    year = str(paper.get("year") or "n.d.")
+    first_author = (paper.get("first_author") or "").strip()
+    authors_str = (paper.get("authors") or "").strip()
+    author_list = paper.get("author_list") or []
+
+    def clean_last_name(raw_name: str) -> str:
+        r = raw_name.strip()
+        if "," in r:
+            return r.split(",")[0].strip()
+        parts = r.split()
+        if parts:
+            if parts[-1].lower() in ["jr.", "jr", "iii", "ii", "iv"] and len(parts) > 1:
+                return parts[-2]
+            return parts[-1]
+        return r
+
+    last_names = []
+    if author_list:
+        last_names = [clean_last_name(a) for a in author_list if a.strip()]
+    elif ";" in authors_str:
+        last_names = [clean_last_name(a) for a in authors_str.split(";") if a.strip()]
+    elif "," in authors_str and len(authors_str.split(",")) > 2:
+        last_names = [clean_last_name(a) for a in authors_str.split(",") if a.strip()]
+    elif first_author:
+        last_names = [clean_last_name(first_author)]
+    else:
+        last_names = ["Tác giả" if lang == "vi" else "Author"]
+
+    if len(last_names) == 1:
+        return f"{last_names[0]} ({year})"
+    elif len(last_names) == 2:
+        and_word = " và " if lang == "vi" else " & "
+        return f"{last_names[0]}{and_word}{last_names[1]} ({year})"
+    else:
+        et_al = " và cộng sự" if lang == "vi" else " et al."
+        return f"{last_names[0]}{et_al} ({year})"
+
+def format_parenthetical_citation_apa7(paper: Dict[str, Any], lang: str = "vi") -> str:
+    """
+    Format parenthetical in-text citation strictly in APA 7:
+    - (Bruns, 2018)
+    - (Bruns và Burgess, 2018) / (Bruns & Burgess, 2018)
+    - (Bruns và cộng sự, 2018) / (Bruns et al., 2018)
+    Uses () parenthesis instead of [] brackets.
+    """
+    year = str(paper.get("year") or "n.d.")
+    first_author = (paper.get("first_author") or "").strip()
+    authors_str = (paper.get("authors") or "").strip()
+    author_list = paper.get("author_list") or []
+
+    def clean_last_name(raw_name: str) -> str:
+        r = raw_name.strip()
+        if "," in r:
+            return r.split(",")[0].strip()
+        parts = r.split()
+        if parts:
+            if parts[-1].lower() in ["jr.", "jr", "iii", "ii", "iv"] and len(parts) > 1:
+                return parts[-2]
+            return parts[-1]
+        return r
+
+    last_names = []
+    if author_list:
+        last_names = [clean_last_name(a) for a in author_list if a.strip()]
+    elif ";" in authors_str:
+        last_names = [clean_last_name(a) for a in authors_str.split(";") if a.strip()]
+    elif "," in authors_str and len(authors_str.split(",")) > 2:
+        last_names = [clean_last_name(a) for a in authors_str.split(",") if a.strip()]
+    elif first_author:
+        last_names = [clean_last_name(first_author)]
+    else:
+        last_names = ["Tác giả" if lang == "vi" else "Author"]
+
+    if len(last_names) == 1:
+        return f"({last_names[0]}, {year})"
+    elif len(last_names) == 2:
+        and_word = " và " if lang == "vi" else " & "
+        return f"({last_names[0]}{and_word}{last_names[1]}, {year})"
+    else:
+        et_al = " và cộng sự" if lang == "vi" else " et al."
+        return f"({last_names[0]}{et_al}, {year})"
+
 def format_author_apa7(author_str: str, author_list: Optional[List[str]] = None) -> str:
     """
     Format authors according to APA 7th Edition rules:

@@ -592,54 +592,161 @@ def generate_theme_css(theme_id: str) -> str:
         margin: 14px 0 6px 4px;
     }}
 
-    /* Menu Chọn Màn Hình Làm Việc Bọc Khối Cao Cấp (HUD Chips) */
-    section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] {{
+    /* Menu Chọn Màn Hình Làm Việc Bọc Khối Cao Cấp (Glassmorphism & Colorful Glow per Menu) */
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] {
         display: flex !important;
         flex-direction: column !important;
-        gap: 6px !important;
-        background: {c["bg_main"]} !important;
-        border: 1px solid rgba({glow_rgb}, 0.22) !important;
-        border-radius: 14px !important;
-        padding: 6px !important;
-        box-shadow: inset 0 0 12px rgba({glow_rgb}, 0.05) !important;
-    }}
+        gap: 8px !important;
+        background: rgba(0, 0, 0, 0.35) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 16px !important;
+        padding: 8px !important;
+        box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.4) !important;
+    }
 
-    section[data-testid="stSidebar"] div[data-testid="stRadio"] label {{
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label {
         display: flex !important;
         align-items: center !important;
-        background: {c["bg_surface_elevated"]} !important;
-        border: 1px solid rgba({glow_rgb}, 0.18) !important;
-        border-radius: 10px !important;
-        padding: 8px 12px !important;
+        background: rgba(255, 255, 255, 0.035) !important;
+        backdrop-filter: blur(16px) !important;
+        -webkit-backdrop-filter: blur(16px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 12px !important;
+        padding: 10px 14px !important;
         margin-bottom: 0 !important;
         cursor: pointer !important;
-        transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1) !important;
         position: relative !important;
         overflow: hidden !important;
-    }}
+    }
     
-    section[data-testid="stSidebar"] div[data-testid="stRadio"] label > div:first-child {{
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label > div:first-child {
         display: none !important;
-    }}
+    }
 
-    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:hover {{
-        background: {c["sidebar_hover_bg"]} !important;
-        border-color: {c["primary_accent"]} !important;
-        box-shadow: 0 0 12px rgba({glow_rgb}, 0.22) !important;
-        transform: translateX(2px) !important;
-    }}
+    /* 1. KHỞI TẠO & DOI (SKY BLUE GLOW) */
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(1) {
+        border-left: 4px solid #38BDF8 !important;
+        box-shadow: 0 4px 14px rgba(56, 189, 248, 0.12) !important;
+    }
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(1):hover,
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(1):has(input:checked) {
+        background: linear-gradient(90deg, rgba(56, 189, 248, 0.22) 0%, rgba(56, 189, 248, 0.06) 100%) !important;
+        border-color: #38BDF8 !important;
+        box-shadow: 0 0 20px rgba(56, 189, 248, 0.45) !important;
+        transform: translateX(3px) !important;
+    }
+
+    /* 2. MẠNG LƯỚI TRÍCH DẪN (EMERALD GLOW) */
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(2) {
+        border-left: 4px solid #34D399 !important;
+        box-shadow: 0 4px 14px rgba(52, 211, 153, 0.12) !important;
+    }
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(2):hover,
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(2):has(input:checked) {
+        background: linear-gradient(90deg, rgba(52, 211, 153, 0.22) 0%, rgba(52, 211, 153, 0.06) 100%) !important;
+        border-color: #34D399 !important;
+        box-shadow: 0 0 20px rgba(52, 211, 153, 0.45) !important;
+        transform: translateX(3px) !important;
+    }
+
+    /* 3. BẢNG TỔNG HỢP APA 7 (SOLAR AMBER GLOW) */
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(3) {
+        border-left: 4px solid #FBBF24 !important;
+        box-shadow: 0 4px 14px rgba(251, 191, 36, 0.12) !important;
+    }
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(3):hover,
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(3):has(input:checked) {
+        background: linear-gradient(90deg, rgba(251, 191, 36, 0.22) 0%, rgba(251, 191, 36, 0.06) 100%) !important;
+        border-color: #FBBF24 !important;
+        box-shadow: 0 0 20px rgba(251, 191, 36, 0.45) !important;
+        transform: translateX(3px) !important;
+    }
+
+    /* 4. TÓM LƯỢC LUẬN ĐIỂM (PURPLE VIOLET GLOW) */
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(4) {
+        border-left: 4px solid #C084FC !important;
+        box-shadow: 0 4px 14px rgba(192, 132, 252, 0.12) !important;
+    }
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(4):hover,
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(4):has(input:checked) {
+        background: linear-gradient(90deg, rgba(192, 132, 252, 0.22) 0%, rgba(192, 132, 252, 0.06) 100%) !important;
+        border-color: #C084FC !important;
+        box-shadow: 0 0 20px rgba(192, 132, 252, 0.45) !important;
+        transform: translateX(3px) !important;
+    }
+
+    /* 5. SOẠN THẢO CARS (ROSE RUBY GLOW) */
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(5) {
+        border-left: 4px solid #FB7185 !important;
+        box-shadow: 0 4px 14px rgba(251, 113, 133, 0.12) !important;
+    }
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(5):hover,
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(5):has(input:checked) {
+        background: linear-gradient(90deg, rgba(251, 113, 133, 0.22) 0%, rgba(251, 113, 133, 0.06) 100%) !important;
+        border-color: #FB7185 !important;
+        box-shadow: 0 0 20px rgba(251, 113, 133, 0.45) !important;
+        transform: translateX(3px) !important;
+    }
+
+    /* 6. TẢI VỀ HỒ SƠ & COPILOT (INDIGO GLOW) */
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(6) {
+        border-left: 4px solid #818CF8 !important;
+        box-shadow: 0 4px 14px rgba(129, 140, 248, 0.12) !important;
+    }
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(6):hover,
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(6):has(input:checked) {
+        background: linear-gradient(90deg, rgba(129, 140, 248, 0.22) 0%, rgba(129, 140, 248, 0.06) 100%) !important;
+        border-color: #818CF8 !important;
+        box-shadow: 0 0 20px rgba(129, 140, 248, 0.45) !important;
+        transform: translateX(3px) !important;
+    }
+
+    /* 7. CÀI ĐẶT HỆ THỐNG & GEMINI (TEAL CYAN GLOW) */
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(7) {
+        border-left: 4px solid #2DD4BF !important;
+        box-shadow: 0 4px 14px rgba(45, 212, 191, 0.12) !important;
+    }
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(7):hover,
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(7):has(input:checked) {
+        background: linear-gradient(90deg, rgba(45, 212, 191, 0.22) 0%, rgba(45, 212, 191, 0.06) 100%) !important;
+        border-color: #2DD4BF !important;
+        box-shadow: 0 0 20px rgba(45, 212, 191, 0.45) !important;
+        transform: translateX(3px) !important;
+    }
+
+    /* 8. HƯỚNG DẪN SỬ DỤNG (CORAL ORANGE GLOW) */
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(8) {
+        border-left: 4px solid #FB923C !important;
+        box-shadow: 0 4px 14px rgba(251, 146, 60, 0.12) !important;
+    }
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(8):hover,
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(8):has(input:checked) {
+        background: linear-gradient(90deg, rgba(251, 146, 60, 0.22) 0%, rgba(251, 146, 60, 0.06) 100%) !important;
+        border-color: #FB923C !important;
+        box-shadow: 0 0 20px rgba(251, 146, 60, 0.45) !important;
+        transform: translateX(3px) !important;
+    }
+
+    /* 9. QUẢN TRỊ NGƯỜI DÙNG (MAGENTA FUCHSIA GLOW) */
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(9) {
+        border-left: 4px solid #E879F9 !important;
+        box-shadow: 0 4px 14px rgba(232, 121, 249, 0.12) !important;
+    }
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(9):hover,
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(9):has(input:checked) {
+        background: linear-gradient(90deg, rgba(232, 121, 249, 0.22) 0%, rgba(232, 121, 249, 0.06) 100%) !important;
+        border-color: #E879F9 !important;
+        box-shadow: 0 0 20px rgba(232, 121, 249, 0.45) !important;
+        transform: translateX(3px) !important;
+    }
     
-    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:has(input:checked) {{
-        background: {c["sidebar_active_bg"]} !important;
-        border-color: {c["primary_accent"]} !important;
-        border-left: 4px solid {c["primary_accent"]} !important;
-        box-shadow: 0 0 16px rgba({glow_rgb}, 0.28) !important;
-    }}
-    
-    section[data-testid="stSidebar"] div[data-testid="stRadio"] label div[data-testid="stMarkdownContainer"] p {{
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label div[data-testid="stMarkdownContainer"] p {
         font-size: 12.5px !important;
         font-weight: 600 !important;
-        color: {c["text_primary"]} !important;
+        color: #F8FAFC !important;
         margin: 0 !important;
         padding: 0 !important;
         display: flex !important;
@@ -648,12 +755,13 @@ def generate_theme_css(theme_id: str) -> str:
         white-space: nowrap !important;
         overflow: hidden !important;
         text-overflow: ellipsis !important;
-    }}
+    }
 
-    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:has(input:checked) div[data-testid="stMarkdownContainer"] p {{
-        color: {c["text_primary"]} !important;
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:has(input:checked) div[data-testid="stMarkdownContainer"] p {
+        color: #FFFFFF !important;
         font-weight: 800 !important;
-    }}
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.5) !important;
+    }
 
     /* 2. GLOBAL HUD HEADER BAR (THƯƠNG HIỆU LƯỢNG TỬ ĐỒNG BỘ) */
     .app-top-toolbar, .synapse-header-bar {{
