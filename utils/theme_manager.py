@@ -1027,5 +1027,157 @@ def generate_theme_css(theme_id: str) -> str:
         color: #A855F7;
         border: 1px solid rgba(168, 85, 247, 0.4);
     }}
+
+    /* =========================================================================
+       TỐI ƯU HÓA ĐẶC BIỆT CHO THIẾT BỊ DI ĐỘNG & MÁY TÍNH BẢNG (MOBILE & TABLET UX)
+       ========================================================================= */
+    /* Máy tính bảng & Màn hình vừa (Tablet: 769px - 1024px) */
+    @media (min-width: 769px) and (max-width: 1024px) {{
+        .block-container, [data-testid="block-container"] {{
+            padding: 1.2rem 1rem 3rem 1rem !important;
+            max-width: 100% !important;
+        }}
+        .app-top-toolbar {{
+            padding: 10px 14px !important;
+            gap: 10px !important;
+        }}
+        [data-testid="column"] {{
+            min-width: 48% !important;
+            flex: 1 1 48% !important;
+            margin-bottom: 8px !important;
+        }}
+        .manual-app-title {{
+            font-size: 24px !important;
+        }}
+    }}
+
+    @media (max-width: 992px) {{
+        .app-top-toolbar {{
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 10px !important;
+            padding: 10px 12px !important;
+        }}
+        .toolbar-left {{
+            width: 100% !important;
+            justify-content: space-between !important;
+        }}
+        .toolbar-right-brand {{
+            width: 100% !important;
+            justify-content: space-between !important;
+            border-top: 1px dashed {c["border_subtle"]} !important;
+            padding-top: 8px !important;
+            margin-left: 0 !important;
+        }}
+        .manual-app-title {{
+            font-size: 22px !important;
+            letter-spacing: 0.06em !important;
+        }}
+    }}
+
+    /* Điện thoại di động (Smartphones & Small Tablets: <= 768px) */
+    @media (max-width: 768px) {{
+        /* Bố cục vùng đệm toàn trang trên điện thoại */
+        .block-container, [data-testid="block-container"] {{
+            padding: 0.85rem 0.65rem 3rem 0.65rem !important;
+            max-width: 100% !important;
+        }}
+
+        /* Sidebar tối ưu cho màn hình cảm ứng di động */
+        section[data-testid="stSidebar"] {{
+            width: 86vw !important;
+            min-width: unset !important;
+            max-width: 330px !important;
+        }}
+
+        /* Thẻ chỉ số Metric: Tự động xếp vừa vặn thay vì bị bẹp */
+        [data-testid="column"] {{
+            min-width: 100% !important;
+            flex: 1 1 100% !important;
+            margin-bottom: 6px !important;
+        }}
+
+        /* Hàng điều khiển nút bấm & thanh trạng thái */
+        .symmetrical-action-card {{
+            height: auto !important;
+            min-height: 48px !important;
+            padding: 8px 12px !important;
+            flex-wrap: wrap !important;
+        }}
+
+        /* Bảng dữ liệu & Dataframe cuộn ngang mượt mà */
+        div[data-testid="stTable"], div[data-testid="stDataFrame"], .stDataFrame {{
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+            max-width: 100% !important;
+        }}
+        table {{
+            min-width: 100% !important;
+            font-size: 12px !important;
+        }}
+
+        /* Hộp thoại Dialog & Popup trên Mobile */
+        div[role="dialog"] {{
+            width: 95vw !important;
+            max-width: 95vw !important;
+            padding: 14px !important;
+            border-radius: 16px !important;
+        }}
+
+        /* Khối mã lệnh / trích dẫn cuộn mượt */
+        pre, code {{
+            font-size: 11.5px !important;
+            white-space: pre-wrap !important;
+            word-break: break-word !important;
+        }}
+
+        /* Thanh Tabs di chuyển ngang mượt mà trên cảm ứng */
+        div[data-baseweb="tab-list"] {{
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+            flex-wrap: nowrap !important;
+            white-space: nowrap !important;
+            -webkit-overflow-scrolling: touch !important;
+            scrollbar-width: none !important;
+            padding: 4px 6px !important;
+        }}
+        div[data-baseweb="tab-list"]::-webkit-scrollbar {{
+            display: none !important;
+        }}
+        div[data-baseweb="tab"] {{
+            flex-shrink: 0 !important;
+            font-size: 12px !important;
+            padding: 8px 12px !important;
+        }}
+
+        /* Chữ và ô nhập liệu tối ưu không bị tự động phóng to trên iOS Safari */
+        .stTextArea textarea, .stTextInput input, .stSelectbox select {{
+            font-size: 14px !important;
+        }}
+
+        /* Nút bấm cảm ứng to rõ, chống bấm nhầm */
+        .stButton button {{
+            height: 46px !important;
+            font-size: 13px !important;
+            width: 100% !important;
+            -webkit-tap-highlight-color: transparent !important;
+        }}
+
+        /* Tiêu đề linh hoạt theo kích thước màn hình */
+        h1 {{ font-size: 19px !important; }}
+        h2 {{ font-size: 16px !important; }}
+        h3 {{ font-size: 14px !important; }}
+
+        /* Khung Hero Banner thu nhỏ vừa vặn */
+        .hero-banner-box {{
+            padding: 14px 16px !important;
+        }}
+        .hero-banner-title {{
+            font-size: 15.5px !important;
+        }}
+        .hero-banner-desc {{
+            font-size: 12.5px !important;
+        }}
+    }}
 </style>
 """

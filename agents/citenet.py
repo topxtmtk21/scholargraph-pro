@@ -572,6 +572,97 @@ class CiteNetAgent:
             background: #262B38;
             color: #FFFFFF;
         }}
+
+        /* Tối ưu hóa hiển thị trên Máy tính bảng (Tablet) & Điện thoại (Mobile) */
+        @media (max-width: 992px) {{
+            .hud-toolbar {{
+                top: 8px;
+                left: 8px;
+                max-width: calc(100% - 16px);
+                gap: 5px;
+                padding: 6px 10px;
+            }}
+            .hud-btn {{
+                padding: 6px 10px;
+                font-size: 11.5px;
+            }}
+            .hud-search-box {{
+                width: 140px;
+                font-size: 11.5px;
+                padding: 6px 10px;
+            }}
+        }}
+
+        @media (max-width: 768px) {{
+            .hud-toolbar {{
+                top: 6px;
+                left: 6px;
+                right: 6px;
+                max-width: calc(100% - 12px);
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                white-space: nowrap;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                padding: 6px 8px;
+                gap: 4px;
+                border-radius: 10px;
+            }}
+            .hud-toolbar::-webkit-scrollbar {{
+                display: none;
+            }}
+            .hud-btn {{
+                padding: 6px 9px;
+                font-size: 11px;
+                flex-shrink: 0;
+            }}
+            .hud-search-box {{
+                width: 130px;
+                font-size: 11px;
+                padding: 5px 8px;
+                flex-shrink: 0;
+            }}
+            .hud-legend {{
+                bottom: 8px;
+                left: 8px;
+                right: 8px;
+                font-size: 10px;
+                padding: 6px 10px;
+                gap: 8px;
+                justify-content: center;
+                border-radius: 8px;
+            }}
+            #floating-hover-card {{
+                display: none !important; /* Ẩn hover card trên thiết bị cảm ứng để tránh vướng màn hình */
+            }}
+            #paper-modal {{
+                top: auto !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                max-height: 82vh !important;
+                border-radius: 20px 20px 0 0 !important;
+                border-bottom: none !important;
+                box-shadow: 0 -10px 40px rgba(0,0,0,0.8) !important;
+                animation: slideUpModal 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            }}
+            @keyframes slideUpModal {{
+                from {{ transform: translateY(100%); opacity: 0; }}
+                to {{ transform: translateY(0); opacity: 1; }}
+            }}
+            .modal-header {{
+                padding: 12px 16px !important;
+            }}
+            .modal-body {{
+                padding: 14px 16px !important;
+                -webkit-overflow-scrolling: touch;
+            }}
+            .modal-title {{
+                font-size: 14px !important;
+            }}
+        }}
     </style>
 </head>
 <body>

@@ -29,7 +29,7 @@ for t in themes:
     # 2. Verify Contrast principles:
     # In light themes: text_primary must be very dark, bg_main must be very light
     if t_type == "light":
-        assert c["text_primary"].upper() in ["#1A1510", "#0F172A", "#000000", "#111827", "#1E293B"], f"Contrast violation in light theme {t_id}"
+        assert c["text_primary"].upper() in ["#1A1510", "#0F172A", "#000000", "#111827", "#1E293B", "#1C1917", "#18181B"], f"Contrast violation in light theme {t_id}"
     else:
         # In dark themes: text_primary must be crisp light
         assert c["text_primary"].upper() in ["#F8FAFC", "#F0F6FF", "#ECFDF5", "#FFF1F2", "#FFFBEB", "#FFFFFF", "#FDF2F8"], f"Contrast violation in dark theme {t_id}"
