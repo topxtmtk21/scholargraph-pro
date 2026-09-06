@@ -400,13 +400,21 @@ class CiteNetAgent:
             abs_vi = meta.get("abstract_vi") or meta.get("abstract") or "Đang cập nhật tóm tắt tiếng Việt..."
             abs_en = meta.get("abstract_en") or meta.get("abstract") or "Abstract in English..."
 
+            auth_val = meta.get("authors", meta.get("first_author", "Unknown"))
+            year_val = meta.get("year", "n.d.")
+            title_val = meta.get("title", "Untitled Paper")
+            venue_val = meta.get("venue", "N/A")
+            apa7_str = f"{auth_val} ({year_val}). {title_val}. {venue_val}."
+            if doi_val:
+                apa7_str += f" https://doi.org/{doi_val}"
+
             extended_meta[node_id] = {
                 "id": node_id,
-                "title": meta.get("title", "Untitled Paper"),
-                "authors": meta.get("authors", "Unknown Authors"),
+                "title": title_val,
+                "authors": auth_val,
                 "first_author": meta.get("first_author", "Unknown"),
-                "year": meta.get("year", "n.d."),
-                "venue": meta.get("venue", "N/A"),
+                "year": year_val,
+                "venue": venue_val,
                 "scopus_tier": meta.get("scopus_tier", "Scopus Indexed"),
                 "study_type": meta.get("study_type", "Empirical Journalism Study"),
                 "doi": doi_val,
@@ -420,6 +428,7 @@ class CiteNetAgent:
                 "layer": meta.get("layer", "seed"),
                 "layer_label": meta.get("layer_label", "★ BÀI BÁO GỐC"),
                 "is_oa": meta.get("is_oa", False) or bool(pdf_url),
+                "apa7": apa7_str,
                 "abstract": abs_vi,
                 "abstract_vi": abs_vi,
                 "abstract_en": abs_en,
@@ -1248,6 +1257,123 @@ class CiteNetAgent:
             margin-top: 2px;
         }}
 
+        /* 2.5. MODAL CHI TIẾT BÀI BÁO NỔI TOÀN DIỆN (TÍNH NĂNG GỐC CỐT LÕI) */
+        #paper-modal {{
+            position: absolute;
+            top: 48px;
+            right: 14px;
+            width: 490px;
+            max-width: calc(100% - 28px);
+            max-height: calc(100% - 64px);
+            background: var(--theme-panel-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1.5px solid var(--theme-accent);
+            border-radius: 16px;
+            z-index: 9999;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.85), 0 0 20px rgba(var(--theme-glow-rgb), 0.35);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            animation: modalSlideIn 0.22s ease-out;
+        }}
+        @keyframes modalSlideIn {{
+            from {{ opacity: 0; transform: translateY(-12px) scale(0.97); }}
+            to {{ opacity: 1; transform: translateY(0) scale(1); }}
+        }}
+        .modal-header {{
+            padding: 10px 14px;
+            background: rgba(var(--theme-glow-rgb), 0.08);
+            border-bottom: 1px solid rgba(var(--theme-glow-rgb), 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: move;
+        }}
+        .modal-body {{
+            padding: 12px 16px;
+            overflow-y: auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }}
+        .modal-title {{
+            font-size: 14px;
+            font-weight: 800;
+            color: #FFFFFF;
+            line-height: 1.45;
+        }}
+        .modal-meta-row {{
+            font-size: 11.5px;
+            color: var(--theme-text-dim);
+            line-height: 1.5;
+        }}
+        .modal-section-title {{
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--theme-accent);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin: 6px 0 2px 0;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }}
+        .bilingual-tabs-nav {{
+            display: flex;
+            gap: 6px;
+            background: rgba(0,0,0,0.35);
+            padding: 3px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }}
+        .bilingual-tab-btn {{
+            flex: 1;
+            padding: 4px 8px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--theme-text-dim);
+            background: transparent;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }}
+        .bilingual-tab-btn.active {{
+            background: var(--theme-accent);
+            color: #040914;
+        }}
+        .modal-abstract-box {{
+            background: rgba(0,0,0,0.25);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            padding: 8px 10px;
+            font-size: 11.5px;
+            line-height: 1.6;
+            color: var(--theme-text-main);
+            max-height: 150px;
+            overflow-y: auto;
+        }}
+        .lineage-chip {{
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 10.5px;
+            color: var(--theme-text-main);
+            background: rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 6px;
+            padding: 4px 8px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }}
+        .lineage-chip:hover {{
+            border-color: var(--theme-accent);
+            color: var(--theme-accent);
+            background: rgba(var(--theme-glow-rgb), 0.15);
+        }}
+
         /* 3. BOTTOM EXPANDABLE PANELS DECK (ĐỔ BÓNG ĐỀU TOÀN KHUNG) */
         .synapse-bottom-deck {{
             {bottom_display_css}
@@ -2017,6 +2143,41 @@ class CiteNetAgent:
                 <button class="hud-mini-btn" onclick="resetPlayback()">↺</button>
             </div>
 
+            <!-- INTERACTIVE PAPER DETAIL MODAL (TÍNH NĂNG TOÀN DIỆN VỐN CÓ BAN ĐẦU) -->
+            <div id="paper-modal">
+                <div class="modal-header" id="paperModalHeader">
+                    <div id="modal-gen-badge"></div>
+                    <button type="button" onclick="closePaperModal()" style="background:transparent; border:none; color:var(--theme-text-dim); font-size:16px; font-weight:700; cursor:pointer; padding:0 4px; line-height:1;" title="Đóng bảng chi tiết (Escape / ✕)">✕</button>
+                </div>
+                <div class="modal-body">
+                    <div id="modal-title" class="modal-title"></div>
+                    <div id="modal-authors" class="modal-meta-row"></div>
+                    <div id="modal-venue" class="modal-meta-row"></div>
+                    <div id="modal-citations" class="modal-meta-row"></div>
+                    
+                    <!-- APA 7 Trích dẫn box -->
+                    <div id="modal-apa-box" style="background:rgba(0,0,0,0.3); padding:6px 10px; border-radius:8px; border:1px solid rgba(255,255,255,0.08); margin:3px 0;"></div>
+
+                    <!-- Action Links -->
+                    <div style="display:flex; gap:6px; flex-wrap:wrap; margin:2px 0;">
+                        <a id="modal-pdf-link" class="hud-mini-btn" href="#" target="_blank" style="background:#059669; border-color:#10B981; color:#FFF; text-decoration:none; padding:4px 10px; font-size:11px; font-weight:700; display:none;">🔓 Toàn văn PDF ↗</a>
+                        <a id="modal-doi-link" class="hud-mini-btn active" href="#" target="_blank" style="text-decoration:none; padding:4px 10px; font-size:11px; font-weight:700; display:none;">🔗 DOI ↗</a>
+                        <a id="modal-openalex-link" class="hud-mini-btn" href="#" target="_blank" style="text-decoration:none; padding:4px 10px; font-size:11px;">🌐 OpenAlex ↗</a>
+                    </div>
+
+                    <div class="modal-section-title">📄 TÓM TẮT NỘI DUNG NGHIÊN CỨU (SONG NGỮ)</div>
+                    <div class="bilingual-tabs-nav">
+                        <button type="button" id="tabBtnVi" class="bilingual-tab-btn active" onclick="switchModalLang('vi')">🇻🇳 Tiếng Việt</button>
+                        <button type="button" id="tabBtnEn" class="bilingual-tab-btn" onclick="switchModalLang('en')">🇬🇧 Nguyên bản (English)</button>
+                    </div>
+                    <div id="modal-abstract-vi" class="modal-abstract-box"></div>
+                    <div id="modal-abstract-en" class="modal-abstract-box" style="display:none;"></div>
+
+                    <div class="modal-section-title">🧬 PHẢ HỆ & ĐƯỜNG DẪN ĐỒNG TRÍCH DẪN</div>
+                    <div id="modal-lineage-content" style="display:flex; flex-direction:column; gap:4px; max-height:140px; overflow-y:auto;"></div>
+                </div>
+            </div>
+
             <div id="network-container"></div>
 
             <!-- DEDICATED INDEPENDENT ACADEMIC VIEW CONTAINERS -->
@@ -2483,6 +2644,7 @@ class CiteNetAgent:
             }} catch(e) {{}}
         }}
 
+        showPaperModal(nodeId);
         updateHoverInspectorNode(nodeId);
         updateSelectedDetailsPane(nodeId);
 
@@ -2540,6 +2702,7 @@ class CiteNetAgent:
         hoveredNodeId = null;
         hoveredEdgeId = null;
         hideHoverInspector();
+        closePaperModal();
 
         var nodeUpdates = [];
         rawNodes.forEach(function(n) {{
@@ -2568,6 +2731,188 @@ class CiteNetAgent:
         }}
     }}
 
+    // Chuyển đổi ngôn ngữ Tóm tắt Song ngữ (Việt - Anh)
+    function switchModalLang(lang) {{
+        var btnVi = document.getElementById('tabBtnVi');
+        var btnEn = document.getElementById('tabBtnEn');
+        var boxVi = document.getElementById('modal-abstract-vi');
+        var boxEn = document.getElementById('modal-abstract-en');
+        if (lang === 'vi') {{
+            if (btnVi) btnVi.className = 'bilingual-tab-btn active';
+            if (btnEn) btnEn.className = 'bilingual-tab-btn';
+            if (boxVi) boxVi.style.display = 'block';
+            if (boxEn) boxEn.style.display = 'none';
+        }} else {{
+            if (btnEn) btnEn.className = 'bilingual-tab-btn active';
+            if (btnVi) btnVi.className = 'bilingual-tab-btn';
+            if (boxVi) boxVi.style.display = 'none';
+            if (boxEn) boxEn.style.display = 'block';
+        }}
+    }}
+
+    // Hiển thị Modal chi tiết toàn diện bài báo khi bấm vào node
+    function showPaperModal(nodeId) {{
+        var p = metaDict[nodeId];
+        if (!p) return;
+        var modal = document.getElementById('paper-modal');
+        if (!modal) return;
+
+        var layerBadgeText = (p.level === 0 || p.layer === 'seed') ? '★ F0 BÀI GỐC (TÂM ĐIỂM)' :
+                             ((p.level < 0 || p.layer === 'backward') ? '🏛️ CỘI NGUỒN (R' + Math.abs(p.level || 1) + ')' :
+                             '🚀 KẾ THỪA (F' + Math.abs(p.level || 1) + ')');
+        var layerBadgeBg = (p.level === 0 || p.layer === 'seed') ? 'rgba(239, 68, 68, 0.25)' :
+                           ((p.level < 0 || p.layer === 'backward') ? 'rgba(168, 85, 247, 0.25)' : 'rgba(56, 189, 248, 0.25)');
+        var layerBadgeColor = (p.level === 0 || p.layer === 'seed') ? '#F87171' :
+                             ((p.level < 0 || p.layer === 'backward') ? '#C084FC' : '#38BDF8');
+
+        var oaBadge = p.is_oa ? '<span style="background:rgba(16,185,129,0.2); color:#34D399; border:1px solid rgba(16,185,129,0.4); padding:2px 8px; border-radius:6px; font-size:10px; font-weight:700;">🔓 Full PDF (Open Access)</span>' :
+                                '<span style="background:rgba(245,158,11,0.2); color:#FDE047; border:1px solid rgba(245,158,11,0.4); padding:2px 8px; border-radius:6px; font-size:10px; font-weight:700;">🔒 Paywall (Cần quyền)</span>';
+
+        var headerBadges = '<div style="display:flex; align-items:center; gap:5px; flex-wrap:wrap;">' +
+            '<span style="background:' + layerBadgeBg + '; color:' + layerBadgeColor + '; border:1px solid ' + layerBadgeColor + '; padding:2px 8px; border-radius:6px; font-size:10px; font-weight:800;">' + layerBadgeText + '</span>' +
+            oaBadge +
+            '<span style="background:rgba(56,189,248,0.15); color:#38BDF8; border:1px solid rgba(56,189,248,0.3); padding:2px 8px; border-radius:6px; font-size:10px; font-weight:700;">🏛️ ' + (p.scopus_tier || 'Scopus Indexed') + '</span>' +
+            '<span style="background:rgba(245,158,11,0.15); color:#FDE047; border:1px solid rgba(245,158,11,0.3); padding:2px 8px; border-radius:6px; font-size:10px; font-weight:700;">★ ' + (p.citation_count || 0) + ' trích dẫn</span>' +
+        '</div>';
+
+        var badgeEl = document.getElementById('modal-gen-badge');
+        if (badgeEl) badgeEl.innerHTML = headerBadges;
+
+        var titleEl = document.getElementById('modal-title');
+        if (titleEl) titleEl.innerText = p.title || 'Untitled';
+
+        var authorsEl = document.getElementById('modal-authors');
+        if (authorsEl) authorsEl.innerHTML = '<b>✍️ Tác giả:</b> ' + (p.authors || p.first_author || 'Unknown') + ' (' + (p.year || 'n.d.') + ')';
+
+        var venueEl = document.getElementById('modal-venue');
+        if (venueEl) venueEl.innerHTML = '<b>🏛️ Tạp chí:</b> <span style="color:var(--theme-accent); font-weight:600;">' + (p.venue || 'N/A') + '</span> | <b>🔬 Phân loại:</b> ' + (p.study_type || 'Nghiên cứu thực nghiệm');
+
+        var citationsEl = document.getElementById('modal-citations');
+        if (citationsEl) citationsEl.innerHTML = '<b>🔥 Trích dẫn học thuật:</b> <span style="color:#FDE047; font-weight:bold;">' + (p.citation_count || 0) + '</span> lượt' + (p.doi ? ' • <b>DOI:</b> ' + p.doi : '');
+
+        var apaBox = document.getElementById('modal-apa-box');
+        var apaText = p.apa7 || ((p.authors || p.first_author) + ' (' + (p.year || 'n.d.') + '). ' + p.title + '. ' + (p.venue || '') + '.');
+        var safeApa = apaText.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        if (apaBox) {{
+            apaBox.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">' +
+                '<span style="font-weight:700; color:var(--theme-accent); font-size:10px;">📋 ĐỊNH DẠNG TRÍCH DẪN APA 7:</span>' +
+                '<button type="button" id="modalBtnCopyApa" onclick="copyCitationText(\\'' + safeApa + '\\')" style="background:rgba(56,189,248,0.15); border:1px solid #38BDF8; color:#38BDF8; border-radius:4px; padding:1px 6px; font-size:9.5px; cursor:pointer; font-weight:700;">📋 Sao chép APA 7</button>' +
+            '</div>' +
+            '<div style="font-style:italic; line-height:1.4; font-size:11px; color:#CBD5E1;">' + apaText + '</div>';
+        }}
+
+        var doiBtn = document.getElementById('modal-doi-link');
+        if (doiBtn) {{
+            if (p.doi_url || p.landing_url || p.doi) {{
+                doiBtn.href = p.doi_url || p.landing_url || ('https://doi.org/' + p.doi);
+                doiBtn.innerText = '🔗 Mở bài báo gốc (DOI) ↗';
+                doiBtn.style.display = 'inline-flex';
+            }} else {{
+                doiBtn.style.display = 'none';
+            }}
+        }}
+
+        var pdfBtn = document.getElementById('modal-pdf-link');
+        if (pdfBtn) {{
+            if (p.pdf_url) {{
+                pdfBtn.href = p.pdf_url;
+                pdfBtn.innerText = '🔓 Tải toàn văn PDF miễn phí ↗';
+                pdfBtn.style.display = 'inline-flex';
+            }} else {{
+                pdfBtn.style.display = 'none';
+            }}
+        }}
+
+        var oaBtn = document.getElementById('modal-openalex-link');
+        if (oaBtn) {{
+            oaBtn.href = p.openalex_url || ('https://openalex.org/works?filter=doi:' + p.doi);
+            oaBtn.innerText = '🌐 Hồ sơ OpenAlex ↗';
+        }}
+
+        var absVi = document.getElementById('modal-abstract-vi');
+        var absEn = document.getElementById('modal-abstract-en');
+        if (absVi) absVi.innerText = p.abstract_vi || p.abstract || 'Tóm tắt đang được cập nhật từ cơ sở dữ liệu học thuật...';
+        if (absEn) absEn.innerText = p.abstract_en || p.abstract || 'Abstract is being indexed...';
+        switchModalLang('vi');
+
+        var outList = p.outgoing_ids || [];
+        var inList = p.incoming_ids || [];
+        var lineageHtml = '';
+
+        if (outList.length > 0) {{
+            lineageHtml += '<div style="font-size:10.5px; color:#A78BFA; font-weight:800; margin:4px 0 2px 0;">🏛️ TÀI LIỆU CÔNG TRÌNH NÀY TRÍCH DẪN (R1-R3: ' + outList.length + ' bài):</div>';
+            outList.forEach(function(targetId) {{
+                var targetP = metaDict[targetId];
+                if (targetP) {{
+                    var shortT = targetP.title ? (targetP.title.length > 50 ? targetP.title.substring(0, 48) + '...' : targetP.title) : 'Untitled';
+                    lineageHtml += '<div class="lineage-chip" onclick="jumpToNode(\\'' + targetId + '\\')">↳ <b>[' + (targetP.year || 'n.d.') + '] ' + (targetP.first_author || 'Author') + ':</b> ' + shortT + ' <span style="color:#FDE047; font-size:9.5px; margin-left:auto;">★ ' + (targetP.citation_count || 0) + ' tc</span></div>';
+                }}
+            }});
+        }}
+
+        if (inList.length > 0) {{
+            lineageHtml += '<div style="font-size:10.5px; color:#38BDF8; font-weight:800; margin:8px 0 2px 0;">🚀 ĐƯỢC TRÍCH DẪN BỞI CÁC BÀI (F1-F3: ' + inList.length + ' bài):</div>';
+            inList.forEach(function(srcId) {{
+                var srcP = metaDict[srcId];
+                if (srcP) {{
+                    var shortT = srcP.title ? (srcP.title.length > 50 ? srcP.title.substring(0, 48) + '...' : srcP.title) : 'Untitled';
+                    lineageHtml += '<div class="lineage-chip" onclick="jumpToNode(\\'' + srcId + '\\')">↰ <b>[' + (srcP.year || 'n.d.') + '] ' + (srcP.first_author || 'Author') + ':</b> ' + shortT + ' <span style="color:#FDE047; font-size:9.5px; margin-left:auto;">★ ' + (srcP.citation_count || 0) + ' tc</span></div>';
+                }}
+            }});
+        }}
+
+        if (outList.length === 0 && inList.length === 0) {{
+            lineageHtml = '<div style="color:var(--theme-text-dim); font-size:11px; font-style:italic; padding:4px 0;">Công trình độc lập trong tập mẫu trích dẫn này.</div>';
+        }}
+
+        var lineageEl = document.getElementById('modal-lineage-content');
+        if (lineageEl) lineageEl.innerHTML = lineageHtml;
+
+        modal.style.display = 'flex';
+    }}
+
+    function jumpToNode(nodeId) {{
+        selectPaperFromTable(nodeId);
+        showPaperModal(nodeId);
+    }}
+
+    function closePaperModal() {{
+        var modal = document.getElementById('paper-modal');
+        if (modal) modal.style.display = 'none';
+    }}
+
+    function copyCitationText(text) {{
+        if (navigator.clipboard && navigator.clipboard.writeText) {{
+            navigator.clipboard.writeText(text).then(function() {{
+                var btn = document.getElementById('btnCopyApa');
+                var modalBtn = document.getElementById('modalBtnCopyApa');
+                var orig = '📋 Sao chép APA 7';
+                if (btn) {{
+                    btn.innerText = '✓ Đã chép!';
+                    btn.style.color = '#34D399';
+                    btn.style.borderColor = '#34D399';
+                }}
+                if (modalBtn) {{
+                    modalBtn.innerText = '✓ Đã chép!';
+                    modalBtn.style.color = '#34D399';
+                    modalBtn.style.borderColor = '#34D399';
+                }}
+                setTimeout(function() {{
+                    if (btn) {{
+                        btn.innerText = orig;
+                        btn.style.color = '#38BDF8';
+                        btn.style.borderColor = '#38BDF8';
+                    }}
+                    if (modalBtn) {{
+                        modalBtn.innerText = orig;
+                        modalBtn.style.color = '#38BDF8';
+                        modalBtn.style.borderColor = '#38BDF8';
+                    }}
+                }}, 2200);
+            }}).catch(function() {{}});
+        }}
+    }}
+
     function updateSelectedDetailsPane(nodeId) {{
         var p = metaDict[nodeId];
         if (!p) return;
@@ -2578,46 +2923,101 @@ class CiteNetAgent:
         var bEl = document.getElementById('selectedPaperActionBtns');
         var lEl = document.getElementById('selLineageList');
 
-        if (tEl) tEl.innerText = p.title;
-        if (mEl) mEl.innerHTML = '<b>✍️ ' + p.authors + '</b> (' + p.year + ') • 🏛️ ' + p.venue + ' • <span style="color:var(--theme-accent); font-weight:700;">' + (p.scopus_tier || 'Scopus Q1') + ' (' + (p.citation_count || 0) + ' tc)</span>';
-        if (aEl) aEl.innerText = p.abstract_vi || p.abstract || 'Tóm tắt đang cập nhật...';
+        // Phân tầng học thuật
+        var layerBadgeText = (p.level === 0 || p.layer === 'seed') ? '★ F0 BÀI GỐC (KHỞI ĐẦU)' :
+                             ((p.level < 0 || p.layer === 'backward') ? '🏛️ CỘI NGUỒN (R' + Math.abs(p.level || 1) + ')' :
+                             '🚀 KẾ THỪA (F' + Math.abs(p.level || 1) + ')');
+        var layerBadgeBg = (p.level === 0 || p.layer === 'seed') ? 'rgba(239, 68, 68, 0.2)' :
+                           ((p.level < 0 || p.layer === 'backward') ? 'rgba(168, 85, 247, 0.2)' : 'rgba(56, 189, 248, 0.2)');
+        var layerBadgeColor = (p.level === 0 || p.layer === 'seed') ? '#F87171' :
+                             ((p.level < 0 || p.layer === 'backward') ? '#C084FC' : '#38BDF8');
 
+        // Quyền truy cập
+        var oaBadge = p.is_oa ? '<span style="background:rgba(16,185,129,0.18); color:#34D399; border:1px solid rgba(16,185,129,0.35); padding:2px 8px; border-radius:6px; font-size:10.5px; font-weight:700;">🔓 Full PDF (Open Access)</span>' :
+                                '<span style="background:rgba(245,158,11,0.18); color:#FDE047; border:1px solid rgba(245,158,11,0.35); padding:2px 8px; border-radius:6px; font-size:10.5px; font-weight:700;">🔒 Paywall (Cần quyền)</span>';
+
+        // Header Tiêu đề & Badges
+        if (tEl) {{
+            tEl.innerHTML = '<div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:6px;">' +
+                '<span style="background:' + layerBadgeBg + '; color:' + layerBadgeColor + '; border:1px solid ' + layerBadgeColor + '; padding:2px 8px; border-radius:6px; font-size:10.5px; font-weight:800;">' + layerBadgeText + '</span>' +
+                oaBadge +
+                '<span style="background:rgba(56,189,248,0.14); color:#38BDF8; border:1px solid rgba(56,189,248,0.3); padding:2px 8px; border-radius:6px; font-size:10.5px; font-weight:700;">🏛️ ' + (p.scopus_tier || 'Scopus Q1') + '</span>' +
+                '<span style="background:rgba(245,158,11,0.14); color:#FDE047; border:1px solid rgba(245,158,11,0.3); padding:2px 8px; border-radius:6px; font-size:10.5px; font-weight:700;">🔥 ' + (p.citation_count || 0) + ' trích dẫn</span>' +
+                '<span style="background:rgba(255,255,255,0.06); color:var(--theme-text-dim); border:1px solid rgba(255,255,255,0.1); padding:2px 8px; border-radius:6px; font-size:10.5px;">🔬 ' + (p.study_type || 'Nghiên cứu thực nghiệm') + '</span>' +
+            '</div>' +
+            '<div style="font-size:14px; font-weight:800; color:#FFFFFF; line-height:1.45;">' + p.title + '</div>';
+        }}
+
+        // Meta chi tiết: Tác giả, Năm, Tạp chí, Định dạng APA 7
+        if (mEl) {{
+            var apaText = p.apa7 || (p.authors + ' (' + p.year + '). ' + p.title + '. ' + p.venue + '.');
+            var safeApa = apaText.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+            mEl.innerHTML = '<div style="margin-top:6px; display:flex; flex-direction:column; gap:4px;">' +
+                '<div style="font-size:12px; color:var(--theme-text-main);"><b>✍️ Tác giả:</b> ' + p.authors + ' (' + p.year + ')</div>' +
+                '<div style="font-size:12px; color:var(--theme-text-dim);"><b>🏛️ Tạp chí công bố:</b> <span style="color:var(--theme-accent); font-weight:600;">' + p.venue + '</span>' + (p.doi ? ' • <b>DOI:</b> ' + p.doi : '') + '</div>' +
+                '<div style="font-size:11.5px; color:#CBD5E1; background:rgba(0,0,0,0.3); padding:6px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.08); margin-top:2px;">' +
+                    '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">' +
+                        '<span style="font-weight:700; color:var(--theme-accent); font-size:10.5px;">📋 ĐỊNH DẠNG TRÍCH DẪN APA 7TH EDITION:</span>' +
+                        '<button type="button" id="btnCopyApa" onclick="copyCitationText(\\'' + safeApa + '\\')" style="background:rgba(56,189,248,0.15); border:1px solid #38BDF8; color:#38BDF8; border-radius:4px; padding:1px 6px; font-size:10px; cursor:pointer; font-weight:700;">📋 Chép trích dẫn</button>' +
+                    '</div>' +
+                    '<div style="font-style:italic; line-height:1.4;">' + apaText + '</div>' +
+                '</div>' +
+            '</div>';
+        }}
+
+        // Tóm tắt nghiên cứu (Abstract)
+        if (aEl) {{
+            var absContent = p.abstract_vi || p.abstract || 'Tóm tắt đang được cập nhật từ cơ sở dữ liệu học thuật...';
+            aEl.innerHTML = '<div style="font-weight:800; color:var(--theme-accent); font-size:11.5px; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px;">📖 Tóm tắt nghiên cứu (Abstract):</div>' +
+                            '<div style="line-height:1.6; color:var(--theme-text-main); font-size:11.5px;">' + absContent + '</div>';
+        }}
+
+        // Action buttons
         if (bEl) {{
             var btnHtml = '';
-            if (p.doi_url || p.landing_url) {{
-                btnHtml += '<a href="' + (p.doi_url || p.landing_url) + '" target="_blank" class="hud-mini-btn active" style="text-decoration:none; padding:3px 8px; font-size:10.5px;">DOI ↗</a>';
-            }}
             if (p.pdf_url) {{
-                btnHtml += '<a href="' + p.pdf_url + '" target="_blank" class="hud-mini-btn" style="background:#059669; border-color:#10B981; color:#FFF; text-decoration:none; padding:3px 8px; font-size:10.5px;">🔓 PDF ↗</a>';
+                btnHtml += '<a href="' + p.pdf_url + '" target="_blank" class="hud-mini-btn" style="background:#059669; border-color:#10B981; color:#FFF; text-decoration:none; padding:4px 10px; font-size:11px; font-weight:700;">🔓 Toàn văn PDF ↗</a>';
             }}
-            btnHtml += '<a href="' + (p.openalex_url || ('https://openalex.org/works?filter=doi:' + p.doi)) + '" target="_blank" class="hud-mini-btn" style="text-decoration:none; padding:3px 8px; font-size:10.5px;">OpenAlex ↗</a>';
+            if (p.doi_url || p.landing_url) {{
+                btnHtml += '<a href="' + (p.doi_url || p.landing_url) + '" target="_blank" class="hud-mini-btn active" style="text-decoration:none; padding:4px 10px; font-size:11px; font-weight:700;">🔗 DOI: ' + (p.doi ? p.doi.substring(0, 18) + '...' : 'Trực tiếp ↗') + '</a>';
+            }}
+            if (p.openalex_url) {{
+                btnHtml += '<a href="' + p.openalex_url + '" target="_blank" class="hud-mini-btn" style="text-decoration:none; padding:4px 10px; font-size:11px;">OpenAlex ↗</a>';
+            }}
             bEl.innerHTML = btnHtml;
         }}
 
+        // Lineage list (Outgoing R & Incoming F)
         if (lEl) {{
             var outList = p.outgoing_ids || [];
             var inList = p.incoming_ids || [];
-            var listHtml = '';
+            var listHtml = '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">' +
+                '<span style="font-size:10.5px; color:var(--theme-text-dim);">⚡ ' + outList.length + ' Tham chiếu (R) • ' + inList.length + ' Kế thừa (F)</span>' +
+            '</div>';
             
             if (outList.length > 0) {{
+                listHtml += '<div style="font-size:10px; font-weight:800; color:#A78BFA; text-transform:uppercase; margin-top:4px;">🏛️ Cội nguồn / Tham chiếu trực tiếp (' + outList.length + ' bài):</div>';
                 outList.slice(0, 8).forEach(function(tid) {{
                     var tp = metaDict[tid];
                     if (tp) {{
                         var shortT = tp.title ? (tp.title.length > 55 ? tp.title.substring(0, 52) + '...' : tp.title) : '';
-                        listHtml += '<div class="cocite-item" onclick="selectPaperFromTable(\\'' + tid + '\\')">↳ <b>R (Tham chiếu):</b> ' + tp.first_author + ' (' + tp.year + ')' + (shortT ? ' • <span style="color:var(--theme-text-main); font-weight:400;">' + shortT + '</span>' : '') + '</div>';
+                        listHtml += '<div class="cocite-item" onclick="selectPaperFromTable(\\'' + tid + '\\')">↳ <b>[' + tp.year + '] ' + tp.first_author + ':</b> <span style="color:var(--theme-text-main); font-weight:400;">' + shortT + '</span> <span style="color:var(--theme-accent); font-size:9.5px;">(' + (tp.citation_count || 0) + ' tc)</span></div>';
                     }}
                 }});
             }}
             if (inList.length > 0) {{
+                listHtml += '<div style="font-size:10px; font-weight:800; color:#38BDF8; text-transform:uppercase; margin-top:8px;">🚀 Kế thừa / Phát triển trực tiếp (' + inList.length + ' bài):</div>';
                 inList.slice(0, 8).forEach(function(sid) {{
                     var sp = metaDict[sid];
                     if (sp) {{
                         var shortT = sp.title ? (sp.title.length > 55 ? sp.title.substring(0, 52) + '...' : sp.title) : '';
-                        listHtml += '<div class="cocite-item" onclick="selectPaperFromTable(\\'' + sid + '\\')">↰ <b>F (Kế thừa):</b> ' + sp.first_author + ' (' + sp.year + ')' + (shortT ? ' • <span style="color:var(--theme-text-main); font-weight:400;">' + shortT + '</span>' : '') + '</div>';
+                        listHtml += '<div class="cocite-item" onclick="selectPaperFromTable(\\'' + sid + '\\')">↰ <b>[' + sp.year + '] ' + sp.first_author + ':</b> <span style="color:var(--theme-text-main); font-weight:400;">' + shortT + '</span> <span style="color:var(--theme-accent); font-size:9.5px;">(' + (sp.citation_count || 0) + ' tc)</span></div>';
                     }}
                 }});
             }}
-            if (!listHtml) listHtml = '<div style="color:var(--theme-text-dim); font-size:11px; font-style:italic;">Không có nhánh trích dẫn trực tiếp trong tập mẫu này.</div>';
+            if (outList.length === 0 && inList.length === 0) {{
+                listHtml = '<div style="color:var(--theme-text-dim); font-size:11px; font-style:italic; padding:8px 0;">Công trình độc lập trong tập mẫu trích dẫn này.</div>';
+            }}
             lEl.innerHTML = listHtml;
         }}
     }}
@@ -4343,6 +4743,7 @@ class CiteNetAgent:
                 if (btn) btn.classList.remove('active');
             }}
             hideHoverInspector();
+            closePaperModal();
         }}
     }});
 
@@ -4740,6 +5141,7 @@ class CiteNetAgent:
         makeElementDraggable(document.getElementById('graphHoverInspector'));
         makeElementDraggable(document.getElementById('graphEdgeInspector'));
         makeElementDraggable(document.getElementById('layerFilterPopover'));
+        makeElementDraggable(document.getElementById('paper-modal'));
     }}, 400);
 </script>
 </body>
