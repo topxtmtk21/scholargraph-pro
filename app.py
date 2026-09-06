@@ -1241,7 +1241,7 @@ elif "02." in workspace_nav:
                     💎 CẤU TRÚC PHÂN TẦNG MẠNG LƯỚI TRI THỨC KIM CƯƠNG 2 CHIỀU
                 </div>
                 <div style="color: var(--text-secondary); font-size: 13px; line-height: 1.5;">
-                    Mô hình kim cương 2 chiều kết nối hoàn chỉnh giữa <b>Cội nguồn lý thuyết quá khứ (R1-R3)</b> $\longleftrightarrow$ <b>Bài báo gốc (F0)</b> $\longleftrightarrow$ <b>Bước tiến kế thừa tương lai (F1-F3)</b>.
+                    Mô hình kim cương 2 chiều kết nối hoàn chỉnh giữa <b>Cội nguồn lý thuyết quá khứ (R1-R3)</b> &harr; <b>Bài báo gốc (F0)</b> &harr; <b>Bước tiến kế thừa tương lai (F1-F3)</b>.
                 </div>
             </div>
             """, unsafe_allow_html=True)

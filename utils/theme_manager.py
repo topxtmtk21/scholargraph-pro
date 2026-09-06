@@ -1132,7 +1132,7 @@ def generate_theme_css(theme_id: str) -> str:
         gap: 3px !important;
     }}
     /* Custom Badges for Diamond Knowledge Graph */
-    .custom-badge {
+    .custom-badge {{
         display: inline-flex;
         align-items: center;
         gap: 4px;
@@ -1140,166 +1140,166 @@ def generate_theme_css(theme_id: str) -> str:
         font-weight: 700;
         padding: 2px 8px;
         border-radius: 6px;
-    }
-    .custom-badge.badge-blue {
+    }}
+    .custom-badge.badge-blue {{
         background: {c["badge_blue_bg"]};
         color: {c["badge_blue_text"]};
         border: 1px solid {c["badge_blue_border"]};
-    }
-    .custom-badge.badge-green {
+    }}
+    .custom-badge.badge-green {{
         background: {c["badge_green_bg"]};
         color: {c["badge_green_text"]};
         border: 1px solid {c["badge_green_border"]};
-    }
-    .custom-badge.badge-rose {
+    }}
+    .custom-badge.badge-rose {{
         background: {c["badge_rose_bg"]};
         color: {c["badge_rose_text"]};
         border: 1px solid {c["badge_rose_border"]};
-    }
-    .custom-badge.badge-amber {
+    }}
+    .custom-badge.badge-amber {{
         background: rgba(245, 158, 11, 0.15);
         color: #F59E0B;
         border: 1px solid rgba(245, 158, 11, 0.4);
-    }
-    .custom-badge.badge-purple {
+    }}
+    .custom-badge.badge-purple {{
         background: rgba(168, 85, 247, 0.15);
         color: #A855F7;
         border: 1px solid rgba(168, 85, 247, 0.4);
-    }
-    .custom-badge.badge-diamond-seed {
+    }}
+    .custom-badge.badge-diamond-seed {{
         background: rgba(234, 67, 53, 0.2);
         color: #F28B82;
         border: 1px solid rgba(234, 67, 53, 0.45);
-    }
-    .custom-badge.badge-diamond-root {
+    }}
+    .custom-badge.badge-diamond-root {{
         background: rgba(124, 58, 237, 0.2);
         color: #C4B5FD;
         border: 1px solid rgba(124, 58, 237, 0.45);
-    }
-    .custom-badge.badge-diamond-frontier {
+    }}
+    .custom-badge.badge-diamond-frontier {{
         background: rgba(2, 132, 199, 0.2);
         color: #38BDF8;
         border: 1px solid rgba(56, 189, 248, 0.45);
-    }
+    }}
 
     /* =========================================================================
        TỐI ƯU HÓA ĐẶC BIỆT CHO THIẾT BỊ DI ĐỘNG & MÁY TÍNH BẢNG (MOBILE & TABLET UX)
        ========================================================================= */
     /* Máy tính bảng & Màn hình vừa (Tablet: 769px - 1024px) */
-    @media (min-width: 769px) and (max-width: 1024px) {
-        .block-container, [data-testid="block-container"] {
+    @media (min-width: 769px) and (max-width: 1024px) {{
+        .block-container, [data-testid="block-container"] {{
             padding: 1.2rem 1rem 3rem 1rem !important;
             max-width: 100% !important;
-        }
-        .app-top-toolbar {
+        }}
+        .app-top-toolbar {{
             padding: 10px 14px !important;
             gap: 10px !important;
-        }
-        [data-testid="column"] {
+        }}
+        [data-testid="column"] {{
             min-width: 48% !important;
             flex: 1 1 48% !important;
             margin-bottom: 8px !important;
-        }
-        .manual-app-title {
+        }}
+        .manual-app-title {{
             font-size: 24px !important;
-        }
-    }
+        }}
+    }}
 
-    @media (max-width: 992px) {
-        .app-top-toolbar {
+    @media (max-width: 992px) {{
+        .app-top-toolbar {{
             flex-direction: column !important;
             align-items: stretch !important;
             gap: 10px !important;
             padding: 10px 12px !important;
-        }
-        .toolbar-left {
+        }}
+        .toolbar-left {{
             width: 100% !important;
             justify-content: space-between !important;
-        }
-        .toolbar-right-brand {
+        }}
+        .toolbar-right-brand {{
             width: 100% !important;
             justify-content: space-between !important;
             border-top: 1px dashed {c["border_subtle"]} !important;
             padding-top: 8px !important;
             margin-left: 0 !important;
-        }
-        .manual-app-title {
+        }}
+        .manual-app-title {{
             font-size: 22px !important;
             letter-spacing: 0.06em !important;
-        }
-    }
+        }}
+    }}
 
     /* Điện thoại di động (Smartphones & Small Tablets: <= 768px) */
-    @media (max-width: 768px) {
+    @media (max-width: 768px) {{
         /* Bố cục vùng đệm toàn trang trên điện thoại */
         .main .block-container,
         div[data-testid="stAppViewBlockContainer"],
-        .block-container, [data-testid="block-container"] {
+        .block-container, [data-testid="block-container"] {{
             padding: 0.75rem 0.5rem 2.8rem 0.5rem !important;
             width: 100% !important;
             max-width: 100% !important;
-        }
+        }}
 
         /* Sidebar tối ưu cho màn hình cảm ứng di động */
-        section[data-testid="stSidebar"][aria-expanded="true"] {
+        section[data-testid="stSidebar"][aria-expanded="true"] {{
             width: 88vw !important;
             min-width: unset !important;
             max-width: 340px !important;
             box-shadow: 0 0 40px rgba(0,0,0,0.88) !important;
-        }
+        }}
 
         /* Thẻ chỉ số Metric: Tự động xếp vừa vặn thay vì bị bẹp */
-        [data-testid="column"] {
+        [data-testid="column"] {{
             min-width: 100% !important;
             flex: 1 1 100% !important;
             margin-bottom: 8px !important;
-        }
+        }}
 
         /* Bảng tổng hợp APA 7: Chuyển lưới 2 cột sang 1 cột linh hoạt trên màn hình hẹp */
         div[style*="grid-template-columns: 1fr 1fr"],
         div[style*="grid-template-columns: repeat(2, 1fr)"],
         div[style*="grid-template-columns: repeat(3, 1fr)"],
-        div[style*="grid-template-columns: repeat(4, 1fr)"] {
+        div[style*="grid-template-columns: repeat(4, 1fr)"] {{
             grid-template-columns: 1fr !important;
             gap: 8px !important;
-        }
+        }}
 
         /* Hàng điều khiển nút bấm & thanh trạng thái */
-        .symmetrical-action-card {
+        .symmetrical-action-card {{
             height: auto !important;
             min-height: 48px !important;
             padding: 8px 12px !important;
             flex-wrap: wrap !important;
-        }
+        }}
 
         /* Bảng dữ liệu & Dataframe cuộn ngang mượt mà */
-        div[data-testid="stTable"], div[data-testid="stDataFrame"], .stDataFrame {
+        div[data-testid="stTable"], div[data-testid="stDataFrame"], .stDataFrame {{
             overflow-x: auto !important;
             -webkit-overflow-scrolling: touch !important;
             max-width: 100% !important;
-        }
-        table {
+        }}
+        table {{
             min-width: 100% !important;
             font-size: 11.5px !important;
-        }
+        }}
 
         /* Hộp thoại Dialog & Popup trên Mobile */
-        div[role="dialog"] {
+        div[role="dialog"] {{
             width: 96vw !important;
             max-width: 96vw !important;
             padding: 12px !important;
             border-radius: 16px !important;
-        }
+        }}
 
         /* Khối mã lệnh / trích dẫn cuộn mượt */
-        pre, code {
+        pre, code {{
             font-size: 11.5px !important;
             white-space: pre-wrap !important;
             word-break: break-word !important;
-        }
+        }}
 
         /* Thanh Tabs di chuyển ngang mượt mà trên cảm ứng */
-        div[data-baseweb="tab-list"] {
+        div[data-baseweb="tab-list"] {{
             overflow-x: auto !important;
             overflow-y: hidden !important;
             flex-wrap: nowrap !important;
@@ -1308,24 +1308,24 @@ def generate_theme_css(theme_id: str) -> str:
             scrollbar-width: none !important;
             padding: 4px 4px !important;
             gap: 4px !important;
-        }
-        div[data-baseweb="tab-list"]::-webkit-scrollbar {
+        }}
+        div[data-baseweb="tab-list"]::-webkit-scrollbar {{
             display: none !important;
-        }
-        div[data-baseweb="tab"] {
+        }}
+        div[data-baseweb="tab"] {{
             flex-shrink: 0 !important;
             font-size: 11.5px !important;
             padding: 7px 10px !important;
             min-height: 38px !important;
-        }
+        }}
 
         /* Chữ và ô nhập liệu tối ưu không bị tự động phóng to trên iOS Safari */
-        .stTextArea textarea, .stTextInput input, .stSelectbox select {
+        .stTextArea textarea, .stTextInput input, .stSelectbox select {{
             font-size: 14px !important;
-        }
+        }}
 
         /* Nút bấm cảm ứng to rõ, chống bấm nhầm (Touch Target >= 44px) */
-        .stButton button {
+        .stButton button {{
             min-height: 44px !important;
             font-size: 13px !important;
             width: 100% !important;
