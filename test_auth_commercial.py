@@ -32,12 +32,23 @@ def run_auth_tests():
     print("🧪 KIỂM THỬ HỆ THỐNG XÁC THỰC DOANH NGHIỆP & PHÂN QUYỀN (AUTH & RBAC)")
     print("=" * 70)
 
+    # Re-init fresh state
+    db_p = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "scholargraph_auth.db")
+    if os.path.exists(db_p):
+        try:
+            os.remove(db_p)
+        except Exception:
+            pass
+    from utils.auth_manager import init_auth_db
+    init_auth_db()
+
     # 1. Test Super Admin Default Login
     print("\n--- [1/6] Kiểm tra Đăng nhập Super Admin Mặc định ---")
     ok, u, msg = authenticate_user(SUPER_ADMIN_EMAIL, DEFAULT_SUPER_ADMIN_PASS)
     assert ok, f"Lỗi đăng nhập Super Admin: {msg}"
     assert u["role"] == "super_admin", "Vai trò không phải super_admin"
     print(f"✓ Đăng nhập thành công Super Admin: {u['email']} | Role: {u['role']} | Bắt buộc đổi pass: {bool(u['must_change_password'])}")
+
 
     # 2. Test Mandatory Password Change
     print("\n--- [2/6] Kiểm tra Đổi mật khẩu lần đầu ---")
