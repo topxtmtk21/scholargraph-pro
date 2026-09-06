@@ -422,9 +422,18 @@ with st.sidebar:
 
     if "workspace_nav" not in st.session_state:
         st.session_state["workspace_nav"] = "01. Khởi tạo & Nhập mã DOI"
-    if st.session_state["workspace_nav"] not in nav_options:
-        st.session_state["workspace_nav"] = nav_options[0]
+        
+    cur_nav_val = st.session_state["workspace_nav"]
+    if cur_nav_val not in nav_options:
+        matched = None
+        for opt in nav_options:
+            if cur_nav_val.split('.')[0] == opt.split('.')[0] or cur_nav_val.lower() in opt.lower() or opt.lower() in cur_nav_val.lower():
+                matched = opt
+                break
+        st.session_state["workspace_nav"] = matched if matched else nav_options[0]
 
+    # Đồng bộ state của widget radio trước khi render để đảm bảo nhận lệnh điều hướng ngoài tức thì
+    st.session_state["workspace_nav_radio"] = st.session_state["workspace_nav"]
     nav_default_index = nav_options.index(st.session_state["workspace_nav"])
 
     workspace_nav = st.radio(
@@ -540,10 +549,10 @@ if st.session_state.get("display_mode") == "mobile_cloud":
 
     q_cols_mobile = st.columns(4)
     q_quick_targets = [
-        ("🚀 01. Nhập DOI", "01. Khởi tạo & Nhập mã DOI"),
-        ("🌐 02. Mạng Lưới Trích Dẫn", "02. Mạng lưới trích dẫn khoa học"),
-        ("📊 03. Ma Trận APA 7", "03. Bảng tổng hợp phương pháp (APA 7)"),
-        ("✍️ 05. Soạn Thảo CARS", "05. Soạn thảo CARS & Phản biện mô phỏng"),
+        ("🚀 KHỞI TẠO & DOI", "01. Khởi tạo & Nhập mã DOI"),
+        ("🌐 MẠNG LƯỚI TRÍCH DẪN", "02. Mạng lưới trích dẫn khoa học"),
+        ("📊 BẢNG TỔNG HỢP APA 7", "03. Bảng tổng hợp phương pháp (APA 7)"),
+        ("✍️ SOẠN THẢO CARS", "05. Soạn thảo CARS & Phản biện mô phỏng"),
     ]
 
     for q_i, (q_txt, q_val) in enumerate(q_quick_targets):
@@ -724,6 +733,7 @@ if hasattr(st, "dialog"):
             if st.button("🌐 XEM MẠNG LƯỚI TRÍCH DẪN ➔", type="primary", use_container_width=True, key="btn_modal_goto_m2"):
                 st.session_state.show_completion_popup = False
                 st.session_state["workspace_nav"] = "02. Mạng lưới trích dẫn khoa học"
+                st.session_state["workspace_nav_radio"] = "02. Mạng lưới trích dẫn khoa học"
                 st.rerun()
         with col_p3:
             if st.button("✕ Đóng", use_container_width=True, key="btn_modal_close"):
@@ -1014,45 +1024,49 @@ if "01." in workspace_nav:
         with qnav1:
             st.markdown("""
             <div class="quick-nav-card qnav-net">
-                <div class="qnav-title">🌐 02. Mạng Lưới Trích Dẫn</div>
+                <div class="qnav-title">🌐 MẠNG LƯỚI TRÍCH DẪN KHOA HỌC</div>
                 <div class="qnav-desc">Khám phá sơ đồ phả hệ học thuật, node trích dẫn & phân loại Open Access</div>
             </div>
             """, unsafe_allow_html=True)
-            if st.button("➔ Xem Mạng Lưới Trích Dẫn", type="primary", use_container_width=True, key="btn_qnav_m2"):
+            if st.button("➔ XEM MẠNG LƯỚI TRÍCH DẪN", type="primary", use_container_width=True, key="btn_qnav_m2"):
                 st.session_state["workspace_nav"] = "02. Mạng lưới trích dẫn khoa học"
+                st.session_state["workspace_nav_radio"] = "02. Mạng lưới trích dẫn khoa học"
                 st.rerun()
                 
         with qnav2:
             st.markdown("""
             <div class="quick-nav-card qnav-apa">
-                <div class="qnav-title">📊 03. Bảng Tổng Hợp APA 7</div>
+                <div class="qnav-title">📊 BẢNG TỔNG HỢP PHƯƠNG PHÁP (APA 7)</div>
                 <div class="qnav-desc">Bóc tách bằng chứng phương pháp, mẫu trích đoạn & chuẩn hóa trích dẫn APA 7</div>
             </div>
             """, unsafe_allow_html=True)
-            if st.button("➔ Xem Bảng APA 7", use_container_width=True, key="btn_qnav_m3"):
+            if st.button("➔ XEM BẢNG TỔNG HỢP APA 7", use_container_width=True, key="btn_qnav_m3"):
                 st.session_state["workspace_nav"] = "03. Bảng tổng hợp phương pháp (APA 7)"
+                st.session_state["workspace_nav_radio"] = "03. Bảng tổng hợp phương pháp (APA 7)"
                 st.rerun()
                 
         with qnav3:
             st.markdown("""
             <div class="quick-nav-card qnav-cars">
-                <div class="qnav-title">✍️ 05. Soạn Thảo CARS</div>
+                <div class="qnav-title">✍️ SOẠN THẢO CARS & PHẢN BIỆN MÔ PHỎNG</div>
                 <div class="qnav-desc">Bản thảo Mở đầu song ngữ chuẩn John Swales CARS & mô phỏng phản biện học thuật</div>
             </div>
             """, unsafe_allow_html=True)
-            if st.button("➔ Xem Bản Thảo CARS", use_container_width=True, key="btn_qnav_m5"):
+            if st.button("➔ XEM BẢN THẢO CARS", use_container_width=True, key="btn_qnav_m5"):
                 st.session_state["workspace_nav"] = "05. Soạn thảo CARS & Phản biện mô phỏng"
+                st.session_state["workspace_nav_radio"] = "05. Soạn thảo CARS & Phản biện mô phỏng"
                 st.rerun()
                 
         with qnav4:
             st.markdown("""
             <div class="quick-nav-card qnav-pack">
-                <div class="qnav-title">📦 06. Tải Hồ Sơ Nghiên Cứu</div>
+                <div class="qnav-title">📦 TẢI VỀ TRỌN BỘ HỒ SƠ & AI COPILOT</div>
                 <div class="qnav-desc">Xuất trọn gói 5 định dạng học thuật (.ZIP, .CSV, .BIB, .DOCX, .HTML tương tác)</div>
             </div>
             """, unsafe_allow_html=True)
-            if st.button("➔ Đến Trang Tải Về", use_container_width=True, key="btn_qnav_m6"):
-                st.session_state["workspace_nav"] = "06. Tải về hồ sơ nghiên cứu (.ZIP)"
+            if st.button("➔ ĐẾN TRANG TẢI VỀ HỒ SƠ", use_container_width=True, key="btn_qnav_m6"):
+                st.session_state["workspace_nav"] = "06. Tải về trọn bộ hồ sơ & AI Copilot"
+                st.session_state["workspace_nav_radio"] = "06. Tải về trọn bộ hồ sơ & AI Copilot"
                 st.rerun()
 
 # -----------------------------------------------------------------------------
