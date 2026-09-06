@@ -917,13 +917,15 @@ class CiteNetAgent:
             <!-- Search Box -->
             <input type="text" id="nodeSearch" class="hud-search-box" style="width: 100%; box-sizing: border-box;" placeholder="🔍 Tìm tác giả / bài báo..." oninput="searchAndFocusNode(this.value)">
             
-            <!-- Hàng 1: Phóng to, Thu nhỏ, Căn giữa, Physics, Hạt sáng, Truy vết, Toàn màn hình -->
+            <!-- Hàng 1: Phóng to, Thu nhỏ, Căn giữa, Physics, Hạt sáng, Nhịp thở, Tua lịch sử, Truy vết, Toàn màn hình -->
             <div class="hud-btn-row">
                 <button class="hud-btn" onclick="zoomIn()" title="Phóng to mạng lưới">🔍+ Phóng to</button>
                 <button class="hud-btn" onclick="zoomOut()" title="Thu nhỏ mạng lưới">🔍- Thu nhỏ</button>
                 <button class="hud-btn" onclick="fitView()" title="Căn giữa toàn cảnh">🎯 Căn giữa</button>
                 <button class="hud-btn" id="physicsBtn" onclick="togglePhysics()" title="Bật/Tắt mô phỏng vật lý">⚡ Tự sắp xếp</button>
                 <button class="hud-btn active" id="particlesBtn" onclick="toggleParticles()" title="Bật/Tắt luồng hạt photon chuyển động dọc theo mũi tên trích dẫn">✨ Hạt Sáng</button>
+                <button class="hud-btn active" id="pulseBtn" onclick="togglePulseGlow()" title="Bật/Tắt vầng hào quang nhịp thở tỏa sáng quanh bài báo gốc & điểm bùng nổ">💓 Nhịp Thở</button>
+                <button class="hud-btn" id="timeplayBtn" onclick="toggleTimelinePlayback()" title="Tua lại lịch sử hình thành & tiến hóa tri thức qua các năm">⏯️ Tua Lịch Sử</button>
                 <button class="hud-btn" id="lineageBtn" onclick="toggleLineageMode()" title="Bật/Tắt chế độ phát sáng chuỗi phả hệ cội nguồn khi chọn bài báo">🧬 Truy Vết</button>
                 <button class="hud-btn" onclick="toggleFullScreen()" title="Phóng to toàn màn hình">⛶ Toàn màn hình</button>
                 <button class="hud-btn primary" onclick="popoutWindow()" title="Mở trong cửa sổ riêng để kéo sang màn hình phụ">🪟 Màn hình phụ</button>
@@ -969,6 +971,14 @@ class CiteNetAgent:
                     <option value="cross_bridge">🔮 Chỉ Bắc cầu xuyên tầng</option>
                     <option value="intra_layer">🟢 Chỉ Cùng phân tầng</option>
                 </select>
+            </div>
+
+            <!-- Hàng 5: Thanh điều khiển Tua lại Lịch sử Tiến hóa (Timeline Evolution Playback Bar) -->
+            <div id="timelinePlaybackBar" class="hud-btn-row" style="display:none; margin-top:4px; background:rgba(20,23,32,0.96); border:1px solid #38BDF8; border-radius:10px; padding:6px 12px; align-items:center; gap:8px;">
+                <button id="playbackPlayBtn" class="hud-btn active" onclick="togglePlaybackPlay()" style="min-width:68px; font-weight:800;">▶️ Phát</button>
+                <span style="font-size:11px; color:#38BDF8; font-weight:700; white-space:nowrap;">NĂM: <b id="playbackYearLabel" style="color:#FDE047; font-size:12.5px;">{max_yr}</b></span>
+                <input type="range" id="playbackYearSlider" min="{min_yr}" max="{max_yr}" value="{max_yr}" step="1" oninput="onPlaybackSliderChange(this.value)" style="flex:1; cursor:pointer;">
+                <button class="hud-btn" onclick="resetPlayback()" style="font-size:10.5px;">↺ Đặt lại</button>
             </div>
         </div>
     </div>
@@ -1032,7 +1042,7 @@ class CiteNetAgent:
         </button>
         <div id="legendContentPanel" class="legend-content-panel" style="display: none;">
             <div style="font-size:11px; font-weight:700; color:#38BDF8; margin-bottom:4px; text-transform:uppercase;">🏛️ Phân Tầng Nút Bài Báo (Nodes):</div>
-            <div class="legend-item"><span class="legend-dot" style="background:#EA4335;"></span> <b>Bài báo gốc (F0):</b> Tâm điểm nghiên cứu</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#EA4335;"></span> <b>Bài báo gốc (F0):</b> Tâm điểm nghiên cứu (💓 Nhịp thở)</div>
             <div class="legend-item"><span class="legend-dot" style="background:#7C3AED;"></span> <b>Nền tảng (R1-R3):</b> Tham chiếu cội nguồn lý thuyết</div>
             <div class="legend-item"><span class="legend-dot" style="background:#0284C7;"></span> <b>Kế thừa (F1-F3):</b> Trích dẫn & phát triển tương lai</div>
             
@@ -1061,7 +1071,12 @@ class CiteNetAgent:
     var data = {{ nodes: nodes, edges: edges }};
     var isPhysicsOn = true;
     var isParticlesOn = true;
+    var isPulsingOn = true;
     var isLineageTracingOn = false;
+    var isTimelinePlaybackActive = false;
+    var isPlaybackPlaying = false;
+    var playbackTimer = null;
+    var currentPlaybackYear = maxYrVal;
     var selectedLineageNodeId = null;
     var currentLayoutMode = 'force'; // 'force', 'timeline', 'concentric', 'hierarchical', 'quartile'
 
@@ -1136,6 +1151,112 @@ class CiteNetAgent:
             btn.innerHTML = isParticlesOn ? '✨ Hạt Sáng: Bật' : '✨ Hạt Sáng: Tắt';
         }}
         network.redraw();
+    }}
+
+    // Toggle Pulsing Halo Glow (Nhịp thở quanh hạt nhân)
+    function togglePulseGlow() {{
+        isPulsingOn = !isPulsingOn;
+        var btn = document.getElementById('pulseBtn');
+        if (btn) {{
+            btn.className = isPulsingOn ? 'hud-btn active' : 'hud-btn';
+            btn.innerHTML = isPulsingOn ? '💓 Nhịp Thở: Bật' : '💓 Nhịp Thở: Tắt';
+        }}
+        network.redraw();
+    }}
+
+    // Toggle Timeline Playback Mode
+    function toggleTimelinePlayback() {{
+        isTimelinePlaybackActive = !isTimelinePlaybackActive;
+        var bar = document.getElementById('timelinePlaybackBar');
+        var btn = document.getElementById('timeplayBtn');
+        if (isTimelinePlaybackActive) {{
+            if (bar) bar.style.display = 'flex';
+            if (btn) {{ btn.className = 'hud-btn active'; btn.innerHTML = '⏯️ Đang Tua Lịch Sử'; }}
+            currentPlaybackYear = minYrVal;
+            applyTimelinePlaybackYear(currentPlaybackYear);
+            startPlaybackTimer();
+        }} else {{
+            if (bar) bar.style.display = 'none';
+            if (btn) {{ btn.className = 'hud-btn'; btn.innerHTML = '⏯️ Tua Lịch Sử'; }}
+            stopPlaybackTimer();
+            resetPlayback();
+        }}
+    }}
+
+    function startPlaybackTimer() {{
+        isPlaybackPlaying = true;
+        var playBtn = document.getElementById('playbackPlayBtn');
+        if (playBtn) playBtn.innerHTML = '⏸️ Tạm Dừng';
+        if (playbackTimer) clearInterval(playbackTimer);
+        playbackTimer = setInterval(function() {{
+            if (currentPlaybackYear >= maxYrVal) {{
+                stopPlaybackTimer();
+                return;
+            }}
+            currentPlaybackYear += 1;
+            applyTimelinePlaybackYear(currentPlaybackYear);
+        }}, 1400);
+    }}
+
+    function stopPlaybackTimer() {{
+        isPlaybackPlaying = false;
+        var playBtn = document.getElementById('playbackPlayBtn');
+        if (playBtn) playBtn.innerHTML = '▶️ Phát Tiếp';
+        if (playbackTimer) {{
+            clearInterval(playbackTimer);
+            playbackTimer = null;
+        }}
+    }}
+
+    function togglePlaybackPlay() {{
+        if (isPlaybackPlaying) {{
+            stopPlaybackTimer();
+        }} else {{
+            if (currentPlaybackYear >= maxYrVal) currentPlaybackYear = minYrVal;
+            startPlaybackTimer();
+        }}
+    }}
+
+    function onPlaybackSliderChange(val) {{
+        currentPlaybackYear = parseInt(val, 10);
+        applyTimelinePlaybackYear(currentPlaybackYear);
+    }}
+
+    function applyTimelinePlaybackYear(yr) {{
+        var label = document.getElementById('playbackYearLabel');
+        var slider = document.getElementById('playbackYearSlider');
+        if (label) label.innerText = yr;
+        if (slider) slider.value = yr;
+
+        var visibleNodeIds = new Set();
+        var nodeUpdates = [];
+        rawNodes.forEach(function(n) {{
+            var nYr = n.year || 2020;
+            var isVisible = (nYr <= yr);
+            if (isVisible) visibleNodeIds.add(n.id);
+            nodeUpdates.push({{
+                id: n.id,
+                hidden: !isVisible,
+                opacity: isVisible ? 1.0 : 0.0
+            }});
+        }});
+        nodes.update(nodeUpdates);
+
+        var edgeUpdates = [];
+        rawEdges.forEach(function(e) {{
+            var edgeVisible = visibleNodeIds.has(e.from) && visibleNodeIds.has(e.to);
+            edgeUpdates.push({{
+                id: e.id,
+                hidden: !edgeVisible
+            }});
+        }});
+        edges.update(edgeUpdates);
+    }}
+
+    function resetPlayback() {{
+        currentPlaybackYear = maxYrVal;
+        applyTimelinePlaybackYear(maxYrVal);
+        stopPlaybackTimer();
     }}
 
     // Toggle Interactive Lineage Tracing Mode
@@ -1345,6 +1466,45 @@ class CiteNetAgent:
         }}
     }}
 
+    // Concentric Orbit Celestial Rings (beforeDrawing)
+    network.on('beforeDrawing', function(ctx) {{
+        if (currentLayoutMode === 'concentric') {{
+            ctx.save();
+            ctx.setLineDash([8, 8]);
+            ctx.lineWidth = 1.5;
+
+            // Vòng quỹ đạo Nền tảng (Backward - R)
+            ctx.strokeStyle = 'rgba(124, 58, 237, 0.25)';
+            ctx.beginPath();
+            ctx.arc(0, 0, 240, Math.PI / 2, Math.PI * 1.5, false);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(0, 0, 380, Math.PI / 2, Math.PI * 1.5, false);
+            ctx.stroke();
+
+            // Vòng quỹ đạo Kế thừa (Forward - F)
+            ctx.strokeStyle = 'rgba(2, 132, 199, 0.25)';
+            ctx.beginPath();
+            ctx.arc(0, 0, 260, -Math.PI / 2, Math.PI / 2, false);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(0, 0, 410, -Math.PI / 2, Math.PI / 2, false);
+            ctx.stroke();
+
+            // Nhãn định hướng không gian
+            ctx.font = 'bold 12px Plus Jakarta Sans, sans-serif';
+            ctx.fillStyle = 'rgba(196, 181, 253, 0.7)';
+            ctx.fillText('🏛️ CỘI NGUỒN LÝ THUYẾT (R1-R3)', -340, -280);
+
+            ctx.fillStyle = 'rgba(56, 189, 248, 0.7)';
+            ctx.fillText('🚀 BƯỚC TIẾN KẾ THỪA (F1-F3)', 150, -300);
+
+            ctx.restore();
+        }}
+    }});
+
     // Dynamic Graph & Edge Filters
     function applyGraphFilters() {{
         var layerVal = document.getElementById('layerFilter') ? document.getElementById('layerFilter').value : 'all';
@@ -1477,51 +1637,88 @@ class CiteNetAgent:
         edges.update(edgeUpdates);
     }}
 
-    // Particle Photon Animation Loop
+    // Particle Photon Animation & Pulsing Node Halos Loop (afterDrawing)
     network.on('afterDrawing', function(ctx) {{
-        if (!isParticlesOn) return;
-        var now = Date.now() / 1100;
+        var now = Date.now();
         var positions = network.getPositions();
 
-        rawEdges.forEach(function(e, idx) {{
-            var p1 = positions[e.from];
-            var p2 = positions[e.to];
-            if (!p1 || !p2) return;
+        // 1. Vẽ Vầng Hào Quang Nhịp Thở (Pulsing Halo) cho Bài Gốc & Điểm Bùng Nổ
+        if (isPulsingOn) {{
+            var pulse = (Math.sin(now / 550) + 1) / 2; // 0.0 -> 1.0
+            rawNodes.forEach(function(n) {{
+                var isSeed = (n.level === 0 || n.layer === 'seed');
+                var isHighImpact = ((n.citations || 0) >= 200);
 
-            // Check if edge is currently hidden
-            var currentEdge = edges.get(e.id);
-            if (currentEdge && currentEdge.hidden) return;
+                if (isSeed || isHighImpact) {{
+                    var pos = positions[n.id];
+                    if (!pos) return;
 
-            var t = (now + (idx * 0.19)) % 1.0;
-            var x = p1.x + (p2.x - p1.x) * t;
-            var y = p1.y + (p2.y - p1.y) * t;
+                    var baseR = (n.size || 22);
+                    var haloR = baseR + 8 + (pulse * (isSeed ? 16 : 10));
 
-            ctx.save();
-            ctx.beginPath();
-            var radius = (e.edge_type === 'mutual') ? 3.6 : ((e.edge_type === 'cross_bridge') ? 3.0 : 2.5);
-            ctx.arc(x, y, radius, 0, 2 * Math.PI, false);
+                    ctx.save();
+                    var grad = ctx.createRadialGradient(pos.x, pos.y, baseR * 0.4, pos.x, pos.y, haloR);
+                    if (isSeed) {{
+                        grad.addColorStop(0, 'rgba(234, 67, 53, ' + (0.45 + pulse * 0.25) + ')');
+                        grad.addColorStop(0.65, 'rgba(234, 67, 53, ' + (0.15 + pulse * 0.1) + ')');
+                        grad.addColorStop(1, 'rgba(234, 67, 53, 0)');
+                    }} else {{
+                        grad.addColorStop(0, 'rgba(245, 158, 11, ' + (0.35 + pulse * 0.2) + ')');
+                        grad.addColorStop(0.65, 'rgba(245, 158, 11, ' + (0.12 + pulse * 0.08) + ')');
+                        grad.addColorStop(1, 'rgba(245, 158, 11, 0)');
+                    }}
 
-            var pColor = '#38BDF8';
-            if (e.edge_type === 'mutual') pColor = '#F59E0B';
-            else if (e.edge_type === 'cross_bridge') pColor = '#C084FC';
-            else if (e.edge_type === 'intra_layer') pColor = '#34D399';
+                    ctx.beginPath();
+                    ctx.arc(pos.x, pos.y, haloR, 0, 2 * Math.PI, false);
+                    ctx.fillStyle = grad;
+                    ctx.fill();
+                    ctx.restore();
+                }}
+            }});
+        }}
 
-            ctx.fillStyle = pColor;
-            ctx.shadowColor = pColor;
-            ctx.shadowBlur = 8;
-            ctx.fill();
-            ctx.restore();
-        }});
+        // 2. Vẽ Dòng Hạt Sáng Chuyển Động (Particle Flow)
+        if (isParticlesOn) {{
+            var tNow = now / 1100;
+            rawEdges.forEach(function(e, idx) {{
+                var p1 = positions[e.from];
+                var p2 = positions[e.to];
+                if (!p1 || !p2) return;
+
+                var currentEdge = edges.get(e.id);
+                if (currentEdge && currentEdge.hidden) return;
+
+                var t = (tNow + (idx * 0.19)) % 1.0;
+                var x = p1.x + (p2.x - p1.x) * t;
+                var y = p1.y + (p2.y - p1.y) * t;
+
+                ctx.save();
+                ctx.beginPath();
+                var radius = (e.edge_type === 'mutual') ? 3.6 : ((e.edge_type === 'cross_bridge') ? 3.0 : 2.5);
+                ctx.arc(x, y, radius, 0, 2 * Math.PI, false);
+
+                var pColor = '#38BDF8';
+                if (e.edge_type === 'mutual') pColor = '#F59E0B';
+                else if (e.edge_type === 'cross_bridge') pColor = '#C084FC';
+                else if (e.edge_type === 'intra_layer') pColor = '#34D399';
+
+                ctx.fillStyle = pColor;
+                ctx.shadowColor = pColor;
+                ctx.shadowBlur = 8;
+                ctx.fill();
+                ctx.restore();
+            }});
+        }}
     }});
 
-    // Continuous 60 FPS animation loop when particles are on
-    function particleAnimationLoop() {{
-        if (isParticlesOn) {{
+    // Continuous 60 FPS animation loop when particles or pulsing are on
+    function dynamicAnimationLoop() {{
+        if (isParticlesOn || isPulsingOn) {{
             network.redraw();
         }}
-        requestAnimationFrame(particleAnimationLoop);
+        requestAnimationFrame(dynamicAnimationLoop);
     }}
-    requestAnimationFrame(particleAnimationLoop);
+    requestAnimationFrame(dynamicAnimationLoop);
 
     // Hover Event
     network.on('hoverNode', function(params) {{
