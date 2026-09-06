@@ -1258,8 +1258,33 @@ def generate_theme_css(theme_id: str) -> str:
             min-height: 44px !important;
             font-size: 12.5px !important;
             touch-action: manipulation !important;
+            -webkit-tap-highlight-color: transparent !important;
         }}
         
+        /* Tối ưu hóa thanh Menu Sidebar trên điện thoại */
+        section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] > label {{
+            min-height: 44px !important;
+            touch-action: manipulation !important;
+            -webkit-tap-highlight-color: transparent !important;
+        }}
+        
+        /* Tối ưu hóa thanh Tab cuộn cảm ứng đa điểm */
+        div[data-baseweb="tab-list"] {{
+            gap: 6px !important;
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+            scrollbar-width: none !important;
+        }}
+        div[data-baseweb="tab-list"]::-webkit-scrollbar {{
+            display: none !important;
+        }}
+        div[data-baseweb="tab"] {{
+            white-space: nowrap !important;
+            padding: 8px 14px !important;
+            font-size: 12px !important;
+            touch-action: manipulation !important;
+        }}
+
         /* Form Inputs & Selects: tránh iOS tự động zoom khi focus */
         input, select, textarea, [data-baseweb="select"] {{
             font-size: 14px !important;
@@ -1273,9 +1298,8 @@ def generate_theme_css(theme_id: str) -> str:
             border-radius: 10px !important;
         }}
         
-        /* Iframe hiển thị đồ thị thích ứng chiều cao trên điện thoại */
+        /* Iframe hiển thị đồ thị thích ứng chiều rộng trên điện thoại */
         iframe {{
-            min-height: 520px !important;
             width: 100% !important;
             border-radius: 12px !important;
         }}
