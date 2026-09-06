@@ -1263,14 +1263,15 @@ class CiteNetAgent:
                     <span id="photonSpeedVal" style="font-size:10.5px; font-family:'JetBrains Mono', monospace; font-weight:700; color:#FDE047; min-width:26px;">1.0x</span>
                 </div>
 
-                <button class="hud-mini-btn active" id="lineageBtn" onclick="toggleLineageMode()" title="Bật/Tắt chế độ truy vết phả hệ">🧬 Truy Vết</button>
-                <button class="hud-mini-btn active" id="labelModeBtn" onclick="cycleLabelMode()" title="Chuyển kiểu nhãn">🏷️ Nhãn</button>
-                <button class="hud-mini-btn active" id="pulseBtn" onclick="togglePulseGlow()" title="Bật/Tắt Nhịp thở">💓 Nhịp Thở</button>
-                <button class="hud-mini-btn active" id="particlesBtn" onclick="toggleParticles()" title="Bật/Tắt Dòng Photon">✨ Photon</button>
-                <button class="hud-mini-btn" id="timeplayBtn" onclick="toggleTimelinePlayback()" title="Tua Lịch Sử">⏯️ Tua</button>
+                <button class="hud-mini-btn active" id="labelModeBtn" onclick="cycleLabelMode()" title="Chuyển chế độ nhãn (Gọn / Đầy Đủ / Ẩn)">🏷️ Nhãn: Gọn</button>
+                <button class="hud-mini-btn active" id="laserBtn" onclick="toggleLaserBeam()" title="Bật/Tắt Tia Laser Neon & Đường kết nối khi chọn/hover">⚡ Tia Laser</button>
+                <button class="hud-mini-btn active" id="particlesBtn" onclick="toggleParticles()" title="Bật/Tắt Dòng Hạt Photon di chuyển">✨ Hạt Photon</button>
+                <button class="hud-mini-btn active" id="pulseBtn" onclick="togglePulseGlow()" title="Bật/Tắt Hào Quang Nhịp Thở Node">💓 Nhịp Thở</button>
+                <button class="hud-mini-btn active" id="lineageBtn" onclick="toggleLineageMode()" title="Bật/Tắt Chế độ Truy Vết Phả Hệ">🧬 Truy Vết</button>
+                <button class="hud-mini-btn" id="timeplayBtn" onclick="toggleTimelinePlayback()" title="Tua Lịch Sử Phát Triển Theo Năm">⏯️ Tua Năm</button>
                 <button class="hud-mini-btn" onclick="zoomIn()" title="Phóng to">🔍+</button>
                 <button class="hud-mini-btn" onclick="zoomOut()" title="Thu nhỏ">🔍-</button>
-                <button class="hud-mini-btn" onclick="openDedicatedViewport()" title="Mở Màn hình phụ (Cửa sổ mới ↗)">🌐 Cửa Sổ Mới ↗</button>
+                <button class="hud-mini-btn" onclick="openDedicatedViewport()" title="Mở Màn hình phụ độc lập (Cửa sổ mới ↗)">🌐 Cửa Sổ Mới ↗</button>
                 <button class="hud-mini-btn" onclick="toggleFullScreen()" title="Toàn màn hình">⛶</button>
             </div>
 
@@ -1356,6 +1357,7 @@ class CiteNetAgent:
 
     var isPhysicsOn = true;
     var isParticlesOn = true;
+    var isLaserBeamOn = true;
     var isPulsingOn = true;
     var isLineageTracingOn = false;
     var isTimelinePlaybackActive = false;
@@ -1624,11 +1626,17 @@ class CiteNetAgent:
         }}
     }}
 
-    // Toggle Particle Photons & Pulsing Glow
+    // Toggle Particle Photons & Pulsing Glow & Laser Beam Stream
     function toggleParticles() {{
         isParticlesOn = !isParticlesOn;
         var btn = document.getElementById('particlesBtn');
         if (btn) btn.className = isParticlesOn ? 'hud-mini-btn active' : 'hud-mini-btn';
+        network.redraw();
+    }}
+    function toggleLaserBeam() {{
+        isLaserBeamOn = !isLaserBeamOn;
+        var btn = document.getElementById('laserBtn');
+        if (btn) btn.className = isLaserBeamOn ? 'hud-mini-btn active' : 'hud-mini-btn';
         network.redraw();
     }}
     function togglePulseGlow() {{
@@ -2188,11 +2196,18 @@ class CiteNetAgent:
             }});
         }}
 
-        // 3. HIỆU ỨNG TIA SÁNG LASER CHẠY LIÊN TỤC KHI HOVER (Instant Active Beam Highlight Stream)
-        if (hoveredNodeId) {{
-            var connectedEdges = rawEdges.filter(function(e) {{
-                return (e.from === hoveredNodeId || e.to === hoveredNodeId);
-            }});
+        // 3. HIỆU ỨNG TIA SÁNG LASER CHẠY LIÊN TỤC KHI HOVER / CHỌN (Instant Active Beam Highlight Stream)
+        if (isLaserBeamOn && (hoveredNodeId || hoveredEdgeId)) {{
+            var connectedEdges = [];
+            if (hoveredNodeId) {{
+                connectedEdges = rawEdges.filter(function(e) {{
+                    return (e.from === hoveredNodeId || e.to === hoveredNodeId);
+                }});
+            }} else if (hoveredEdgeId) {{
+                connectedEdges = rawEdges.filter(function(e) {{
+                    return (e.id === hoveredEdgeId);
+                }});
+            }}
 
             var beamProgress = (photonSpeedFactor > 0) ? ((now / 650 * photonSpeedFactor) % 1.0) : 0.5;
             var beamProgress2 = (beamProgress + 0.5) % 1.0;
