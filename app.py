@@ -543,42 +543,42 @@ if st.session_state.get("auth_user"):
 
 cur_time_str = time.strftime("%d/%m/%Y | %H:%M:%S")
 
-st.markdown(f"""
-<div class="synapse-header-bar">
-    <div class="brand-logo-cluster">
-        <span class="brand-atom-icon">⚛️</span>
-        <div>
-            <div class="brand-title">SYNAPSE ACADEMIC</div>
-            <div class="brand-subtitle">SCHOLARGRAPH PRO // QUANTUM HUD DECK</div>
-        </div>
-    </div>
-
-    <div class="toolbar-breadcrumb">
-        {get_svg_icon("compass", color="var(--primary-accent)", size=16)}
-        <span class="crumb-root">Workspace</span>
-        <span class="crumb-slash">/</span>
-        <span class="crumb-active">{nav_title}</span>
-    </div>
-
-    <div class="header-meta-cluster">
-        <div class="meta-chip" title="Đề tài nghiên cứu hạt nhân">
-            <span>📁 PROJECT:</span>
-            <b style="color:var(--primary-accent);">{cur_project_name}</b>
-        </div>
-        <div class="meta-chip">
-            <span>👤 USER:</span>
-            <b>{user_display_name}</b>
-        </div>
-        <div class="meta-chip" style="border-color:#10B981; color:#34D399;">
-            <span class="pulse-dot"></span>
-            <span>ACTIVE</span>
-        </div>
-        <div class="meta-chip" style="font-family:'JetBrains Mono', monospace; font-size:11px;">
-            <span>🕒 {cur_time_str}</span>
-        </div>
-    </div>
-</div>
-""", unsafe_allow_html=True)
+compass_icon = get_svg_icon("compass", color="var(--primary-accent)", size=16)
+header_html = (
+    '<div class="synapse-header-bar">'
+    '<div class="brand-logo-cluster">'
+    '<span class="brand-atom-icon">⚛️</span>'
+    '<div>'
+    '<div class="brand-title">SYNAPSE ACADEMIC</div>'
+    '<div class="brand-subtitle">SCHOLARGRAPH PRO // QUANTUM HUD DECK</div>'
+    '</div>'
+    '</div>'
+    '<div class="toolbar-breadcrumb">'
+    f'{compass_icon}'
+    '<span class="crumb-root">Workspace</span>'
+    '<span class="crumb-slash">/</span>'
+    f'<span class="crumb-active">{nav_title}</span>'
+    '</div>'
+    '<div class="header-meta-cluster">'
+    '<div class="meta-chip" title="Đề tài nghiên cứu hạt nhân">'
+    '<span>📁 PROJECT:</span>'
+    f'<b style="color:var(--primary-accent);">{cur_project_name}</b>'
+    '</div>'
+    '<div class="meta-chip">'
+    '<span>👤 USER:</span>'
+    f'<b>{user_display_name}</b>'
+    '</div>'
+    '<div class="meta-chip" style="border-color:#10B981; color:#34D399;">'
+    '<span class="pulse-dot"></span>'
+    '<span>ACTIVE</span>'
+    '</div>'
+    '<div class="meta-chip" style="font-family:\'JetBrains Mono\', monospace; font-size:11px;">'
+    f'<span>🕒 {cur_time_str}</span>'
+    '</div>'
+    '</div>'
+    '</div>'
+)
+st.markdown(header_html, unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
 # THANH ĐIỀU HƯỚNG NHANH CẢM ỨNG (CHỈ KÍCH HOẠT TRÊN BẢN DI ĐỘNG & CLOUD)
