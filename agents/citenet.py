@@ -511,7 +511,8 @@ class CiteNetAgent:
         html, body {{
             width: 100%;
             height: 100%;
-            overflow: hidden;
+            min-height: 860px;
+            overflow-x: hidden;
             background-color: var(--theme-bg-base);
             font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
             color: var(--theme-text-main);
@@ -523,7 +524,9 @@ class CiteNetAgent:
             display: flex;
             flex-direction: column;
             width: 100%;
-            height: 100%;
+            height: 860px;
+            min-height: 860px;
+            box-sizing: border-box;
             padding: 10px;
             gap: 10px;
             background: radial-gradient(circle at 50% 20%, rgba(var(--theme-glow-rgb), 0.08) 0%, transparent 70%);
@@ -607,7 +610,8 @@ class CiteNetAgent:
             display: flex;
             flex: 1;
             gap: 10px;
-            min-height: 0;
+            height: 540px;
+            min-height: 480px;
             position: relative;
         }}
 
@@ -778,9 +782,8 @@ class CiteNetAgent:
             display: grid;
             grid-template-columns: 1fr 1.25fr;
             gap: 10px;
-            height: 220px;
-            min-height: 180px;
-            max-height: 38vh;
+            height: 250px;
+            min-height: 230px;
             flex-shrink: 0;
             transition: height 0.25s ease;
         }}

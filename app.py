@@ -786,7 +786,7 @@ if hasattr(st, "dialog"):
             <span class="status-chip green" style="font-weight:700;">Chế độ tương tác cao</span>
         </div>
         """, unsafe_allow_html=True)
-        components.html(html_content, height=750, scrolling=False)
+        components.html(html_content, height=890, scrolling=True)
 
 # Hiển thị Popup khi hoàn thành
 if st.session_state.get("show_completion_popup") and st.session_state.pipeline_results:
@@ -1223,7 +1223,15 @@ elif "02." in workspace_nav:
 
         st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
 
-        active_network_html = c_res.get("network_html", "")
+        # Luôn đảm bảo HTML được tái tạo theo chuẩn giao diện Synapse HUD Deck mới nhất từ c_res['nodes'] và c_res['edges']
+        nodes_data = c_res.get("nodes", {})
+        edges_data = c_res.get("edges", [])
+        if nodes_data and edges_data:
+            citenet_agent_inst = CiteNetAgent(email=email_val)
+            active_network_html = citenet_agent_inst.generate_network_html(nodes_data, edges_data)
+            c_res["network_html"] = active_network_html
+        else:
+            active_network_html = c_res.get("network_html", "")
 
         col_g1, col_g2 = st.columns([2.5, 1], gap="small")
         with col_g1:
@@ -1250,8 +1258,8 @@ elif "02." in workspace_nav:
                 key="btn_dl_active_net_html"
             )
 
-        # Hiển thị sơ đồ tương tác chuẩn quốc tế
-        components.html(active_network_html, height=730, scrolling=False)
+        # Hiển thị sơ đồ tương tác chuẩn quốc tế (HUD Deck cao 890px đầy đủ các panel)
+        components.html(active_network_html, height=890, scrolling=True)
 
         st.markdown("<div style='height: 18px;'></div>", unsafe_allow_html=True)
 
