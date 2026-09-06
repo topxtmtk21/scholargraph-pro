@@ -407,6 +407,13 @@ class CiteNetAgent:
                 "is_isolated": (len(outgoing) + len(incoming) == 0)
             }
 
+        # Trích xuất tên đề tài chính từ bài gốc
+        seed_nodes = [n for n in nodes.values() if n.get("level") == 0 or n.get("layer") == "seed"]
+        primary_seed = seed_nodes[0] if seed_nodes else (list(nodes.values())[0] if nodes else {})
+        seed_title = primary_seed.get("title", "Quantum Knowledge & Scientific Discovery")
+        clean_seed_title = str(seed_title).replace('"', '').replace("'", "")
+        short_project_name = clean_seed_title[:38] + "..." if len(clean_seed_title) > 38 else clean_seed_title
+
         nodes_json = json.dumps(vis_nodes, ensure_ascii=False)
         edges_json = json.dumps(vis_edges, ensure_ascii=False)
         meta_dict_json = json.dumps(extended_meta, ensure_ascii=False)
@@ -416,10 +423,85 @@ class CiteNetAgent:
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Academic Citation Knowledge Graph — ScholarGraph Pro</title>
+    <title>Synapse Academic — Global Citation Network HUD</title>
     <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
     <style type="text/css">
+        :root {{
+            --theme-glow: #00F2FE;
+            --theme-glow-rgb: 0, 242, 254;
+            --theme-bg-base: #040914;
+            --theme-panel-bg: rgba(6, 14, 28, 0.82);
+            --theme-panel-border: rgba(0, 242, 254, 0.32);
+            --theme-accent: #00F2FE;
+            --theme-accent-hover: #38BDF8;
+            --theme-text-main: #F8FAFC;
+            --theme-text-dim: #94A3B8;
+            --theme-badge-bg: rgba(0, 242, 254, 0.14);
+        }}
+
+        /* 5 THEMES KẾ THỪA ĐỒNG BỘ */
+        body.theme-synapse-cyan {{
+            --theme-glow: #00F2FE;
+            --theme-glow-rgb: 0, 242, 254;
+            --theme-bg-base: #040914;
+            --theme-panel-bg: rgba(6, 14, 28, 0.84);
+            --theme-panel-border: rgba(0, 242, 254, 0.35);
+            --theme-accent: #00F2FE;
+            --theme-accent-hover: #38BDF8;
+            --theme-text-main: #F8FAFC;
+            --theme-text-dim: #94A3B8;
+            --theme-badge-bg: rgba(0, 242, 254, 0.14);
+        }}
+        body.theme-nebula-violet {{
+            --theme-glow: #C084FC;
+            --theme-glow-rgb: 192, 132, 252;
+            --theme-bg-base: #090514;
+            --theme-panel-bg: rgba(18, 10, 34, 0.86);
+            --theme-panel-border: rgba(192, 132, 252, 0.35);
+            --theme-accent: #C084FC;
+            --theme-accent-hover: #E879F9;
+            --theme-text-main: #FAF5FF;
+            --theme-text-dim: #A8A29E;
+            --theme-badge-bg: rgba(192, 132, 252, 0.16);
+        }}
+        body.theme-emerald-matrix {{
+            --theme-glow: #10B981;
+            --theme-glow-rgb: 16, 185, 129;
+            --theme-bg-base: #030F0C;
+            --theme-panel-bg: rgba(6, 26, 20, 0.86);
+            --theme-panel-border: rgba(16, 185, 129, 0.35);
+            --theme-accent: #10B981;
+            --theme-accent-hover: #34D399;
+            --theme-text-main: #ECFDF5;
+            --theme-text-dim: #9CA3AF;
+            --theme-badge-bg: rgba(16, 185, 129, 0.16);
+        }}
+        body.theme-solar-amber {{
+            --theme-glow: #F59E0B;
+            --theme-glow-rgb: 245, 158, 11;
+            --theme-bg-base: #100A04;
+            --theme-panel-bg: rgba(28, 18, 8, 0.86);
+            --theme-panel-border: rgba(245, 158, 11, 0.38);
+            --theme-accent: #F59E0B;
+            --theme-accent-hover: #FCD34D;
+            --theme-text-main: #FFFBEB;
+            --theme-text-dim: #A1A1AA;
+            --theme-badge-bg: rgba(245, 158, 11, 0.16);
+        }}
+        body.theme-nordic-light {{
+            --theme-glow: #0284C7;
+            --theme-glow-rgb: 2, 132, 199;
+            --theme-bg-base: #F0F4F8;
+            --theme-panel-bg: rgba(255, 255, 255, 0.90);
+            --theme-panel-border: rgba(2, 132, 199, 0.35);
+            --theme-accent: #0284C7;
+            --theme-accent-hover: #0369A1;
+            --theme-text-main: #0F172A;
+            --theme-text-dim: #475569;
+            --theme-badge-bg: rgba(2, 132, 199, 0.12);
+        }}
+
         * {{
             box-sizing: border-box;
             margin: 0;
@@ -430,690 +512,581 @@ class CiteNetAgent:
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background-color: #0B0C0E;
+            background-color: var(--theme-bg-base);
             font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
-            color: #F8FAFC;
-        }}
-        #network-wrapper {{
-            position: relative;
-            width: 100%;
-            height: 100%;
-            min-height: 520px;
-            border-radius: 16px;
-            border: 1px solid #262B38;
-            overflow: hidden;
-            transition: background 0.3s ease;
-        }}
-        /* Chế độ 1: Deep Obsidian vũ trụ mặc định */
-        #network-wrapper.bg-obsidian {{
-            background: radial-gradient(circle at center, #151822 0%, #0B0C0E 100%);
-        }}
-        /* Chế độ 2: Không gian Lưới 3D tương phản công nghệ (Cyber 3D Grid) */
-        #network-wrapper.bg-3d-grid {{
-            background-color: #06080F;
-            background-image: 
-                linear-gradient(rgba(56, 189, 248, 0.14) 1.5px, transparent 1.5px),
-                linear-gradient(90deg, rgba(56, 189, 248, 0.14) 1.5px, transparent 1.5px),
-                radial-gradient(circle at 50% 50%, rgba(37, 99, 235, 0.25) 0%, rgba(6, 8, 15, 0.96) 80%);
-            background-size: 38px 38px, 38px 38px, 100% 100%;
-            box-shadow: inset 0 0 100px rgba(6, 182, 212, 0.2);
-        }}
-        /* Chế độ 3: Bản vẽ Kỹ thuật Blueprint */
-        #network-wrapper.bg-blueprint {{
-            background-color: #0A192F;
-            background-image: 
-                linear-gradient(rgba(100, 255, 218, 0.15) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(100, 255, 218, 0.15) 1px, transparent 1px),
-                linear-gradient(rgba(100, 255, 218, 0.05) 5px, transparent 5px),
-                linear-gradient(90deg, rgba(100, 255, 218, 0.05) 5px, transparent 5px);
-            background-size: 20px 20px, 20px 20px, 100px 100px, 100px 100px;
-        }}
-        /* Chế độ 4: Bản thảo Giấy da Ngà sáng (Parchment Ivory) */
-        #network-wrapper.bg-parchment {{
-            background-color: #F8F5EC;
-            background-image: radial-gradient(#D3C7A1 1.2px, transparent 1.2px);
-            background-size: 24px 24px;
-        }}
-        /* Chế độ 5: Bắc Âu Glacier xám sáng sạch (Nordic Slate Light) */
-        #network-wrapper.bg-nordic-light {{
-            background-color: #F1F5F9;
-            background-image: 
-                linear-gradient(rgba(203, 213, 225, 0.6) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(203, 213, 225, 0.6) 1px, transparent 1px);
-            background-size: 32px 32px;
+            color: var(--theme-text-main);
+            transition: background 0.3s ease, color 0.3s ease;
         }}
 
+        /* MAIN SCI-FI HUD DECK CONTAINER */
+        #synapse-hud-deck {{
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            padding: 10px;
+            gap: 10px;
+            background: radial-gradient(circle at 50% 20%, rgba(var(--theme-glow-rgb), 0.08) 0%, transparent 70%);
+        }}
+
+        /* 1. TOP HEADER HUD BAR */
+        .synapse-header-bar {{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 18px;
+            background: var(--theme-panel-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--theme-panel-border);
+            border-radius: 14px;
+            box-shadow: 0 0 20px rgba(var(--theme-glow-rgb), 0.12);
+            flex-shrink: 0;
+        }}
+        .brand-logo-cluster {{
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }}
+        .brand-atom-icon {{
+            font-size: 20px;
+            color: var(--theme-accent);
+            text-shadow: 0 0 12px var(--theme-glow);
+            animation: atomSpin 18s linear infinite;
+        }}
+        @keyframes atomSpin {{
+            from {{ transform: rotate(0deg); }}
+            to {{ transform: rotate(360deg); }}
+        }}
+        .brand-title {{
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            color: var(--theme-text-main);
+            text-transform: uppercase;
+        }}
+        .brand-subtitle {{
+            font-size: 10px;
+            color: var(--theme-accent);
+            font-weight: 700;
+            letter-spacing: 0.12em;
+        }}
+
+        .header-meta-cluster {{
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }}
+        .meta-chip {{
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--theme-badge-bg);
+            border: 1px solid var(--theme-panel-border);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11.5px;
+            font-weight: 600;
+            color: var(--theme-text-main);
+        }}
+        .pulse-dot {{
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #10B981;
+            box-shadow: 0 0 8px #10B981;
+            animation: blink 1.6s infinite ease-in-out;
+        }}
+        @keyframes blink {{
+            0%, 100% {{ opacity: 1; transform: scale(1); }}
+            50% {{ opacity: 0.4; transform: scale(0.85); }}
+        }}
+
+        /* 2. MIDDLE AREA (SLIM DOCK + GRAPH CANVAS) */
+        .synapse-middle-deck {{
+            display: flex;
+            flex: 1;
+            gap: 10px;
+            min-height: 0;
+            position: relative;
+        }}
+
+        /* SLIM VERTICAL DOCK BAR */
+        .synapse-vertical-dock {{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 6px;
+            background: var(--theme-panel-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--theme-panel-border);
+            border-radius: 14px;
+            box-shadow: 0 0 20px rgba(var(--theme-glow-rgb), 0.10);
+            width: 48px;
+            flex-shrink: 0;
+        }}
+        .dock-btn-group {{
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+            align-items: center;
+        }}
+        .dock-icon-btn {{
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--theme-text-dim);
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }}
+        .dock-icon-btn:hover {{
+            color: var(--theme-accent);
+            border-color: var(--theme-panel-border);
+            background: var(--theme-badge-bg);
+            box-shadow: 0 0 12px rgba(var(--theme-glow-rgb), 0.25);
+            transform: scale(1.08);
+        }}
+        .dock-icon-btn.active {{
+            color: var(--theme-text-main);
+            border-color: var(--theme-accent);
+            background: var(--theme-badge-bg);
+            box-shadow: 0 0 14px rgba(var(--theme-glow-rgb), 0.35);
+        }}
+
+        /* GRAPH CANVAS WRAPPER */
+        .synapse-graph-container {{
+            position: relative;
+            flex: 1;
+            height: 100%;
+            background: var(--theme-panel-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--theme-panel-border);
+            border-radius: 16px;
+            box-shadow: 0 0 30px rgba(var(--theme-glow-rgb), 0.12);
+            overflow: hidden;
+        }}
         #network-container {{
             width: 100%;
             height: 100%;
         }}
-        
-        /* Floating Collapsible Control HUD Toolbar */
-        .hud-controls-drawer {{
+
+        /* FLOATING HUD CONTROLS INSIDE GRAPH */
+        .graph-overlay-header {{
             position: absolute;
             top: 14px;
-            left: 14px;
-            z-index: 100;
-            background: rgba(18, 20, 26, 0.95);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid #262B38;
-            border-radius: 14px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.6);
-            max-width: calc(100% - 28px);
-            transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
-            overflow: hidden;
+            left: 16px;
+            z-index: 50;
+            pointer-events: none;
         }}
-        .hud-toggle-btn {{
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            background: transparent;
-            border: none;
-            color: #F8FAFC;
-            font-family: inherit;
-            font-size: 12px;
+        .graph-title {{
+            font-size: 16px;
             font-weight: 800;
-            padding: 8px 14px;
-            cursor: pointer;
-            outline: none;
-            transition: all 0.15s ease;
-            white-space: nowrap;
+            letter-spacing: 0.04em;
+            color: var(--theme-text-main);
+            text-shadow: 0 0 10px rgba(var(--theme-glow-rgb), 0.4);
         }}
-        .hud-toggle-btn:hover {{
-            color: #38BDF8;
-            background: rgba(56, 189, 248, 0.08);
-        }}
-        .hud-content-panel {{
-            display: none;
-            padding: 10px 14px 12px 14px;
-            border-top: 1px solid rgba(255,255,255,0.08);
-            flex-direction: column;
-            gap: 8px;
-            max-height: 72vh;
-            overflow-y: auto;
-        }}
-        .hud-controls-drawer.is-open .hud-content-panel {{
-            display: flex !important;
-        }}
-        .hud-btn-row {{
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            align-items: center;
-        }}
-        .hud-btn {{
-            background: #181B24;
-            border: 1px solid #262B38;
-            color: #F8FAFC;
-            padding: 6px 11px;
-            border-radius: 8px;
-            font-size: 12px;
+        .graph-subtitle {{
+            font-size: 11.5px;
+            color: var(--theme-accent);
             font-weight: 600;
+            letter-spacing: 0.02em;
+        }}
+
+        .graph-top-tools {{
+            position: absolute;
+            top: 12px;
+            right: 14px;
+            z-index: 60;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(var(--theme-glow-rgb), 0.08);
+            backdrop-filter: blur(14px);
+            padding: 4px 8px;
+            border-radius: 12px;
+            border: 1px solid var(--theme-panel-border);
+        }}
+        .hud-mini-btn {{
+            background: var(--theme-panel-bg);
+            border: 1px solid var(--theme-panel-border);
+            color: var(--theme-text-main);
+            padding: 5px 9px;
+            border-radius: 8px;
+            font-size: 11.5px;
+            font-weight: 700;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 5px;
+            gap: 4px;
             transition: all 0.18s ease;
             white-space: nowrap;
-            user-select: none;
         }}
-        .hud-btn:hover {{
-            background: #232836;
-            border-color: #38BDF8;
+        .hud-mini-btn:hover {{
+            border-color: var(--theme-accent);
             color: #FFFFFF;
+            box-shadow: 0 0 10px rgba(var(--theme-glow-rgb), 0.3);
             transform: translateY(-1px);
         }}
-        .hud-btn.active {{
-            background: rgba(37, 99, 235, 0.25);
-            border-color: #38BDF8;
-            color: #38BDF8;
-            box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+        .hud-mini-btn.active {{
+            background: var(--theme-accent);
+            border-color: var(--theme-accent);
+            color: #040914;
+            font-weight: 800;
+            box-shadow: 0 0 12px var(--theme-glow);
         }}
-        .hud-btn.primary {{
-            background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
-            border-color: #38BDF8;
-            color: #FFFFFF;
-        }}
-        .hud-search-box {{
-            background: #141720;
-            border: 1px solid #262B38;
-            color: #FFFFFF;
-            padding: 7px 12px;
-            border-radius: 8px;
-            font-size: 12px;
-            outline: none;
-            transition: border-color 0.2s;
-        }}
-        .hud-search-box:focus {{
-            border-color: #38BDF8;
-            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
-        }}
-        
-        /* Chú thích bên trái - Mặc định ẩn triệt để (Strictly Collapsed Left Legend) */
-        .hud-legend-drawer {{
+
+        /* CHÚ THÍCH NHANH GÓC DƯỚI TRÁI CANVAS */
+        .graph-bottom-legend {{
             position: absolute;
-            bottom: 14px;
-            left: 14px;
-            z-index: 95;
-            background: rgba(18, 20, 26, 0.94);
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
-            border: 1px solid #262B38;
-            border-radius: 12px;
-            box-shadow: 0 6px 24px rgba(0,0,0,0.5);
-            font-size: 11.5px;
+            bottom: 12px;
+            left: 16px;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(var(--theme-glow-rgb), 0.06);
+            backdrop-filter: blur(12px);
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--theme-panel-border);
+            font-size: 11px;
             font-weight: 600;
-            color: #F8FAFC;
-            transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
-            overflow: hidden;
-            max-width: 340px;
         }}
-        .legend-toggle-btn {{
+        .legend-indicator {{
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-            background: transparent;
-            border: none;
-            color: #38BDF8;
-            font-family: inherit;
-            font-size: 11.5px;
-            font-weight: 700;
-            padding: 8px 12px;
-            cursor: pointer;
-            width: 100%;
-            text-align: left;
-            outline: none;
-            transition: color 0.15s ease;
+            gap: 5px;
         }}
-        .legend-toggle-btn:hover {{
-            color: #FFFFFF;
-            background: rgba(255,255,255,0.04);
-        }}
-        .legend-content-panel {{
-            display: none;
-            padding: 8px 12px 10px 12px;
-            border-top: 1px solid rgba(255,255,255,0.08);
-            flex-direction: column;
-            gap: 6px;
-        }}
-        .hud-legend-drawer.is-open .legend-content-panel {{
-            display: flex !important;
-        }}
-        .legend-item {{
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            line-height: 1.4;
-        }}
-        .legend-dot {{
-            width: 10px;
-            height: 10px;
+        .ind-dot {{
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
+        }}
+
+        /* 3. BOTTOM EXPANDABLE PANELS DECK (RELATED PAPERS + SELECTED DETAILS) */
+        .synapse-bottom-deck {{
+            display: grid;
+            grid-template-columns: 1fr 1.25fr;
+            gap: 10px;
+            height: 220px;
+            min-height: 180px;
+            max-height: 38vh;
             flex-shrink: 0;
+            transition: height 0.25s ease;
         }}
-
-        /* Floating Info Card HUD */
-        #floating-hover-card {{
-            display: none;
-            position: absolute;
-            pointer-events: none;
-            z-index: 150;
-            width: 380px;
-            max-width: 92%;
-            background: rgba(18, 20, 26, 0.97);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid #262B38;
-            border-radius: 12px;
-            padding: 14px 16px;
-            box-shadow: 0 14px 36px rgba(0,0,0,0.65);
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            color: #F8FAFC;
-        }}
-
-        /* Modal Drawer */
-        #paper-modal {{
-            position: absolute;
-            top: 14px;
-            right: 14px;
-            width: 440px;
-            max-width: 90%;
-            max-height: calc(100% - 28px);
-            background: rgba(18, 20, 26, 0.98);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid #262B38;
-            border-radius: 16px;
-            z-index: 200;
-            box-shadow: 0 16px 40px rgba(0,0,0,0.6);
-            display: none;
-            flex-direction: column;
-            overflow: hidden;
-            animation: slideIn 0.2s ease-out;
-        }}
-        @keyframes slideIn {{
-            from {{ opacity: 0; transform: translateX(20px); }}
-            to {{ opacity: 1; transform: translateX(0); }}
-        }}
-        .modal-header {{
-            padding: 14px 18px;
-            background: #181B24;
-            border-bottom: 1px solid #262B38;
+        .hud-panel-card {{
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            background: var(--theme-panel-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--theme-panel-border);
+            border-radius: 14px;
+            box-shadow: 0 0 20px rgba(var(--theme-glow-rgb), 0.10);
+            overflow: hidden;
         }}
-        .modal-body {{
-            padding: 18px;
+        .panel-card-header {{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 14px;
+            border-bottom: 1px solid rgba(var(--theme-glow-rgb), 0.15);
+            background: rgba(var(--theme-glow-rgb), 0.04);
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            color: var(--theme-accent);
+            text-transform: uppercase;
+        }}
+        .panel-card-body {{
+            padding: 10px 14px;
             overflow-y: auto;
             flex: 1;
         }}
-        .modal-title {{
-            font-size: 15.5px;
-            font-weight: 700;
-            color: #FFFFFF;
-            line-height: 1.45;
-            margin-bottom: 8px;
-        }}
-        .modal-meta-row {{
-            font-size: 13px;
-            color: #94A3B8;
-            margin-bottom: 6px;
-            line-height: 1.5;
-        }}
-        .modal-badge {{
-            display: inline-block;
-            padding: 3px 9px;
-            border-radius: 10px;
+
+        /* BẢNG RELATED PAPERS MATRIX */
+        .related-table {{
+            width: 100%;
+            border-collapse: collapse;
             font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
         }}
-        .badge-seed {{ background: rgba(234, 67, 53, 0.2); color: #F28B82; border: 1px solid rgba(234, 67, 53, 0.4); }}
-        .badge-r1 {{ background: rgba(124, 58, 237, 0.2); color: #C4B5FD; border: 1px solid rgba(124, 58, 237, 0.4); }}
-        .badge-r2 {{ background: rgba(99, 102, 241, 0.2); color: #A5B4FC; border: 1px solid rgba(99, 102, 241, 0.4); }}
-        .badge-f1 {{ background: rgba(2, 132, 199, 0.2); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.4); }}
-        .badge-f2 {{ background: rgba(5, 150, 105, 0.2); color: #34D399; border: 1px solid rgba(52, 211, 153, 0.4); }}
-        .badge-f3 {{ background: rgba(217, 119, 6, 0.2); color: #FCD34D; border: 1px solid rgba(245, 158, 11, 0.4); }}
-        
-        .modal-section-title {{
-            font-size: 12px;
+        .related-table th {{
+            text-align: left;
+            padding: 5px 8px;
+            color: var(--theme-text-dim);
             font-weight: 700;
-            color: #38BDF8;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            margin: 14px 0 6px 0;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
         }}
-        
-        .bilingual-tabs-nav {{
-            display: flex;
-            gap: 6px;
-            background: #141720;
-            padding: 4px;
-            border-radius: 10px;
-            border: 1px solid #262B38;
-            margin-bottom: 8px;
+        .related-table td {{
+            padding: 6px 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            color: var(--theme-text-main);
         }}
-        .bilingual-tab-btn {{
-            flex: 1;
-            padding: 6px 10px;
-            font-size: 12px;
-            font-weight: 700;
-            color: #94A3B8;
-            background: transparent;
-            border: none;
-            border-radius: 6px;
+        .related-row {{
             cursor: pointer;
-            transition: all 0.15s ease;
+            transition: background 0.15s ease;
         }}
-        .bilingual-tab-btn:hover {{
-            color: #FFFFFF;
-            background: #181B24;
+        .related-row:hover {{
+            background: rgba(var(--theme-glow-rgb), 0.12);
         }}
-        .bilingual-tab-btn.active {{
-            background: #2563EB;
-            color: #FFFFFF;
-            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+        .related-row.selected {{
+            background: rgba(var(--theme-glow-rgb), 0.22);
+            font-weight: 700;
         }}
-        
-        .modal-abstract-box {{
-            background: #141720;
-            border: 1px solid #262B38;
-            border-radius: 10px;
-            padding: 12px 14px;
-            font-size: 13px;
-            color: #F8FAFC;
-            line-height: 1.65;
-            max-height: 180px;
+        .relevance-bar-track {{
+            width: 70px;
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 4px;
+        }}
+        .relevance-bar-fill {{
+            height: 100%;
+            background: linear-gradient(90deg, #00C6FF 0%, var(--theme-glow) 100%);
+            border-radius: 3px;
+            box-shadow: 0 0 6px var(--theme-glow);
+        }}
+
+        /* SELECTED PAPER DETAILS TWO-COLUMN VIEW */
+        .details-grid {{
+            display: grid;
+            grid-template-columns: 1.35fr 1fr;
+            gap: 12px;
+            height: 100%;
+        }}
+        .detail-abstract-pane {{
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 11.5px;
+            line-height: 1.55;
+            color: var(--theme-text-main);
             overflow-y: auto;
         }}
-        .modal-abstract-box.en-mode {{
-            font-style: italic;
-            color: #CBD5E1;
+        .detail-cocitation-pane {{
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            background: rgba(0,0,0,0.25);
+            border: 1px solid rgba(var(--theme-glow-rgb), 0.18);
+            border-radius: 10px;
+            padding: 8px 10px;
+            overflow-y: auto;
         }}
-        
-        .action-link-btn {{
-            display: inline-flex;
+        .cocite-item {{
+            display: flex;
             align-items: center;
             gap: 6px;
-            padding: 7px 12px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 700;
-            text-decoration: none;
-            color: #FFFFFF;
-            background: #2563EB;
-            border: 1px solid #38BDF8;
-            transition: all 0.15s ease;
-            margin-right: 6px;
-            margin-top: 6px;
-        }}
-        .action-link-btn:hover {{
-            background: #1D4ED8;
-            transform: translateY(-1px);
-        }}
-        .action-link-btn.secondary {{
-            background: #181B24;
-            border-color: #262B38;
-            color: #38BDF8;
-        }}
-        .action-link-btn.secondary:hover {{
-            background: #232836;
-        }}
-
-        .lineage-chip {{
-            display: block;
-            background: #141720;
-            border: 1px solid #262B38;
-            border-radius: 8px;
-            padding: 6px 10px;
-            font-size: 11.5px;
-            color: #CBD5E1;
-            margin-bottom: 4px;
+            font-size: 11px;
+            color: var(--theme-text-dim);
             cursor: pointer;
-            transition: all 0.15s;
-        }}
-        .lineage-chip:hover {{
-            background: #181B24;
-            border-color: #38BDF8;
-            color: #FFFFFF;
-        }}
-        
-        .close-btn {{
-            background: transparent;
-            border: none;
-            color: #94A3B8;
-            font-size: 18px;
-            cursor: pointer;
-            padding: 4px 8px;
+            padding: 3px 6px;
             border-radius: 6px;
-            line-height: 1;
+            transition: all 0.15s ease;
         }}
-        .close-btn:hover {{
-            background: #262B38;
-            color: #FFFFFF;
-        }}
-
-        /* Tối ưu hóa hiển thị trên Máy tính bảng & Mobile */
-        @media (max-width: 992px) {{
-            .hud-controls-drawer {{
-                top: 8px;
-                left: 8px;
-                max-width: calc(100% - 16px);
-            }}
-            .hud-toggle-btn {{
-                padding: 7px 12px;
-                font-size: 11.5px;
-            }}
-            .hud-btn {{
-                padding: 5px 9px;
-                font-size: 11px;
-            }}
+        .cocite-item:hover {{
+            color: var(--theme-accent);
+            background: rgba(var(--theme-glow-rgb), 0.12);
         }}
 
-        @media (max-width: 768px) {{
-            .hud-controls-drawer {{
-                top: 6px;
-                left: 6px;
-                right: 6px;
-                max-width: calc(100% - 12px);
-                border-radius: 12px;
+        /* RESPONSIVE ON MOBILE */
+        @media (max-width: 900px) {{
+            .synapse-bottom-deck {{
+                grid-template-columns: 1fr;
+                height: auto;
+                max-height: 48vh;
             }}
-            .hud-toggle-btn {{
-                padding: 8px 12px;
-                font-size: 11.5px;
-                width: 100%;
+            .synapse-header-bar {{
+                padding: 6px 12px;
             }}
-            .hud-content-panel {{
-                padding: 8px 10px 10px 10px;
-                max-height: 56vh;
-                overflow-y: auto;
-                -webkit-overflow-scrolling: touch;
+            .header-meta-cluster {{
+                display: none;
             }}
-            .hud-btn-row {{
-                gap: 5px;
+            .details-grid {{
+                grid-template-columns: 1fr;
             }}
-            .hud-btn {{
-                padding: 6px 9px;
-                font-size: 11px;
-                flex: 1 1 auto;
-                justify-content: center;
-                min-height: 36px;
-            }}
-            #floating-hover-card {{
-                display: none !important;
-            }}
-            #paper-modal {{
-                top: auto !important;
-                bottom: 0 !important;
-                left: 0 !important;
-                right: 0 !important;
-                width: 100% !important;
-                max-width: 100% !important;
-                max-height: 85vh !important;
-                border-radius: 20px 20px 0 0 !important;
-                border-bottom: none !important;
-                box-shadow: 0 -10px 40px rgba(0,0,0,0.8) !important;
-                animation: slideUpModal 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
-            }}
-            @keyframes slideUpModal {{
-                from {{ transform: translateY(100%); opacity: 0; }}
-                to {{ transform: translateY(0); opacity: 1; }}
-            }}
-            .modal-header {{
-                padding: 12px 16px !important;
-            }}
-            .modal-body {{
-                padding: 14px 16px !important;
-                -webkit-overflow-scrolling: touch;
-            }}
-            .modal-title {{
-                font-size: 14px !important;
-            }}
-            .action-link-btn {{
-                min-height: 38px;
-                padding: 8px 14px;
+            .synapse-vertical-dock {{
+                display: none;
             }}
         }}
     </style>
 </head>
-<body>
-<div id="network-wrapper" class="bg-obsidian">
-    <!-- Floating Collapsible Control HUD Toolbar (Mặc định thu gọn) -->
-    <div id="hud-controls-drawer" class="hud-controls-drawer">
-        <button id="hudToggleBtn" class="hud-toggle-btn" onclick="toggleHudDrawer()" title="Bấm để mở/thu gọn thanh công cụ (Phóng to, thu nhỏ, căn giữa, bố cục, nền 3D, tốc độ)">
-            <span style="display:inline-flex; align-items:center; gap:6px;">
-                <span>🎛️</span>
-                <span>BẢNG CÔNG CỤ & BỐ CỤC</span>
-            </span>
-            <span id="hudArrowIcon" style="font-size:12px; color:#38BDF8; font-weight:800;">▸</span>
-        </button>
-        
-        <div id="hudContentPanel" class="hud-content-panel" style="display: none;">
-            <!-- Search Box -->
-            <input type="text" id="nodeSearch" class="hud-search-box" style="width: 100%; box-sizing: border-box;" placeholder="🔍 Tìm tác giả / bài báo..." oninput="searchAndFocusNode(this.value)">
-            
-            <!-- Hàng 1: Zoom, Fit, Physics, Hạt sáng, Nhịp thở, Nhãn, Tua lịch sử, Toàn màn hình -->
-            <div class="hud-btn-row">
-                <button class="hud-btn" onclick="zoomIn()" title="Phóng to mạng lưới">🔍+ Phóng to</button>
-                <button class="hud-btn" onclick="zoomOut()" title="Thu nhỏ mạng lưới">🔍- Thu nhỏ</button>
-                <button class="hud-btn" onclick="fitView()" title="Căn giữa toàn cảnh">🎯 Căn giữa</button>
-                <button class="hud-btn" id="physicsBtn" onclick="togglePhysics()" title="Bật/Tắt mô phỏng vật lý">⚡ Tự sắp xếp</button>
-                <button class="hud-btn active" id="labelModeBtn" onclick="cycleLabelMode()" title="Chuyển đổi kiểu nhãn: Rút gọn -> Đầy đủ -> Ẩn nhãn">🏷️ Nhãn: Rút Gọn</button>
-                <button class="hud-btn active" id="particlesBtn" onclick="toggleParticles()" title="Bật/Tắt luồng hạt photon chuyển động dọc theo mũi tên trích dẫn">✨ Hạt Sáng</button>
-                <button class="hud-btn active" id="pulseBtn" onclick="togglePulseGlow()" title="Bật/Tắt vầng hào quang nhịp thở tỏa sáng quanh bài báo gốc & điểm bùng nổ">💓 Nhịp Thở</button>
-                <button class="hud-btn" id="timeplayBtn" onclick="toggleTimelinePlayback()" title="Tua lại lịch sử hình thành & tiến hóa tri thức qua các năm">⏯️ Tua Lịch Sử</button>
-                <button class="hud-btn" id="lineageBtn" onclick="toggleLineageMode()" title="Bật/Tắt chế độ phát sáng chuỗi phả hệ cội nguồn khi chọn bài báo">🧬 Truy Vết</button>
-                <button class="hud-btn" onclick="toggleFullScreen()" title="Phóng to toàn màn hình">⛶ Toàn màn hình</button>
-                <button class="hud-btn primary" onclick="popoutWindow()" title="Mở trong cửa sổ riêng để kéo sang màn hình phụ">🪟 Cửa sổ riêng</button>
+<body class="theme-synapse-cyan">
+<div id="synapse-hud-deck">
+    
+    <!-- 1. TOP HEADER HUD BAR -->
+    <header class="synapse-header-bar">
+        <div class="brand-logo-cluster">
+            <span class="brand-atom-icon">⚛️</span>
+            <div>
+                <div class="brand-title">SYNAPSE ACADEMIC</div>
+                <div class="brand-subtitle">SCHOLARGRAPH PRO // QUANTUM DECK</div>
+            </div>
+        </div>
+
+        <div class="header-meta-cluster">
+            <div class="meta-chip" title="Đề tài nghiên cứu hạt nhân">
+                <span>📁 PROJECT:</span>
+                <b style="color:var(--theme-accent);">{short_project_name}</b>
+            </div>
+            <div class="meta-chip">
+                <span>👤 USER:</span>
+                <b>Scholar Pro</b>
+            </div>
+            <div class="meta-chip" style="border-color:#10B981; color:#34D399;">
+                <span class="pulse-dot"></span>
+                <span>STATUS: ACTIVE</span>
+            </div>
+            <div class="meta-chip" id="realtimeClock" style="font-family:'JetBrains Mono', monospace; font-size:11px;">
+                --:--
+            </div>
+        </div>
+    </header>
+
+    <!-- 2. MIDDLE DECK (DOCK + NETWORK CANVAS) -->
+    <div class="synapse-middle-deck">
+        <!-- SLIM VERTICAL DOCK -->
+        <nav class="synapse-vertical-dock">
+            <div class="dock-btn-group">
+                <button class="dock-icon-btn active" id="dockBtnForce" onclick="switchLayoutMode('force')" title="1. Mạng Cụm (VOSviewer)">🕸️</button>
+                <button class="dock-icon-btn" id="dockBtnTimeline" onclick="switchLayoutMode('timeline')" title="2. Dòng Thời Gian (HistCite)">⏳</button>
+                <button class="dock-icon-btn" id="dockBtnConcentric" onclick="switchLayoutMode('concentric')" title="3. Kim Cương 2 Chiều (Diamond)">💎</button>
+                <button class="dock-icon-btn" id="dockBtnHierarchical" onclick="switchLayoutMode('hierarchical')" title="4. Cây Phả Hệ (CiteSpace)">🌳</button>
+                <button class="dock-icon-btn" id="dockBtnQuartile" onclick="switchLayoutMode('quartile')" title="5. Phân Làn Scopus Q1/Q2">📊</button>
             </div>
             
-            <!-- Hàng 2: 5 Chế độ bố cục Scientometric -->
-            <div class="hud-btn-row">
-                <button class="hud-btn active" id="btnModeForce" onclick="switchLayoutMode('force')" title="1. Chuẩn VOSviewer: Cụm lực hút đồng trích dẫn">🕸️ Mạng Cụm</button>
-                <button class="hud-btn" id="btnModeTimeline" onclick="switchLayoutMode('timeline')" title="2. Chuẩn HistCite: Dòng thời gian tiến hóa học thuật kèm cột mốc năm">⏳ Dòng Thời gian (Năm)</button>
-                <button class="hud-btn" id="btnModeConcentric" onclick="switchLayoutMode('concentric')" title="3. Chuẩn Kim Cương: Quỹ đạo Nền tảng (R) - Kế thừa (F)">💎 Kim Cương 2 Chiều</button>
-                <button class="hud-btn" id="btnModeHierarchical" onclick="switchLayoutMode('hierarchical')" title="4. Chuẩn CiteSpace: Cây phả hệ phân tầng">🌳 Cây Phả hệ</button>
-                <button class="hud-btn" id="btnModeQuartile" onclick="switchLayoutMode('quartile')" title="5. Chuẩn Clarivate: Phân làn Scopus Q1/Q2">📊 Phân làn Scopus</button>
+            <div class="dock-btn-group">
+                <button class="dock-icon-btn active" id="dockBtnTrace" onclick="toggleLineageMode()" title="🧬 Bật/Tắt Truy Vết Phả Hệ">🧬</button>
+                <button class="dock-icon-btn" onclick="cycleThemes()" title="🎨 Chuyển đổi 5 Mẫu Theme Kính Dạ Quang">🎨</button>
+                <button class="dock-icon-btn" onclick="fitView()" title="🎯 Căn giữa toàn cảnh">🎯</button>
             </div>
-            
-            <!-- Hàng 3: Chọn kiểu nền & Menu Điều chỉnh Tốc độ Động học -->
-            <div class="hud-btn-row" style="margin-top:2px; display:grid; grid-template-columns: 1.2fr 1fr; gap:6px;">
-                <select id="bgSelector" class="hud-search-box" onchange="switchCanvasBg(this.value)" style="width:100%; cursor:pointer; font-weight:700; background:#181B24; border-color:#38BDF8; color:#38BDF8;" title="Chọn kiểu nền hiển thị & không gian 3D tương phản cao">
-                    <option value="obsidian">🌌 Nền: Vũ trụ Obsidian (Mặc định)</option>
-                    <option value="3d-grid">🧊 Nền: Không gian Lưới 3D (Cyber 3D)</option>
-                    <option value="blueprint">📐 Nền: Bản vẽ Blueprint</option>
-                    <option value="parchment">📜 Nền: Giấy da Ivory (Sáng)</option>
-                    <option value="nordic-light">🏛️ Nền: Bắc Âu Slate (Sáng)</option>
-                </select>
+        </nav>
+
+        <!-- GRAPH CANVAS -->
+        <div class="synapse-graph-container">
+            <div class="graph-overlay-header">
+                <div class="graph-title">Global Citation Knowledge Network</div>
+                <div class="graph-subtitle">Project: {short_project_name}</div>
+            </div>
+
+            <!-- TOP RIGHT MINI CONTROLS -->
+            <div class="graph-top-tools">
+                <input type="text" id="nodeSearchInput" placeholder="🔍 Tìm kiếm bài báo..." oninput="searchAndFocusNode(this.value)" style="background:rgba(0,0,0,0.4); border:1px solid var(--theme-panel-border); color:#FFFFFF; border-radius:6px; padding:4px 8px; font-size:11px; outline:none; width:130px;">
                 
-                <select id="animSpeedSelector" class="hud-search-box" onchange="updateInteractionSpeeds(this.value)" style="width:100%; cursor:pointer; font-weight:700; background:#181B24; border-color:#F59E0B; color:#F59E0B;" title="Điều chỉnh tốc độ chạy của các hiệu ứng tương tác (Hạt sáng, nhịp thở, chuyển động)">
-                    <option value="normal">⚡ Tốc độ hiệu ứng: Chuẩn (1.0x)</option>
-                    <option value="slow">🐢 Tốc độ hiệu ứng: Chậm dịu (0.5x)</option>
-                    <option value="fast">🚀 Tốc độ hiệu ứng: Nhanh (2.0x)</option>
+                <select id="edgeFilter" onchange="applyGraphFilters()" style="background:var(--theme-panel-bg); border:1px solid var(--theme-panel-border); color:var(--theme-text-main); border-radius:8px; padding:4px 7px; font-size:11px; font-weight:600; outline:none; cursor:pointer;" title="Lọc loại liên kết mũi tên">
+                    <option value="all">⚡ Tất cả mũi tên</option>
+                    <option value="direct">🔷 Kế thừa 1 chiều</option>
+                    <option value="mutual">🔶 Đối thoại 2 chiều</option>
+                    <option value="cross_bridge">🔮 Bắc cầu xuyên tầng</option>
+                    <option value="intra_layer">🟢 Cùng phân tầng</option>
                 </select>
+
+                <select id="layerFilter" onchange="applyGraphFilters()" style="background:var(--theme-panel-bg); border:1px solid var(--theme-panel-border); color:var(--theme-text-main); border-radius:8px; padding:4px 7px; font-size:11px; font-weight:600; outline:none; cursor:pointer;" title="Lọc phân tầng tri thức">
+                    <option value="all">🌐 Toàn bộ tầng</option>
+                    <option value="seed">★ F0 Bài gốc</option>
+                    <option value="backward">🏛️ R1-R3 Cội nguồn</option>
+                    <option value="forward">🚀 F1-F3 Kế thừa</option>
+                </select>
+
+                <button class="hud-mini-btn active" id="lineageBtn" onclick="toggleLineageMode()" title="Bật/Tắt chế độ truy vết phả hệ">🧬 Truy Vết</button>
+                <button class="hud-mini-btn active" id="labelModeBtn" onclick="cycleLabelMode()" title="Chuyển kiểu nhãn">🏷️ Nhãn</button>
+                <button class="hud-mini-btn active" id="pulseBtn" onclick="togglePulseGlow()" title="Bật/Tắt Nhịp thở">💓 Nhịp Thở</button>
+                <button class="hud-mini-btn active" id="particlesBtn" onclick="toggleParticles()" title="Bật/Tắt Dòng Photon">✨ Photon</button>
+                <button class="hud-mini-btn" id="timeplayBtn" onclick="toggleTimelinePlayback()" title="Tua Lịch Sử">⏯️ Tua</button>
+                <button class="hud-mini-btn" onclick="zoomIn()" title="Phóng to">🔍+</button>
+                <button class="hud-mini-btn" onclick="zoomOut()" title="Thu nhỏ">🔍-</button>
+                <button class="hud-mini-btn" onclick="toggleFullScreen()" title="Toàn màn hình">⛶</button>
             </div>
 
-            <!-- Hàng 4: Bộ lọc Phân tầng Kim Cương, Quyền truy cập & Phân loại Mũi tên -->
-            <div class="hud-btn-row" style="margin-top:2px; display:grid; grid-template-columns: 1fr 1fr 1fr; gap:6px;">
-                <select id="layerFilter" class="hud-search-box" onchange="applyGraphFilters()" style="width:100%; cursor:pointer; font-weight:600; background:#181B24; border-color:#262B38; color:#F8FAFC;" title="Lọc theo tầng tri thức">
-                    <option value="all">🌐 Tầng: Tất cả (Diamond)</option>
-                    <option value="seed">🔴 Chỉ Bài Gốc (F0)</option>
-                    <option value="backward">🟣 Chỉ Nền Tảng (R1-R3)</option>
-                    <option value="forward">🟢 Chỉ Kế Thừa (F1-F3)</option>
-                </select>
-                <select id="accessFilter" class="hud-search-box" onchange="applyGraphFilters()" style="width:100%; cursor:pointer; font-weight:600; background:#181B24; border-color:#262B38; color:#F8FAFC;" title="Lọc theo quyền truy cập">
-                    <option value="all">🔓 Quyền: Tất cả bài báo</option>
-                    <option value="oa">🔓 Chỉ Open Access (PDF)</option>
-                    <option value="paywall">🔒 Chỉ Bài Paywall</option>
-                </select>
-                <select id="edgeFilter" class="hud-search-box" onchange="applyGraphFilters()" style="width:100%; cursor:pointer; font-weight:600; background:#181B24; border-color:#38BDF8; color:#38BDF8;" title="Lọc theo kiểu mũi tên dòng chảy tri thức">
-                    <option value="all">🔗 Mũi tên: Tất cả (4 loại)</option>
-                    <option value="direct">🔷 Chỉ Kế thừa 1 chiều</option>
-                    <option value="mutual">🔶 Chỉ Đối thoại 2 chiều</option>
-                    <option value="cross_bridge">🔮 Chỉ Bắc cầu xuyên tầng</option>
-                    <option value="intra_layer">🟢 Chỉ Cùng phân tầng</option>
-                </select>
+            <!-- BOTTOM LEFT FAST LEGEND -->
+            <div class="graph-bottom-legend">
+                <div class="legend-indicator"><span class="ind-dot" style="background:#EA4335; box-shadow:0 0 6px #EA4335;"></span> <span>F0 Tâm điểm</span></div>
+                <div class="legend-indicator"><span class="ind-dot" style="background:#7C3AED; box-shadow:0 0 6px #7C3AED;"></span> <span>Nền tảng (R1-R3)</span></div>
+                <div class="legend-indicator"><span class="ind-dot" style="background:#0284C7; box-shadow:0 0 6px #0284C7;"></span> <span>Kế thừa (F1-F3)</span></div>
+                <div class="legend-indicator" style="color:var(--theme-accent);">✨ <span>60 FPS Photon Stream</span></div>
             </div>
 
-            <!-- Hàng 5: Thanh điều khiển Tua lại Lịch sử Tiến hóa (Timeline Evolution Playback Bar) -->
-            <div id="timelinePlaybackBar" class="hud-btn-row" style="display:none; margin-top:6px; background:rgba(20,23,32,0.98); border:1.5px solid #38BDF8; border-radius:12px; padding:8px 14px; align-items:center; gap:10px; box-shadow: 0 4px 16px rgba(56,189,248,0.2);">
-                <button id="playbackPlayBtn" class="hud-btn primary" onclick="togglePlaybackPlay()" style="min-width:85px; font-weight:800; font-size:12.5px;">▶️ Phát</button>
-                <div style="display:flex; flex-direction:column; gap:2px;">
-                    <span style="font-size:11px; color:#94A3B8; font-weight:700;">TIẾN ĐỘ TIẾN HÓA:</span>
-                    <span style="font-size:13px; color:#FDE047; font-weight:800;">NĂM <b id="playbackYearLabel" style="font-size:15px; color:#38BDF8;">{max_yr}</b> <span id="playbackCountBadge" style="font-size:11px; color:#94A3B8; font-weight:600;">(Đầy đủ)</span></span>
+            <!-- TIMELINE PLAYBACK BAR (NỔI KHI BẬT) -->
+            <div id="timelinePlaybackBar" style="display:none; position:absolute; bottom:14px; right:16px; z-index:70; background:var(--theme-panel-bg); border:1.5px solid var(--theme-accent); border-radius:12px; padding:6px 12px; align-items:center; gap:8px; box-shadow:0 0 16px rgba(var(--theme-glow-rgb), 0.3);">
+                <button id="playbackPlayBtn" class="hud-mini-btn active" onclick="togglePlaybackPlay()">▶️ Phát</button>
+                <span style="font-size:11px; font-weight:700;">NĂM: <b id="playbackYearLabel" style="color:#FDE047;">{max_yr}</b></span>
+                <input type="range" id="playbackYearSlider" min="{min_yr}" max="{max_yr}" value="{max_yr}" step="1" oninput="onPlaybackSliderChange(this.value)" style="cursor:pointer; accent-color:var(--theme-accent); width:110px;">
+                <button class="hud-mini-btn" onclick="resetPlayback()">↺</button>
+            </div>
+
+            <div id="network-container"></div>
+        </div>
+    </div>
+
+    <!-- 3. BOTTOM EXPANDABLE PANELS DECK -->
+    <div class="synapse-bottom-deck">
+        <!-- PANEL 1: RELATED PAPERS MATRIX -->
+        <div class="hud-panel-card">
+            <div class="panel-card-header">
+                <span>📑 Related Papers Matrix ({len(vis_nodes)} works)</span>
+                <span style="font-size:10.5px; color:var(--theme-text-dim); text-transform:none;">Bấm dòng để focus ↗</span>
+            </div>
+            <div class="panel-card-body" id="relatedPapersTableContainer">
+                <table class="related-table">
+                    <thead>
+                        <tr>
+                            <th>Author & Work</th>
+                            <th>Year</th>
+                            <th>Journal / Venue</th>
+                            <th>Cites</th>
+                            <th>AI Relevance</th>
+                        </tr>
+                    </thead>
+                    <tbody id="relatedPapersTbody">
+                        <!-- Rendered by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- PANEL 2: SELECTED PAPER DETAILS & CO-CITATION -->
+        <div class="hud-panel-card">
+            <div class="panel-card-header">
+                <span>📄 Selected Paper Details & Co-Citation Path</span>
+                <div id="selectedPaperActionBtns" style="display:flex; gap:6px;">
+                    <!-- Action Links Rendered by JS -->
                 </div>
-                <input type="range" id="playbackYearSlider" min="{min_yr}" max="{max_yr}" value="{max_yr}" step="1" oninput="onPlaybackSliderChange(this.value)" style="flex:1; cursor:pointer; accent-color:#38BDF8; min-width:120px;">
-                <select id="playbackSpeedSelect" class="hud-search-box" onchange="changePlaybackSpeed(this.value)" style="cursor:pointer; font-weight:700; padding:4px 8px; font-size:11px; background:#181B24; border-color:#38BDF8; color:#38BDF8;" title="Tốc độ tua dòng thời gian">
-                    <option value="1200">⏱️ Tua: 1.0x (Chuẩn)</option>
-                    <option value="2500">🐢 Tua: 0.5x (Chậm)</option>
-                    <option value="600">🚀 Tua: 2.0x (Nhanh)</option>
-                    <option value="300">⚡ Tua: 3.0x (Siêu tốc)</option>
-                </select>
-                <button class="hud-btn" onclick="resetPlayback()" style="font-size:11px; padding:6px 10px;">↺ Đặt lại</button>
+            </div>
+            <div class="panel-card-body">
+                <div class="details-grid">
+                    <!-- LEFT PANE: TITLE & ABSTRACT -->
+                    <div class="detail-abstract-pane">
+                        <div id="selTitle" style="font-size:12.5px; font-weight:700; color:#FFFFFF; line-height:1.4;">Vui lòng chọn 1 bài báo trên đồ thị hoặc bảng bên trái</div>
+                        <div id="selMeta" style="font-size:11px; color:var(--theme-text-dim);"></div>
+                        <div id="selAbstract" style="font-size:11px; color:var(--theme-text-main); line-height:1.55; max-height:85px; overflow-y:auto; background:rgba(0,0,0,0.2); padding:6px 8px; border-radius:6px; border:1px solid rgba(255,255,255,0.05);"></div>
+                    </div>
+
+                    <!-- RIGHT PANE: CO-CITATION PATH & LINEAGE -->
+                    <div class="detail-cocitation-pane">
+                        <div style="font-size:10.5px; font-weight:800; color:var(--theme-accent); text-transform:uppercase; letter-spacing:0.04em;">🧬 AI Co-Citation Path:</div>
+                        <div id="selLineageList" style="display:flex; flex-direction:column; gap:4px; overflow-y:auto; max-height:110px;">
+                            <div style="color:var(--theme-text-dim); font-size:10.5px; font-style:italic;">Chưa chọn bài báo.</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-
-    <!-- Floating Hover Info Card -->
-    <div id="floating-hover-card">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-            <div id="hover-badge" style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em;"></div>
-            <div id="hover-conn-badge" style="font-size:11px; font-weight:600;"></div>
-        </div>
-        <!-- Thông báo lý do bài báo đứng lẻ loi -->
-        <div id="hover-orphan-notice" style="display:none; background:rgba(245, 158, 11, 0.16); border:1px solid rgba(245, 158, 11, 0.55); border-radius:8px; padding:7px 10px; margin-bottom:8px; font-size:11.5px; color:#FCD34D; line-height:1.45;">
-        </div>
-        <div id="hover-title" style="font-size:13px; font-weight:700; color:#FFFFFF; line-height:1.4; margin-bottom:6px;"></div>
-        <div id="hover-meta" style="font-size:11.5px; color:#94A3B8; line-height:1.5; margin-bottom:8px;"></div>
-        <div style="background:#141720; border:1px solid #262B38; border-radius:8px; padding:8px 10px; margin-bottom:8px;">
-            <div style="font-size:10.5px; font-weight:700; color:#38BDF8; text-transform:uppercase; margin-bottom:3px;">Tóm tắt nội dung (Tiếng Việt):</div>
-            <div id="hover-abstract-vi" style="font-size:11.5px; color:#E2E8F0; line-height:1.5; max-height:85px; overflow:hidden; text-overflow:ellipsis;"></div>
-        </div>
-        <div style="display:flex; justify-content:space-between; font-size:11px; color:#38BDF8; font-weight:600;">
-            <span>Nhấp chuột để mở toàn văn song ngữ & bài gốc ↗</span>
-        </div>
-    </div>
-
-    <!-- Interactive Paper Detail Modal -->
-    <div id="paper-modal">
-        <div class="modal-header">
-            <div id="modal-gen-badge"></div>
-            <button class="close-btn" onclick="closePaperModal()">✕</button>
-        </div>
-        <div class="modal-body">
-            <div id="modal-title" class="modal-title"></div>
-            <div id="modal-authors" class="modal-meta-row"></div>
-            <div id="modal-venue" class="modal-meta-row"></div>
-            <div id="modal-citations" class="modal-meta-row"></div>
-            
-            <div style="margin: 10px 0;">
-                <a id="modal-doi-link" class="action-link-btn" href="#" target="_blank">Mở bài báo gốc (DOI) ↗</a>
-                <a id="modal-pdf-link" class="action-link-btn secondary" href="#" target="_blank" style="display:none;">📄 Tải tệp PDF ↗</a>
-                <a id="modal-openalex-link" class="action-link-btn secondary" href="#" target="_blank">🌐 OpenAlex ↗</a>
-            </div>
-
-            <div class="modal-section-title">📄 TÓM TẮT NỘI DUNG NGHIÊN CỨU (SONG NGỮ)</div>
-            <div class="bilingual-tabs-nav">
-                <button id="tabBtnVi" class="bilingual-tab-btn active" onclick="switchModalLang('vi')">🇻🇳 Tiếng Việt</button>
-                <button id="tabBtnEn" class="bilingual-tab-btn" onclick="switchModalLang('en')">🇬🇧 Nguyên bản (English)</button>
-            </div>
-            <div id="modal-abstract-vi" class="modal-abstract-box"></div>
-            <div id="modal-abstract-en" class="modal-abstract-box en-mode" style="display: none;"></div>
-
-            <div class="modal-section-title">🧬 PHẢ HỆ & LIÊN KẾT TRÍCH DẪN</div>
-            <div id="modal-lineage-content"></div>
-        </div>
-    </div>
-
-    <!-- Chú thích Kim Cương Tri Thức & Phân Loại Mũi Tên (Left Collapsible Legend) -->
-    <div id="hud-legend-wrapper" class="hud-legend-drawer">
-        <button id="legendToggleBtn" class="legend-toggle-btn" onclick="toggleLegendDrawer()" title="Bấm để mở rộng / thu gọn chú giải">
-            <span>📖 Chú thích Kim Cương & Mũi Tên Tri Thức</span>
-            <span id="legendArrowIcon">▸</span>
-        </button>
-        <div id="legendContentPanel" class="legend-content-panel" style="display: none;">
-            <div style="font-size:11px; font-weight:700; color:#38BDF8; margin-bottom:4px; text-transform:uppercase;">🏛️ Phân Tầng Nút Bài Báo (Nodes):</div>
-            <div class="legend-item"><span class="legend-dot" style="background:#EA4335;"></span> <b>Bài báo gốc (F0):</b> Tâm điểm nghiên cứu (💓 Nhịp thở)</div>
-            <div class="legend-item"><span class="legend-dot" style="background:#7C3AED;"></span> <b>Nền tảng (R1-R3):</b> Tham chiếu cội nguồn lý thuyết</div>
-            <div class="legend-item"><span class="legend-dot" style="background:#0284C7;"></span> <b>Kế thừa (F1-F3):</b> Trích dẫn & phát triển tương lai</div>
-            
-            <div style="font-size:11px; font-weight:700; color:#F59E0B; margin:8px 0 4px 0; text-transform:uppercase; border-top:1px solid rgba(255,255,255,0.08); padding-top:6px;">🔗 Dòng Chảy & Mũi Tên Liên Kết (Edges):</div>
-            <div class="legend-item"><span style="color:#38BDF8; font-weight:bold; font-size:13px;">—➔</span> <span style="color:#38BDF8; font-weight:700;">Kế thừa 1 chiều:</span> Dòng kế thừa trực tiếp</div>
-            <div class="legend-item"><span style="color:#F59E0B; font-weight:bold; font-size:13px;">⟷</span> <span style="color:#F59E0B; font-weight:700;">Đối thoại 2 chiều:</span> Trích dẫn chéo tương hỗ</div>
-            <div class="legend-item"><span style="color:#C084FC; font-weight:bold; font-size:13px;">┄➔</span> <span style="color:#C084FC; font-weight:700;">Bắc cầu xuyên tầng:</span> Kế thừa neo cội nguồn</div>
-            <div class="legend-item"><span style="color:#34D399; font-weight:bold; font-size:13px;">┈➔</span> <span style="color:#34D399; font-weight:700;">Cùng phân tầng:</span> Liên kết nội bộ thế hệ</div>
-            <div class="legend-item" style="color:#FDE047; font-size:10.5px; margin-top:2px;">✨ <b>Hạt photon sáng:</b> Dòng chuyển động tri thức (60 FPS)</div>
-        </div>
-    </div>
-
-    <div id="network-container"></div>
 </div>
 
 <script type="text/javascript">
@@ -1122,12 +1095,12 @@ class CiteNetAgent:
     var metaDict = {meta_dict_json};
     var minYrVal = {min_yr};
     var maxYrVal = {max_yr};
-    
+
     var nodes = new vis.DataSet(rawNodes);
     var edges = new vis.DataSet(rawEdges);
     var container = document.getElementById('network-container');
     var data = {{ nodes: nodes, edges: edges }};
-    
+
     var isPhysicsOn = true;
     var isParticlesOn = true;
     var isPulsingOn = true;
@@ -1135,19 +1108,20 @@ class CiteNetAgent:
     var isTimelinePlaybackActive = false;
     var isPlaybackPlaying = false;
     var playbackTimer = null;
-    var playbackIntervalMs = 1200; // Mặc định 1.2s mỗi năm
+    var playbackIntervalMs = 1200;
     var currentPlaybackYear = maxYrVal;
     var selectedLineageNodeId = null;
-    var currentLayoutMode = 'force'; // 'force', 'timeline', 'concentric', 'hierarchical', 'quartile'
-    var currentLabelMode = 'short'; // 'short', 'full', 'minimal'
-    var speedMultiplier = 1.0; // 0.5 (slow), 1.0 (normal), 2.0 (fast)
+    var currentLayoutMode = 'force';
+    var currentLabelMode = 'short';
+    var currentThemeIndex = 0;
+    var themesList = ['theme-synapse-cyan', 'theme-nebula-violet', 'theme-emerald-matrix', 'theme-solar-amber', 'theme-nordic-light'];
 
     var forceOptions = {{
         nodes: {{
             shadow: {{
                 enabled: true,
-                color: 'rgba(0,0,0,0.4)',
-                size: 6,
+                color: 'rgba(0,0,0,0.5)',
+                size: 8,
                 x: 2,
                 y: 2
             }}
@@ -1183,28 +1157,143 @@ class CiteNetAgent:
 
     var network = new vis.Network(container, data, forceOptions);
 
-    // Zoom Controls
-    function zoomIn() {{
-        var scale = network.getScale();
-        network.moveTo({{
-            scale: scale * 1.35,
-            animation: {{ duration: 250, easingFunction: 'easeInOutQuad' }}
+    // Realtime Clock
+    function updateClock() {{
+        var d = new Date();
+        var clockEl = document.getElementById('realtimeClock');
+        if (clockEl) {{
+            clockEl.innerText = d.toLocaleDateString('en-GB') + ' | ' + d.toLocaleTimeString([], {{hour: '2-digit', minute:'2-digit', second:'2-digit'}});
+        }}
+    }}
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Populate Related Papers Table
+    function renderRelatedPapersTable() {{
+        var tbody = document.getElementById('relatedPapersTbody');
+        if (!tbody) return;
+        var html = '';
+        var maxCites = 1;
+        rawNodes.forEach(function(n) {{ if ((n.citations || 0) > maxCites) maxCites = n.citations; }});
+
+        rawNodes.forEach(function(n, idx) {{
+            var p = metaDict[n.id] || {{}};
+            var relPct = Math.min(99, Math.max(30, Math.round(35 + Math.log((n.citations || 1) + 1) / Math.log(maxCites + 2) * 60)));
+            if (p.level === 0 || p.layer === 'seed') relPct = 99;
+            
+            var cleanT = (p.title || '').replace(/"/g, '');
+            var shortT = cleanT.length > 32 ? cleanT.substring(0, 32) + '...' : cleanT;
+            var shortV = (p.venue || 'Journal').length > 20 ? (p.venue || 'Journal').substring(0, 20) + '...' : (p.venue || 'Journal');
+
+            html += '<tr class="related-row" id="rel_row_' + n.id + '" onclick="selectPaperFromTable(\\'' + n.id + '\\')">' +
+                '<td><b>' + p.first_author + '</b>: <span style="color:var(--theme-text-dim);">' + shortT + '</span></td>' +
+                '<td style="color:#FDE047;">' + p.year + '</td>' +
+                '<td style="color:var(--theme-accent);">' + shortV + '</td>' +
+                '<td><b>' + (p.citation_count || 0) + '</b></td>' +
+                '<td>' +
+                    '<div class="relevance-bar-track"><div class="relevance-bar-fill" style="width:' + relPct + '%;"></div></div>' +
+                    '<span style="font-family:JetBrains Mono, monospace; font-size:10px; color:var(--theme-accent);">' + relPct + '%</span>' +
+                '</td>' +
+            '</tr>';
         }});
+        tbody.innerHTML = html;
     }}
+    renderRelatedPapersTable();
 
-    function zoomOut() {{
-        var scale = network.getScale();
-        network.moveTo({{
-            scale: scale / 1.35,
-            animation: {{ duration: 250, easingFunction: 'easeInOutQuad' }}
+    // Select Paper from Table or Canvas
+    function selectPaperFromTable(nodeId) {{
+        // Highlight row
+        var allRows = document.querySelectorAll('.related-row');
+        allRows.forEach(function(r) {{ r.classList.remove('selected'); }});
+        var activeRow = document.getElementById('rel_row_' + nodeId);
+        if (activeRow) {{
+            activeRow.classList.add('selected');
+            activeRow.scrollIntoView({{ behavior: 'smooth', block: 'nearest' }});
+        }}
+
+        // Focus in Network
+        network.selectNodes([nodeId]);
+        network.focus(nodeId, {{
+            scale: 1.35,
+            animation: {{ duration: 350, easingFunction: 'easeInOutQuad' }}
         }});
+
+        // Update Right Pane (Selected Details)
+        updateSelectedDetailsPane(nodeId);
+
+        if (isLineageTracingOn) {{
+            traceAncestryAndDescendants(nodeId);
+        }}
     }}
 
-    function fitView() {{
-        network.fit({{ animation: {{ duration: 500, easingFunction: 'easeInOutQuad' }} }});
+    function updateSelectedDetailsPane(nodeId) {{
+        var p = metaDict[nodeId];
+        if (!p) return;
+
+        var tEl = document.getElementById('selTitle');
+        var mEl = document.getElementById('selMeta');
+        var aEl = document.getElementById('selAbstract');
+        var bEl = document.getElementById('selectedPaperActionBtns');
+        var lEl = document.getElementById('selLineageList');
+
+        if (tEl) tEl.innerText = p.title;
+        if (mEl) mEl.innerHTML = '<b>✍️ ' + p.authors + '</b> (' + p.year + ') • 🏛️ ' + p.venue + ' • <span style="color:var(--theme-accent); font-weight:700;">' + (p.scopus_tier || 'Scopus Q1') + ' (' + (p.citation_count || 0) + ' tc)</span>';
+        if (aEl) aEl.innerText = p.abstract_vi || p.abstract || 'Tóm tắt đang cập nhật...';
+
+        if (bEl) {{
+            var btnHtml = '';
+            if (p.doi_url || p.landing_url) {{
+                btnHtml += '<a href="' + (p.doi_url || p.landing_url) + '" target="_blank" class="hud-mini-btn active" style="text-decoration:none; padding:3px 8px; font-size:10.5px;">DOI ↗</a>';
+            }}
+            if (p.pdf_url) {{
+                btnHtml += '<a href="' + p.pdf_url + '" target="_blank" class="hud-mini-btn" style="background:#059669; border-color:#10B981; color:#FFF; text-decoration:none; padding:3px 8px; font-size:10.5px;">🔓 PDF ↗</a>';
+            }}
+            btnHtml += '<a href="' + (p.openalex_url || ('https://openalex.org/works?filter=doi:' + p.doi)) + '" target="_blank" class="hud-mini-btn" style="text-decoration:none; padding:3px 8px; font-size:10.5px;">OpenAlex ↗</a>';
+            bEl.innerHTML = btnHtml;
+        }}
+
+        if (lEl) {{
+            var outList = p.outgoing_ids || [];
+            var inList = p.incoming_ids || [];
+            var listHtml = '';
+            
+            if (outList.length > 0) {{
+                outList.slice(0, 3).forEach(function(tid) {{
+                    var tp = metaDict[tid];
+                    if (tp) listHtml += '<div class="cocite-item" onclick="selectPaperFromTable(\\'' + tid + '\\')">↳ <b>R (Tham chiếu):</b> ' + tp.first_author + ' (' + tp.year + ')</div>';
+                }});
+            }}
+            if (inList.length > 0) {{
+                inList.slice(0, 3).forEach(function(sid) {{
+                    var sp = metaDict[sid];
+                    if (sp) listHtml += '<div class="cocite-item" onclick="selectPaperFromTable(\\'' + sid + '\\')">↰ <b>F (Kế thừa):</b> ' + sp.first_author + ' (' + sp.year + ')</div>';
+                }});
+            }}
+            if (!listHtml) listHtml = '<div style="color:var(--theme-text-dim); font-size:10.5px;">Không có nhánh trích dẫn trực tiếp trong tập mẫu này.</div>';
+            lEl.innerHTML = listHtml;
+        }}
     }}
 
-    // Switch Label Mode: Short -> Full -> Minimal
+    // Cycle 5 Hologram Themes
+    function cycleThemes() {{
+        currentThemeIndex = (currentThemeIndex + 1) % themesList.length;
+        var nextTheme = themesList[currentThemeIndex];
+        document.body.className = nextTheme;
+    }}
+
+    // Network Click Event
+    network.on('click', function(params) {{
+        if (params.nodes.length > 0) {{
+            var nodeId = params.nodes[0];
+            selectPaperFromTable(nodeId);
+        }} else {{
+            if (isLineageTracingOn) {{
+                resetLineageHighlight();
+            }}
+        }}
+    }});
+
+    // Switch Label Mode
     function cycleLabelMode() {{
         var btn = document.getElementById('labelModeBtn');
         if (currentLabelMode === 'short') {{
@@ -1212,10 +1301,10 @@ class CiteNetAgent:
             if (btn) btn.innerHTML = '🏷️ Nhãn: Đầy Đủ';
         }} else if (currentLabelMode === 'full') {{
             currentLabelMode = 'minimal';
-            if (btn) btn.innerHTML = '🏷️ Nhãn: Ẩn (Hover)';
+            if (btn) btn.innerHTML = '🏷️ Nhãn: Ẩn';
         }} else {{
             currentLabelMode = 'short';
-            if (btn) btn.innerHTML = '🏷️ Nhãn: Rút Gọn';
+            if (btn) btn.innerHTML = '🏷️ Nhãn: Gọn';
         }}
 
         var updates = [];
@@ -1223,76 +1312,66 @@ class CiteNetAgent:
             var lbl = n.label_short;
             if (currentLabelMode === 'full') lbl = n.label_full;
             else if (currentLabelMode === 'minimal') lbl = '';
-            
-            updates.push({{
-                id: n.id,
-                label: lbl
-            }});
+            updates.push({{ id: n.id, label: lbl }});
         }});
         nodes.update(updates);
     }}
 
-    // Toggle Particle Photon Animation
+    // Zoom & View Controls
+    function zoomIn() {{
+        network.moveTo({{ scale: network.getScale() * 1.35, animation: {{ duration: 250, easingFunction: 'easeInOutQuad' }} }});
+    }}
+    function zoomOut() {{
+        network.moveTo({{ scale: network.getScale() / 1.35, animation: {{ duration: 250, easingFunction: 'easeInOutQuad' }} }});
+    }}
+    function fitView() {{
+        network.fit({{ animation: {{ duration: 450, easingFunction: 'easeInOutQuad' }} }});
+    }}
+    function toggleFullScreen() {{
+        var elem = document.documentElement;
+        if (!document.fullscreenElement) {{
+            if (elem.requestFullscreen) elem.requestFullscreen();
+        }} else {{
+            if (document.exitFullscreen) document.exitFullscreen();
+        }}
+    }}
+
+    // Toggle Particle Photons & Pulsing Glow
     function toggleParticles() {{
         isParticlesOn = !isParticlesOn;
         var btn = document.getElementById('particlesBtn');
-        if (btn) {{
-            btn.className = isParticlesOn ? 'hud-btn active' : 'hud-btn';
-            btn.innerHTML = isParticlesOn ? '✨ Hạt Sáng: Bật' : '✨ Hạt Sáng: Tắt';
-        }}
+        if (btn) btn.className = isParticlesOn ? 'hud-mini-btn active' : 'hud-mini-btn';
         network.redraw();
     }}
-
-    // Toggle Pulsing Halo Glow
     function togglePulseGlow() {{
         isPulsingOn = !isPulsingOn;
         var btn = document.getElementById('pulseBtn');
-        if (btn) {{
-            btn.className = isPulsingOn ? 'hud-btn active' : 'hud-btn';
-            btn.innerHTML = isPulsingOn ? '💓 Nhịp Thở: Bật' : '💓 Nhịp Thở: Tắt';
-        }}
+        if (btn) btn.className = isPulsingOn ? 'hud-mini-btn active' : 'hud-mini-btn';
         network.redraw();
     }}
 
-    // Update Interactive Speeds (Particles, Pulsing)
-    function updateInteractionSpeeds(val) {{
-        if (val === 'slow') speedMultiplier = 0.5;
-        else if (val === 'fast') speedMultiplier = 2.0;
-        else speedMultiplier = 1.0;
-    }}
-
-    // Change Timeline Playback Speed
-    function changePlaybackSpeed(val) {{
-        playbackIntervalMs = parseInt(val, 10) || 1200;
-        if (isPlaybackPlaying) {{
-            stopPlaybackTimer();
-            startPlaybackTimer();
-        }}
-    }}
-
-    // Toggle Timeline Playback Mode
+    // Timeline Playback
     function toggleTimelinePlayback() {{
         isTimelinePlaybackActive = !isTimelinePlaybackActive;
         var bar = document.getElementById('timelinePlaybackBar');
         var btn = document.getElementById('timeplayBtn');
         if (isTimelinePlaybackActive) {{
             if (bar) bar.style.display = 'flex';
-            if (btn) {{ btn.className = 'hud-btn active'; btn.innerHTML = '⏯️ Đang Tua Lịch Sử'; }}
+            if (btn) btn.className = 'hud-mini-btn active';
             currentPlaybackYear = minYrVal;
             applyTimelinePlaybackYear(currentPlaybackYear);
             startPlaybackTimer();
         }} else {{
             if (bar) bar.style.display = 'none';
-            if (btn) {{ btn.className = 'hud-btn'; btn.innerHTML = '⏯️ Tua Lịch Sử'; }}
+            if (btn) btn.className = 'hud-mini-btn';
             stopPlaybackTimer();
             resetPlayback();
         }}
     }}
-
     function startPlaybackTimer() {{
         isPlaybackPlaying = true;
         var playBtn = document.getElementById('playbackPlayBtn');
-        if (playBtn) playBtn.innerHTML = '⏸️ Tạm Dừng';
+        if (playBtn) playBtn.innerHTML = '⏸️';
         if (playbackTimer) clearInterval(playbackTimer);
         playbackTimer = setInterval(function() {{
             if (currentPlaybackYear >= maxYrVal) {{
@@ -1303,110 +1382,178 @@ class CiteNetAgent:
             applyTimelinePlaybackYear(currentPlaybackYear);
         }}, playbackIntervalMs);
     }}
-
     function stopPlaybackTimer() {{
         isPlaybackPlaying = false;
         var playBtn = document.getElementById('playbackPlayBtn');
-        if (playBtn) playBtn.innerHTML = '▶️ Phát Tiếp';
+        if (playBtn) playBtn.innerHTML = '▶️';
         if (playbackTimer) {{
             clearInterval(playbackTimer);
             playbackTimer = null;
         }}
     }}
-
     function togglePlaybackPlay() {{
-        if (isPlaybackPlaying) {{
-            stopPlaybackTimer();
-        }} else {{
+        if (isPlaybackPlaying) stopPlaybackTimer();
+        else {{
             if (currentPlaybackYear >= maxYrVal) currentPlaybackYear = minYrVal;
             startPlaybackTimer();
         }}
     }}
-
     function onPlaybackSliderChange(val) {{
         currentPlaybackYear = parseInt(val, 10);
         applyTimelinePlaybackYear(currentPlaybackYear);
     }}
-
     function applyTimelinePlaybackYear(yr) {{
         var label = document.getElementById('playbackYearLabel');
         var slider = document.getElementById('playbackYearSlider');
-        var countBadge = document.getElementById('playbackCountBadge');
         if (label) label.innerText = yr;
         if (slider) slider.value = yr;
 
         var visibleNodeIds = new Set();
         var nodeUpdates = [];
-        var totalCount = rawNodes.length;
-
         rawNodes.forEach(function(n) {{
             var nYr = n.year || 2020;
             var isVisible = (nYr <= yr);
-            var isCurrentNew = (nYr === yr);
             if (isVisible) visibleNodeIds.add(n.id);
-            nodeUpdates.push({{
-                id: n.id,
-                hidden: !isVisible,
-                opacity: isVisible ? 1.0 : 0.0,
-                borderWidth: isCurrentNew ? (n.size ? n.size * 0.25 : 4.0) : (n.borderWidth || 2.0)
-            }});
+            nodeUpdates.push({{ id: n.id, hidden: !isVisible, opacity: isVisible ? 1.0 : 0.0 }});
         }});
         nodes.update(nodeUpdates);
-
-        if (countBadge) {{
-            countBadge.innerText = '(' + visibleNodeIds.size + '/' + totalCount + ' bài)';
-        }}
 
         var edgeUpdates = [];
         rawEdges.forEach(function(e) {{
             var edgeVisible = visibleNodeIds.has(e.from) && visibleNodeIds.has(e.to);
-            edgeUpdates.push({{
-                id: e.id,
-                hidden: !edgeVisible
-            }});
+            edgeUpdates.push({{ id: e.id, hidden: !edgeVisible }});
         }});
         edges.update(edgeUpdates);
     }}
-
     function resetPlayback() {{
         currentPlaybackYear = maxYrVal;
         applyTimelinePlaybackYear(maxYrVal);
         stopPlaybackTimer();
-        var playBtn = document.getElementById('playbackPlayBtn');
-        if (playBtn) playBtn.innerHTML = '▶️ Phát Lại';
     }}
 
-    // Toggle Interactive Lineage Tracing Mode
+    // Dynamic Graph Filtering (Edge & Layer Filters)
+    function applyGraphFilters() {{
+        var edgeEl = document.getElementById('edgeFilter');
+        var layerEl = document.getElementById('layerFilter');
+        var edgeVal = edgeEl ? edgeEl.value : 'all';
+        var layerVal = layerEl ? layerEl.value : 'all';
+
+        var visibleNodeIds = new Set();
+        var nodeUpdates = [];
+
+        rawNodes.forEach(function(n) {{
+            var matchLayer = true;
+            if (layerVal === 'seed') matchLayer = (n.level === 0 || n.layer === 'seed');
+            else if (layerVal === 'backward') matchLayer = (n.level < 0 || n.layer === 'backward');
+            else if (layerVal === 'forward') matchLayer = (n.level > 0 || n.layer === 'forward');
+
+            if (matchLayer) visibleNodeIds.add(n.id);
+            nodeUpdates.push({{ id: n.id, hidden: !matchLayer }});
+        }});
+        nodes.update(nodeUpdates);
+
+        var edgeUpdates = [];
+        rawEdges.forEach(function(e) {{
+            var matchEdge = (edgeVal === 'all' || e.edge_type === edgeVal);
+            var nodesVisible = visibleNodeIds.has(e.from) && visibleNodeIds.has(e.to);
+            var isEdgeShown = matchEdge && nodesVisible;
+            edgeUpdates.push({{ id: e.id, hidden: !isEdgeShown }});
+        }});
+        edges.update(edgeUpdates);
+    }}
+
+    // Lineage Tracing
     function toggleLineageMode() {{
         isLineageTracingOn = !isLineageTracingOn;
-        var btn = document.getElementById('lineageBtn');
-        if (btn) {{
-            btn.className = isLineageTracingOn ? 'hud-btn active' : 'hud-btn';
-            btn.innerHTML = isLineageTracingOn ? '🧬 Truy Vết: Bật' : '🧬 Truy Vết: Tắt';
+        var btn = document.getElementById('dockBtnTrace');
+        var lbtn = document.getElementById('lineageBtn');
+        if (btn) btn.classList.toggle('active', isLineageTracingOn);
+        if (lbtn) lbtn.classList.toggle('active', isLineageTracingOn);
+        if (!isLineageTracingOn) resetLineageHighlight();
+        else if (selectedLineageNodeId) traceAncestryAndDescendants(selectedLineageNodeId);
+    }}
+    function traceAncestryAndDescendants(targetNodeId) {{
+        selectedLineageNodeId = targetNodeId;
+        var lineageNodes = new Set([targetNodeId]);
+        var lineageEdges = new Set();
+
+        var queueUp = [targetNodeId];
+        var visitedUp = new Set([targetNodeId]);
+        while (queueUp.length > 0) {{
+            var curr = queueUp.shift();
+            rawEdges.forEach(function(e) {{
+                if (e.to === curr && !visitedUp.has(e.from)) {{
+                    visitedUp.add(e.from);
+                    lineageNodes.add(e.from);
+                    lineageEdges.add(e.id);
+                    queueUp.push(e.from);
+                }}
+            }});
         }}
-        if (!isLineageTracingOn) {{
-            resetLineageHighlight();
-        }} else if (selectedLineageNodeId) {{
-            traceAncestryAndDescendants(selectedLineageNodeId);
+
+        var queueDown = [targetNodeId];
+        var visitedDown = new Set([targetNodeId]);
+        while (queueDown.length > 0) {{
+            var curr = queueDown.shift();
+            rawEdges.forEach(function(e) {{
+                if (e.from === curr && !visitedDown.has(e.to)) {{
+                    visitedDown.add(e.to);
+                    lineageNodes.add(e.to);
+                    lineageEdges.add(e.id);
+                    queueDown.push(e.to);
+                }}
+            }});
         }}
+
+        var nodeUpdates = [];
+        rawNodes.forEach(function(n) {{
+            var inLineage = lineageNodes.has(n.id);
+            nodeUpdates.push({{
+                id: n.id,
+                opacity: inLineage ? 1.0 : 0.18,
+                borderWidth: (n.id === targetNodeId) ? 4.5 : (inLineage ? 3.0 : 1.0)
+            }});
+        }});
+        nodes.update(nodeUpdates);
+
+        var edgeUpdates = [];
+        rawEdges.forEach(function(e) {{
+            var inLineage = lineageEdges.has(e.id);
+            edgeUpdates.push({{
+                id: e.id,
+                color: inLineage ? {{ color: '#F59E0B', opacity: 1.0, highlight: '#F59E0B' }} : {{ color: 'rgba(100,116,139,0.08)', opacity: 0.08 }},
+                width: inLineage ? 3.2 : 1.0
+            }});
+        }});
+        edges.update(edgeUpdates);
+    }}
+    function resetLineageHighlight() {{
+        selectedLineageNodeId = null;
+        var nodeUpdates = [];
+        rawNodes.forEach(function(n) {{
+            var isSeed = (n.level === 0 || n.layer === 'seed');
+            nodeUpdates.push({{ id: n.id, opacity: 1.0, borderWidth: isSeed ? 3.5 : (n.is_isolated ? 2.6 : 1.8) }});
+        }});
+        nodes.update(nodeUpdates);
+
+        var edgeUpdates = [];
+        rawEdges.forEach(function(e) {{
+            edgeUpdates.push({{ id: e.id, color: e.color, width: e.width }});
+        }});
+        edges.update(edgeUpdates);
     }}
 
-    // 5 International Scientometric Layouts Switcher
+    // Switch Layout Modes
     function switchLayoutMode(mode) {{
         currentLayoutMode = mode;
-        var btnForce = document.getElementById('btnModeForce');
-        var btnTimeline = document.getElementById('btnModeTimeline');
-        var btnConcentric = document.getElementById('btnModeConcentric');
-        var btnHierarchical = document.getElementById('btnModeHierarchical');
-        var btnQuartile = document.getElementById('btnModeQuartile');
-
-        [btnForce, btnTimeline, btnConcentric, btnHierarchical, btnQuartile].forEach(function(b) {{
-            if (b) b.className = 'hud-btn';
+        ['dockBtnForce', 'dockBtnTimeline', 'dockBtnConcentric', 'dockBtnHierarchical', 'dockBtnQuartile'].forEach(function(id) {{
+            var b = document.getElementById(id);
+            if (b) b.classList.remove('active');
         }});
 
         if (mode === 'timeline') {{
-            if (btnTimeline) btnTimeline.className = 'hud-btn active';
-
+            var db = document.getElementById('dockBtnTimeline');
+            if (db) db.classList.add('active');
             network.setOptions({{ physics: {{ enabled: false }}, layout: {{ hierarchical: false }} }});
             
             var updates = [];
@@ -1423,19 +1570,14 @@ class CiteNetAgent:
                 var indexInYear = listInYear.indexOf(n.id);
                 var totalInYear = listInYear.length;
                 var yOffset = (indexInYear - (totalInYear - 1) / 2) * 95;
-                updates.push({{
-                    id: n.id,
-                    x: n.x_timeline,
-                    y: yOffset,
-                    physics: false
-                }});
+                updates.push({{ id: n.id, x: n.x_timeline, y: yOffset, physics: false }});
             }});
             nodes.update(updates);
-            setTimeout(function() {{ fitView(); }}, 200);
+            setTimeout(fitView, 200);
 
         }} else if (mode === 'concentric') {{
-            if (btnConcentric) btnConcentric.className = 'hud-btn active';
-
+            var db = document.getElementById('dockBtnConcentric');
+            if (db) db.classList.add('active');
             network.setOptions({{ physics: {{ enabled: false }}, layout: {{ hierarchical: false }} }});
 
             var updates = [];
@@ -1443,363 +1585,137 @@ class CiteNetAgent:
             var backwardPapers = rawNodes.filter(function(n) {{ return (n.level < 0 || n.layer === 'backward'); }});
             var forwardPapers = rawNodes.filter(function(n) {{ return (n.level > 0 || n.layer === 'forward'); }});
 
-            // Seed đặt ở tâm
             seeds.forEach(function(n, i) {{
                 updates.push({{ id: n.id, x: (i * 80) - ((seeds.length - 1) * 40), y: 0, physics: false }});
             }});
 
-            // Nền tảng (Backward - R) đặt bên cánh TRÁI
             var bCount = backwardPapers.length || 1;
             backwardPapers.forEach(function(n, i) {{
                 var lvl = Math.abs(n.level || 1);
                 var radius = 240 + (lvl - 1) * 140;
                 var angle = Math.PI / 2 + ((Math.PI * (i + 0.5)) / bCount);
-                updates.push({{
-                    id: n.id,
-                    x: Math.round(radius * Math.cos(angle)),
-                    y: Math.round(radius * Math.sin(angle)),
-                    physics: false
-                }});
+                updates.push({{ id: n.id, x: Math.round(radius * Math.cos(angle)), y: Math.round(radius * Math.sin(angle)), physics: false }});
             }});
 
-            // Kế thừa (Forward - F) đặt bên cánh PHẢI
             var fCount = forwardPapers.length || 1;
             forwardPapers.forEach(function(n, j) {{
                 var lvl = Math.abs(n.level || 1);
                 var radius = 260 + (lvl - 1) * 150;
                 var angle = -Math.PI / 2 + ((Math.PI * (j + 0.5)) / fCount);
-                updates.push({{
-                    id: n.id,
-                    x: Math.round(radius * Math.cos(angle)),
-                    y: Math.round(radius * Math.sin(angle)),
-                    physics: false
-                }});
+                updates.push({{ id: n.id, x: Math.round(radius * Math.cos(angle)), y: Math.round(radius * Math.sin(angle)), physics: false }});
             }});
 
             nodes.update(updates);
-            setTimeout(function() {{ fitView(); }}, 200);
+            setTimeout(fitView, 200);
 
         }} else if (mode === 'hierarchical') {{
-            if (btnHierarchical) btnHierarchical.className = 'hud-btn active';
-
+            var db = document.getElementById('dockBtnHierarchical');
+            if (db) db.classList.add('active');
             var updates = [];
-            rawNodes.forEach(function(n) {{
-                updates.push({{ id: n.id, physics: true }});
-            }});
+            rawNodes.forEach(function(n) {{ updates.push({{ id: n.id, physics: true }}); }});
             nodes.update(updates);
 
             network.setOptions({{
-                layout: {{
-                    hierarchical: {{
-                        enabled: true,
-                        direction: 'UD',
-                        sortMethod: 'directed',
-                        levelSeparation: 150,
-                        nodeSpacing: 180,
-                        treeSpacing: 220,
-                        blockShifting: true,
-                        edgeMinimization: true
-                    }}
-                }},
-                physics: {{
-                    hierarchicalRepulsion: {{
-                        centralGravity: 0.0,
-                        springLength: 100,
-                        springConstant: 0.01,
-                        nodeDistance: 170,
-                        damping: 0.09
-                    }},
-                    solver: 'hierarchicalRepulsion'
-                }}
+                layout: {{ hierarchical: {{ enabled: true, direction: 'UD', sortMethod: 'directed', levelSeparation: 150, nodeSpacing: 180 }} }},
+                physics: {{ hierarchicalRepulsion: {{ nodeDistance: 170 }}, solver: 'hierarchicalRepulsion' }}
             }});
-            setTimeout(function() {{ fitView(); }}, 350);
+            setTimeout(fitView, 350);
 
         }} else if (mode === 'quartile') {{
-            if (btnQuartile) btnQuartile.className = 'hud-btn active';
-
+            var db = document.getElementById('dockBtnQuartile');
+            if (db) db.classList.add('active');
             network.setOptions({{ physics: {{ enabled: false }}, layout: {{ hierarchical: false }} }});
 
-            var lanes = {{
-                core: [],
-                q1: [],
-                q2: [],
-                other: []
-            }};
-
+            var lanes = {{ core: [], q1: [], q2: [], other: [] }};
             rawNodes.forEach(function(n) {{
                 var p = metaDict[n.id] || {{}};
                 var tier = (p.scopus_tier || '').toLowerCase();
-                if (p.level === 0 || p.layer === 'seed') {{
-                    lanes.core.push(n.id);
-                }} else if (tier.indexOf('q1') !== -1 || tier.indexOf('top tier') !== -1) {{
-                    lanes.q1.push(n.id);
-                }} else if (tier.indexOf('q2') !== -1 || tier.indexOf('q3') !== -1) {{
-                    lanes.q2.push(n.id);
-                }} else {{
-                    lanes.other.push(n.id);
-                }}
+                if (p.level === 0 || p.layer === 'seed') lanes.core.push(n.id);
+                else if (tier.indexOf('q1') !== -1) lanes.q1.push(n.id);
+                else if (tier.indexOf('q2') !== -1) lanes.q2.push(n.id);
+                else lanes.other.push(n.id);
             }});
 
-            var laneX = {{
-                core: -440,
-                q1: -150,
-                q2: 150,
-                other: 440
-            }};
-
+            var laneX = {{ core: -440, q1: -150, q2: 150, other: 440 }};
             var updates = [];
             ['core', 'q1', 'q2', 'other'].forEach(function(k) {{
                 var list = lanes[k];
-                var total = list.length;
                 list.forEach(function(id, idx) {{
-                    var yOffset = (idx - (total - 1) / 2) * 95;
-                    updates.push({{
-                        id: id,
-                        x: laneX[k],
-                        y: yOffset,
-                        physics: false
-                    }});
+                    var yOffset = (idx - (list.length - 1) / 2) * 95;
+                    updates.push({{ id: id, x: laneX[k], y: yOffset, physics: false }});
                 }});
             }});
-
             nodes.update(updates);
-            setTimeout(function() {{ fitView(); }}, 200);
+            setTimeout(fitView, 200);
 
         }} else {{
-            // 'force'
-            if (btnForce) btnForce.className = 'hud-btn active';
-
+            var db = document.getElementById('dockBtnForce');
+            if (db) db.classList.add('active');
             network.setOptions({{ layout: {{ hierarchical: false }} }});
             var updates = [];
-            rawNodes.forEach(function(n) {{
-                updates.push({{
-                    id: n.id,
-                    physics: true
-                }});
-            }});
+            rawNodes.forEach(function(n) {{ updates.push({{ id: n.id, physics: true }}); }});
             nodes.update(updates);
             network.setOptions(forceOptions);
-            setTimeout(function() {{ fitView(); }}, 200);
+            setTimeout(fitView, 200);
         }}
     }}
 
-    // Concentric & Timeline Guides (beforeDrawing)
+    // Concentric & Timeline Guides
     network.on('beforeDrawing', function(ctx) {{
-        // 1. Vẽ Vòng Quỹ Đạo Kim Cương khi ở chế độ 'concentric'
         if (currentLayoutMode === 'concentric') {{
             ctx.save();
             ctx.setLineDash([8, 8]);
             ctx.lineWidth = 1.5;
-
-            // Vòng quỹ đạo Nền tảng (Backward - R)
             ctx.strokeStyle = 'rgba(124, 58, 237, 0.25)';
             ctx.beginPath();
             ctx.arc(0, 0, 240, Math.PI / 2, Math.PI * 1.5, false);
             ctx.stroke();
 
-            ctx.beginPath();
-            ctx.arc(0, 0, 380, Math.PI / 2, Math.PI * 1.5, false);
-            ctx.stroke();
-
-            // Vòng quỹ đạo Kế thừa (Forward - F)
             ctx.strokeStyle = 'rgba(2, 132, 199, 0.25)';
             ctx.beginPath();
             ctx.arc(0, 0, 260, -Math.PI / 2, Math.PI / 2, false);
             ctx.stroke();
 
-            ctx.beginPath();
-            ctx.arc(0, 0, 410, -Math.PI / 2, Math.PI / 2, false);
-            ctx.stroke();
-
-            // Nhãn định hướng không gian
             ctx.font = 'bold 12px Plus Jakarta Sans, sans-serif';
             ctx.fillStyle = 'rgba(196, 181, 253, 0.7)';
-            ctx.fillText('🏛️ CỘI NGUỒN LÝ THUYẾT (R1-R3)', -340, -280);
-
+            ctx.fillText('🏛️ CỘI NGUỒN LÝ THUYẾT (R)', -340, -280);
             ctx.fillStyle = 'rgba(56, 189, 248, 0.7)';
-            ctx.fillText('🚀 BƯỚC TIẾN KẾ THỪA (F1-F3)', 150, -300);
-
+            ctx.fillText('🚀 BƯỚC TIẾN KẾ THỪA (F)', 150, -300);
             ctx.restore();
-        }}
-        
-        // 2. Vẽ Cột mốc Dải Năm khi ở chế độ 'timeline' (HistCite Layout)
-        if (currentLayoutMode === 'timeline') {{
+        }} else if (currentLayoutMode === 'timeline') {{
             ctx.save();
-            var distinctYears = [];
             for (var y = minYrVal; y <= maxYrVal; y++) {{
-                distinctYears.push(y);
-            }}
-
-            distinctYears.forEach(function(yr) {{
-                var xPos = (yr - minYrVal) * 260 - ((maxYrVal - minYrVal) * 130);
-                
-                // Dải dọc phân cách năm
+                var xPos = (y - minYrVal) * 260 - ((maxYrVal - minYrVal) * 130);
                 ctx.setLineDash([6, 6]);
                 ctx.lineWidth = 1.0;
-                ctx.strokeStyle = 'rgba(56, 189, 248, 0.18)';
+                ctx.strokeStyle = 'rgba(0, 242, 254, 0.18)';
                 ctx.beginPath();
                 ctx.moveTo(xPos, -420);
                 ctx.lineTo(xPos, 420);
                 ctx.stroke();
 
-                // Thẻ nhãn năm mốc phía trên & dưới
                 ctx.setLineDash([]);
-                ctx.fillStyle = 'rgba(18, 20, 26, 0.85)';
-                ctx.fillRect(xPos - 48, -435, 96, 26);
-                ctx.strokeStyle = '#38BDF8';
-                ctx.lineWidth = 1.2;
-                ctx.strokeRect(xPos - 48, -435, 96, 26);
+                ctx.fillStyle = 'rgba(6, 14, 28, 0.85)';
+                ctx.fillRect(xPos - 44, -435, 88, 24);
+                ctx.strokeStyle = '#00F2FE';
+                ctx.strokeRect(xPos - 44, -435, 88, 24);
 
-                ctx.font = 'bold 12px Plus Jakarta Sans, sans-serif';
+                ctx.font = 'bold 11px JetBrains Mono, monospace';
                 ctx.fillStyle = '#FDE047';
                 ctx.textAlign = 'center';
-                ctx.fillText('📅 ' + yr, xPos, -418);
-            }});
+                ctx.fillText('📅 ' + y, xPos, -419);
+            }}
             ctx.restore();
         }}
     }});
 
-    // Dynamic Graph & Edge Filters
-    function applyGraphFilters() {{
-        var layerVal = document.getElementById('layerFilter') ? document.getElementById('layerFilter').value : 'all';
-        var accessVal = document.getElementById('accessFilter') ? document.getElementById('accessFilter').value : 'all';
-        var edgeVal = document.getElementById('edgeFilter') ? document.getElementById('edgeFilter').value : 'all';
-
-        var nodeUpdates = [];
-        var visibleNodeIds = new Set();
-
-        rawNodes.forEach(function(n) {{
-            var p = metaDict[n.id] || {{}};
-            var isSeed = (n.level === 0 || n.layer === 'seed');
-            var isBackward = (n.level < 0 || n.layer === 'backward');
-            var isForward = (n.level > 0 || n.layer === 'forward');
-            var isOa = !!p.is_oa || !!p.pdf_url;
-
-            var matchLayer = true;
-            if (layerVal === 'seed') matchLayer = isSeed;
-            else if (layerVal === 'backward') matchLayer = isBackward;
-            else if (layerVal === 'forward') matchLayer = isForward;
-
-            var matchAccess = true;
-            if (accessVal === 'oa') matchAccess = isOa;
-            else if (accessVal === 'paywall') matchAccess = !isOa;
-
-            var isVisible = (matchLayer && matchAccess);
-            if (isVisible) visibleNodeIds.add(n.id);
-            nodeUpdates.push({{
-                id: n.id,
-                hidden: !isVisible
-            }});
-        }});
-        nodes.update(nodeUpdates);
-
-        var edgeUpdates = [];
-        rawEdges.forEach(function(e) {{
-            var matchType = (edgeVal === 'all' || e.edge_type === edgeVal);
-            var nodesVisible = visibleNodeIds.has(e.from) && visibleNodeIds.has(e.to);
-            edgeUpdates.push({{
-                id: e.id,
-                hidden: !(matchType && nodesVisible)
-            }});
-        }});
-        edges.update(edgeUpdates);
-    }}
-
-    // Lineage Tracing (Ancestry & Descendants)
-    function traceAncestryAndDescendants(targetNodeId) {{
-        selectedLineageNodeId = targetNodeId;
-        var lineageNodes = new Set([targetNodeId]);
-        var lineageEdges = new Set();
-
-        // 1. Trace Ancestors (Backward via incoming edges)
-        var queueUp = [targetNodeId];
-        var visitedUp = new Set([targetNodeId]);
-        while (queueUp.length > 0) {{
-            var curr = queueUp.shift();
-            rawEdges.forEach(function(e) {{
-                if (e.to === curr && !visitedUp.has(e.from)) {{
-                    visitedUp.add(e.from);
-                    lineageNodes.add(e.from);
-                    lineageEdges.add(e.id);
-                    queueUp.push(e.from);
-                }}
-            }});
-        }}
-
-        // 2. Trace Descendants (Forward via outgoing edges)
-        var queueDown = [targetNodeId];
-        var visitedDown = new Set([targetNodeId]);
-        while (queueDown.length > 0) {{
-            var curr = queueDown.shift();
-            rawEdges.forEach(function(e) {{
-                if (e.from === curr && !visitedDown.has(e.to)) {{
-                    visitedDown.add(e.to);
-                    lineageNodes.add(e.to);
-                    lineageEdges.add(e.id);
-                    queueDown.push(e.to);
-                }}
-            }});
-        }}
-
-        // Update Nodes: Dim unrelated nodes, Highlight lineage
-        var nodeUpdates = [];
-        rawNodes.forEach(function(n) {{
-            var inLineage = lineageNodes.has(n.id);
-            var isTarget = (n.id === targetNodeId);
-            nodeUpdates.push({{
-                id: n.id,
-                opacity: inLineage ? 1.0 : 0.18,
-                borderWidth: isTarget ? 4.5 : (inLineage ? 3.0 : 1.0)
-            }});
-        }});
-        nodes.update(nodeUpdates);
-
-        // Update Edges: Dim unrelated edges, Brighten lineage
-        var edgeUpdates = [];
-        rawEdges.forEach(function(e) {{
-            var inLineage = lineageEdges.has(e.id);
-            edgeUpdates.push({{
-                id: e.id,
-                color: inLineage ? {{ color: '#F59E0B', opacity: 1.0, highlight: '#F59E0B' }} : {{ color: 'rgba(100,116,139,0.08)', opacity: 0.08 }},
-                width: inLineage ? 3.2 : 1.0
-            }});
-        }});
-        edges.update(edgeUpdates);
-    }}
-
-    function resetLineageHighlight() {{
-        selectedLineageNodeId = null;
-        var nodeUpdates = [];
-        rawNodes.forEach(function(n) {{
-            var isSeed = (n.level === 0 || n.layer === 'seed');
-            nodeUpdates.push({{
-                id: n.id,
-                opacity: 1.0,
-                borderWidth: isSeed ? 3.5 : (n.is_isolated ? 2.6 : 1.8)
-            }});
-        }});
-        nodes.update(nodeUpdates);
-
-        var edgeUpdates = [];
-        rawEdges.forEach(function(e) {{
-            edgeUpdates.push({{
-                id: e.id,
-                color: e.color,
-                width: e.width
-            }});
-        }});
-        edges.update(edgeUpdates);
-    }}
-
-    // Particle Photon Animation & Pulsing Node Halos Loop (afterDrawing)
+    // Particles & Pulsing Halos (afterDrawing)
     network.on('afterDrawing', function(ctx) {{
         var now = Date.now();
         var positions = network.getPositions();
 
-        // 1. Vẽ Vầng Hào Quang Nhịp Thở (Pulsing Halo) cho Bài Gốc & Điểm Bùng Nổ
         if (isPulsingOn) {{
-            var pulseTime = (now * speedMultiplier) / 550;
-            var pulse = (Math.sin(pulseTime) + 1) / 2; // 0.0 -> 1.0
+            var pulse = (Math.sin(now / 550) + 1) / 2;
             rawNodes.forEach(function(n) {{
                 var isSeed = (n.level === 0 || n.layer === 'seed');
                 var isHighImpact = ((n.citations || 0) >= 200);
@@ -1807,7 +1723,6 @@ class CiteNetAgent:
                 if (isSeed || isHighImpact) {{
                     var pos = positions[n.id];
                     if (!pos) return;
-
                     var baseR = (n.size || 22);
                     var haloR = baseR + 8 + (pulse * (isSeed ? 16 : 10));
 
@@ -1815,14 +1730,11 @@ class CiteNetAgent:
                     var grad = ctx.createRadialGradient(pos.x, pos.y, baseR * 0.4, pos.x, pos.y, haloR);
                     if (isSeed) {{
                         grad.addColorStop(0, 'rgba(234, 67, 53, ' + (0.45 + pulse * 0.25) + ')');
-                        grad.addColorStop(0.65, 'rgba(234, 67, 53, ' + (0.15 + pulse * 0.1) + ')');
                         grad.addColorStop(1, 'rgba(234, 67, 53, 0)');
                     }} else {{
-                        grad.addColorStop(0, 'rgba(245, 158, 11, ' + (0.35 + pulse * 0.2) + ')');
-                        grad.addColorStop(0.65, 'rgba(245, 158, 11, ' + (0.12 + pulse * 0.08) + ')');
-                        grad.addColorStop(1, 'rgba(245, 158, 11, 0)');
+                        grad.addColorStop(0, 'rgba(0, 242, 254, ' + (0.45 + pulse * 0.25) + ')');
+                        grad.addColorStop(1, 'rgba(0, 242, 254, 0)');
                     }}
-
                     ctx.beginPath();
                     ctx.arc(pos.x, pos.y, haloR, 0, 2 * Math.PI, false);
                     ctx.fillStyle = grad;
@@ -1832,9 +1744,8 @@ class CiteNetAgent:
             }});
         }}
 
-        // 2. Vẽ Dòng Hạt Sáng Chuyển Động (Particle Flow)
         if (isParticlesOn) {{
-            var tNow = (now * speedMultiplier) / 1100;
+            var tNow = now / 1100;
             rawEdges.forEach(function(e, idx) {{
                 var p1 = positions[e.from];
                 var p2 = positions[e.to];
@@ -1849,16 +1760,9 @@ class CiteNetAgent:
 
                 ctx.save();
                 ctx.beginPath();
-                var radius = (e.edge_type === 'mutual') ? 3.6 : ((e.edge_type === 'cross_bridge') ? 3.0 : 2.5);
-                ctx.arc(x, y, radius, 0, 2 * Math.PI, false);
-
-                var pColor = '#38BDF8';
-                if (e.edge_type === 'mutual') pColor = '#F59E0B';
-                else if (e.edge_type === 'cross_bridge') pColor = '#C084FC';
-                else if (e.edge_type === 'intra_layer') pColor = '#34D399';
-
-                ctx.fillStyle = pColor;
-                ctx.shadowColor = pColor;
+                ctx.arc(x, y, 3.2, 0, 2 * Math.PI, false);
+                ctx.fillStyle = '#00F2FE';
+                ctx.shadowColor = '#00F2FE';
                 ctx.shadowBlur = 8;
                 ctx.fill();
                 ctx.restore();
@@ -1866,343 +1770,29 @@ class CiteNetAgent:
         }}
     }});
 
-    // Continuous 60 FPS animation loop
     function dynamicAnimationLoop() {{
-        if (isParticlesOn || isPulsingOn) {{
-            network.redraw();
-        }}
+        if (isParticlesOn || isPulsingOn) network.redraw();
         requestAnimationFrame(dynamicAnimationLoop);
     }}
     requestAnimationFrame(dynamicAnimationLoop);
 
-    // Hover Event
-    network.on('hoverNode', function(params) {{
-        var nodeId = params.node;
-        var p = metaDict[nodeId];
-        if (!p) return;
-        var card = document.getElementById('floating-hover-card');
-        
-        var lvl = p.level !== undefined ? p.level : 0;
-        var badgeColor = '#EA4335';
-        var badgeLabel = '⭐ Bài báo gốc (F0 Tâm điểm)';
-        if (lvl === -1) {{ badgeColor = '#7C3AED'; badgeLabel = '🏛️ Nền tảng tham chiếu (R1)'; }}
-        else if (lvl === -2) {{ badgeColor = '#6366F1'; badgeLabel = '🏛️ Cội nguồn lý thuyết (R2)'; }}
-        else if (lvl <= -3) {{ badgeColor = '#4338CA'; badgeLabel = '🏛️ Nền tảng sâu xa (R3)'; }}
-        else if (lvl === 1) {{ badgeColor = '#0284C7'; badgeLabel = '🚀 Kế thừa trực tiếp (F1)'; }}
-        else if (lvl === 2) {{ badgeColor = '#059669'; badgeLabel = '🚀 Bước tiến mở rộng (F2)'; }}
-        else if (lvl >= 3) {{ badgeColor = '#D97706'; badgeLabel = '🚀 Chân trời mới (F3)'; }}
-        
-        document.getElementById('hover-badge').style.color = badgeColor;
-        document.getElementById('hover-badge').innerText = badgeLabel;
-        
-        var connBadge = document.getElementById('hover-conn-badge');
-        var orphanNotice = document.getElementById('hover-orphan-notice');
-        var totalConn = p.total_connections || 0;
-        
-        if (totalConn === 0) {{
-            connBadge.innerHTML = '<span style="color:#F59E0B; background:rgba(245,158,11,0.18); padding:2px 8px; border-radius:6px; border:1px solid rgba(245,158,11,0.4); font-weight:700;">⚠️ 0 LIÊN KẾT (ĐỨNG LẺ LOI)</span>';
-            if (orphanNotice) {{
-                orphanNotice.style.display = 'block';
-                orphanNotice.innerHTML = '⚠️ <b>Bài báo đứng lẻ loi:</b><br/><span style="color:#E2E8F0;">Công trình thuộc cùng chủ đề nhưng không có trích dẫn chéo trong tập dữ liệu giới hạn này.</span>';
-            }}
-        }} else {{
-            connBadge.innerHTML = '<span style="color:#38BDF8; background:rgba(56,189,248,0.12); padding:2px 8px; border-radius:6px; border:1px solid rgba(56,189,248,0.3);">🔗 ' + totalConn + ' liên kết • ' + p.citation_count + ' trích dẫn</span>';
-            if (orphanNotice) {{
-                orphanNotice.style.display = 'none';
-            }}
-        }}
-
-        document.getElementById('hover-title').innerText = p.title;
-        document.getElementById('hover-meta').innerHTML = '<b>✍️ Tác giả:</b> ' + p.authors + ' (' + p.year + ')<br/><b>🏛️ Tạp chí:</b> ' + p.venue + ' <span style="color:#38BDF8; font-weight:600;">(' + (p.scopus_tier || 'Scopus Indexed') + ')</span>';
-        
-        var absPreview = p.abstract_vi || p.abstract || 'Đang cập nhật tóm tắt tiếng Việt...';
-        if (absPreview.length > 210) {{
-            absPreview = absPreview.substring(0, 210) + '...';
-        }}
-        document.getElementById('hover-abstract-vi').innerText = absPreview;
-
-        var domPos = network.canvasToDOM(network.getPosition(nodeId));
-        var cardLeft = Math.min(window.innerWidth - 400, Math.max(15, domPos.x + 18));
-        var cardTop = Math.min(window.innerHeight - 240, Math.max(15, domPos.y - 50));
-        
-        card.style.left = cardLeft + 'px';
-        card.style.top = cardTop + 'px';
-        card.style.display = 'block';
-    }});
-
-    network.on('blurNode', function() {{
-        document.getElementById('floating-hover-card').style.display = 'none';
-    }});
-
-    function switchModalLang(lang) {{
-        var btnVi = document.getElementById('tabBtnVi');
-        var btnEn = document.getElementById('tabBtnEn');
-        var boxVi = document.getElementById('modal-abstract-vi');
-        var boxEn = document.getElementById('modal-abstract-en');
-        if (lang === 'vi') {{
-            btnVi.className = 'bilingual-tab-btn active';
-            btnEn.className = 'bilingual-tab-btn';
-            boxVi.style.display = 'block';
-            boxEn.style.display = 'none';
-        }} else {{
-            btnEn.className = 'bilingual-tab-btn active';
-            btnVi.className = 'bilingual-tab-btn';
-            boxVi.style.display = 'none';
-            boxEn.style.display = 'block';
-        }}
-    }}
-
-    network.on('click', function(params) {{
-        if (params.nodes.length > 0) {{
-            var nodeId = params.nodes[0];
-            showPaperModal(nodeId);
-            if (isLineageTracingOn) {{
-                traceAncestryAndDescendants(nodeId);
-            }}
-        }} else {{
-            if (isLineageTracingOn) {{
-                resetLineageHighlight();
-            }}
-        }}
-    }});
-
-    function showPaperModal(nodeId) {{
-        var p = metaDict[nodeId];
-        if (!p) return;
-
-        var modal = document.getElementById('paper-modal');
-        
-        var lvl = p.level !== undefined ? p.level : 0;
-        var badgeHtml = '';
-        if (lvl === 0 || p.layer === 'seed') {{
-            badgeHtml = '<span class="modal-badge badge-seed">Bài báo gốc (F0 Tâm điểm)</span>';
-        }} else if (lvl === -1) {{
-            badgeHtml = '<span class="modal-badge badge-r1">Nền tảng tham chiếu (R1)</span>';
-        }} else if (lvl === -2) {{
-            badgeHtml = '<span class="modal-badge badge-r2">Cội nguồn lý thuyết (R2)</span>';
-        }} else if (lvl <= -3) {{
-            badgeHtml = '<span class="modal-badge badge-r2">Nền tảng sâu xa (R3)</span>';
-        }} else if (lvl === 1) {{
-            badgeHtml = '<span class="modal-badge badge-f1">Kế thừa trực tiếp (F1)</span>';
-        }} else if (lvl === 2) {{
-            badgeHtml = '<span class="modal-badge badge-f2">Bước tiến mở rộng (F2)</span>';
-        }} else {{
-            badgeHtml = '<span class="modal-badge badge-f3">Chân trời mới (F3)</span>';
-        }}
-        badgeHtml += ' <span style="font-size:12px; color:#38BDF8; font-weight:600; margin-left:8px;">' + (p.scopus_tier || 'Scopus Indexed') + '</span>';
-
-        if (p.is_oa || p.pdf_url) {{
-            badgeHtml += '<div style="background:rgba(16, 185, 129, 0.12); border:1px solid rgba(16, 185, 129, 0.35); border-radius:8px; padding:6px 10px; margin-top:8px; color:#34D399; font-size:11.5px; font-weight:700;">🔓 BẢN PDF MIỄN PHÍ (OPEN ACCESS): Có thể tải trực tiếp.</div>';
-        }} else {{
-            badgeHtml += '<div style="background:rgba(244, 63, 94, 0.1); border:1px solid rgba(244, 63, 94, 0.3); border-radius:8px; padding:6px 10px; margin-top:8px; color:#FB7185; font-size:11.5px; font-weight:700;">🔒 CẦN QUYỀN TRUY CẬP (PAYWALL): Yêu cầu tài khoản thư viện hoặc mua bài.</div>';
-        }}
-
-        document.getElementById('modal-gen-badge').innerHTML = badgeHtml;
-        document.getElementById('modal-title').innerText = p.title;
-        document.getElementById('modal-authors').innerHTML = '<b>Tác giả:</b> ' + p.authors + ' (' + p.year + ')';
-        document.getElementById('modal-venue').innerHTML = '<b>Tạp chí:</b> ' + p.venue + ' | <b>Phân loại:</b> ' + p.study_type;
-        document.getElementById('modal-citations').innerHTML = '<b>Trích dẫn Scopus:</b> <span style="color:#38BDF8; font-weight:bold;">' + p.citation_count + '</span> lượt trích dẫn';
-
-        var doiBtn = document.getElementById('modal-doi-link');
-        if (p.doi_url || p.landing_url) {{
-            doiBtn.href = p.doi_url || p.landing_url;
-            doiBtn.innerText = 'Mở bài báo gốc (DOI) ↗';
-            doiBtn.style.display = 'inline-flex';
-        }} else {{
-            doiBtn.style.display = 'none';
-        }}
-
-        var pdfBtn = document.getElementById('modal-pdf-link');
-        if (p.pdf_url) {{
-            pdfBtn.href = p.pdf_url;
-            pdfBtn.innerText = '🔓 Tải bản full PDF miễn phí ↗';
-            pdfBtn.style.background = '#059669';
-            pdfBtn.style.borderColor = '#10B981';
-            pdfBtn.style.color = '#FFFFFF';
-            pdfBtn.style.display = 'inline-flex';
-        }} else {{
-            pdfBtn.style.display = 'none';
-        }}
-
-        var oaBtn = document.getElementById('modal-openalex-link');
-        oaBtn.href = p.openalex_url || ('https://openalex.org/works?filter=doi:' + p.doi);
-        oaBtn.innerText = 'Hồ sơ OpenAlex ↗';
-
-        document.getElementById('modal-abstract-vi').innerText = p.abstract_vi || p.abstract || 'Đang cập nhật tóm tắt tiếng Việt...';
-        document.getElementById('modal-abstract-en').innerText = p.abstract_en || p.abstract || 'Abstract in English...';
-        switchModalLang('vi');
-
-        var lineageHtml = '';
-        var outList = p.outgoing_ids || [];
-        var inList = p.incoming_ids || [];
-
-        if (p.total_connections === 0) {{
-            lineageHtml += '<div style="background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.4); border-radius:10px; padding:12px 14px; margin-top:4px; margin-bottom:10px;">' +
-                '<div style="color:#FCD34D; font-weight:800; font-size:12px; margin-bottom:6px; display:flex; align-items:center; gap:6px;">' +
-                '<span>⚠️</span> <span>LÝ DO BÀI BÁO ĐỨNG LẺ LOI (KHÔNG CÓ MŨI TÊN KẾT NỐI):</span></div>' +
-                '<div style="color:#E2E8F0; font-size:12px; line-height:1.6;">' +
-                '• <b>Giới hạn chuỗi trích dẫn:</b> Công trình này thuộc cùng chủ đề nhưng không trực tiếp trích dẫn bài báo gốc trong tập mẫu giới hạn này.<br/>' +
-                '• <b>Giá trị học thuật:</b> Cung cấp bằng chứng thực nghiệm độc lập và góc nhìn khách quan cho tổng quan nghiên cứu.' +
-                '</div></div>';
-        }}
-
-        if (outList.length > 0) {{
-            lineageHtml += '<div style="font-size:11.5px; color:#C4B5FD; font-weight:700; margin-bottom:4px;">⬇️ TÀI LIỆU CÔNG TRÌNH NÀY TRÍCH DẪN / THAM CHIẾU NỀN TẢNG (' + outList.length + ' bài):</div>';
-            outList.forEach(function(targetId) {{
-                var targetP = metaDict[targetId];
-                if (targetP) {{
-                    lineageHtml += '<div class="lineage-chip" onclick="jumpToNode(\\'' + targetId + '\\')">↳ ' + targetP.first_author + ' (' + targetP.year + '): ' + targetP.title.substring(0, 52) + '...</div>';
-                }}
-            }});
-        }}
-
-        if (inList.length > 0) {{
-            lineageHtml += '<div style="font-size:11.5px; color:#38BDF8; font-weight:700; margin:8px 0 4px 0;">⬆️ ĐƯỢC TRÍCH DẪN & KẾ THỪA BỞI CÁC BÀI (' + inList.length + ' bài):</div>';
-            inList.forEach(function(srcId) {{
-                var srcP = metaDict[srcId];
-                if (srcP) {{
-                    lineageHtml += '<div class="lineage-chip" onclick="jumpToNode(\\'' + srcId + '\\')">↰ ' + srcP.first_author + ' (' + srcP.year + '): ' + srcP.title.substring(0, 52) + '...</div>';
-                }}
-            }});
-        }}
-
-        document.getElementById('modal-lineage-content').innerHTML = lineageHtml;
-        modal.style.display = 'flex';
-        
-        network.focus(nodeId, {{
-            scale: 1.25,
-            animation: {{ duration: 350, easingFunction: 'easeInOutQuad' }}
-        }});
-    }}
-
-    function jumpToNode(nodeId) {{
-        showPaperModal(nodeId);
-        network.selectNodes([nodeId]);
-        if (isLineageTracingOn) {{
-            traceAncestryAndDescendants(nodeId);
-        }}
-    }}
-
-    function closePaperModal() {{
-        document.getElementById('paper-modal').style.display = 'none';
-        if (isLineageTracingOn) {{
-            resetLineageHighlight();
-        }}
-    }}
-
-    function togglePhysics() {{
-        isPhysicsOn = !isPhysicsOn;
-        network.setOptions({{ physics: {{ enabled: isPhysicsOn }} }});
-        var btn = document.getElementById('physicsBtn');
-        btn.innerHTML = isPhysicsOn ? '⚡ Tắt Physics' : '⚡ Bật Physics';
-    }}
-
-    function toggleFullScreen() {{
-        var elem = document.getElementById('network-wrapper');
-        if (!document.fullscreenElement) {{
-            if (elem.requestFullscreen) elem.requestFullscreen();
-            else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
-        }} else {{
-            if (document.exitFullscreen) document.exitFullscreen();
-        }}
-    }}
-
-    function popoutWindow() {{
-        var currentHtml = document.documentElement.outerHTML;
-        var blob = new Blob([currentHtml], {{type: 'text/html;charset=utf-8'}});
-        var blobUrl = URL.createObjectURL(blob);
-        var win = window.open(blobUrl, '_blank', 'width=1340,height=880,menubar=no,toolbar=no,location=no,status=no');
-        if (!win) {{
-            alert('Trình duyệt đã chặn popup. Vui lòng cho phép popup để mở màn hình phụ!');
-        }}
-    }}
-
-    function searchAndFocusNode(query) {{
-        if (!query || query.trim() === '') return;
-        var q = query.toLowerCase().trim();
+    function searchAndFocusNode(q) {{
+        if (!q || q.trim() === '') return;
+        var query = q.toLowerCase().trim();
         var foundId = null;
         rawNodes.forEach(function(n) {{
             var lbl = (n.label_full || n.label || '').toLowerCase();
-            if (lbl.indexOf(q) !== -1) {{
-                if (!foundId) foundId = n.id;
-            }}
+            if (lbl.indexOf(query) !== -1) foundId = n.id;
         }});
-        if (foundId) {{
-            showPaperModal(foundId);
-            network.selectNodes([foundId]);
-            if (isLineageTracingOn) {{
-                traceAncestryAndDescendants(foundId);
-            }}
+        if (foundId) selectPaperFromTable(foundId);
+    }}
+
+    // Auto-select primary seed on initial load
+    setTimeout(function() {{
+        if (rawNodes.length > 0) {{
+            selectPaperFromTable(rawNodes[0].id);
         }}
-    }}
-
-    // Mở / Thu gọn thanh công cụ trên cùng
-    function toggleHudDrawer() {{
-        var drawer = document.getElementById('hud-controls-drawer');
-        var panel = document.getElementById('hudContentPanel');
-        var arrow = document.getElementById('hudArrowIcon');
-        if (!panel) return;
-        if (panel.style.display === 'none' || panel.style.display === '') {{
-            panel.style.display = 'flex';
-            if (drawer) drawer.classList.add('is-open');
-            if (arrow) arrow.innerText = '▾';
-        }} else {{
-            panel.style.display = 'none';
-            if (drawer) drawer.classList.remove('is-open');
-            if (arrow) arrow.innerText = '▸';
-        }}
-    }}
-
-    // Mở / Thu gọn chú thích bên trái
-    function toggleLegendDrawer() {{
-        var drawer = document.getElementById('hud-legend-wrapper');
-        var panel = document.getElementById('legendContentPanel');
-        var arrow = document.getElementById('legendArrowIcon');
-        if (!panel) return;
-        if (panel.style.display === 'none' || panel.style.display === '') {{
-            panel.style.display = 'flex';
-            if (drawer) drawer.classList.add('is-open');
-            if (arrow) arrow.innerText = '▾';
-        }} else {{
-            panel.style.display = 'none';
-            if (drawer) drawer.classList.remove('is-open');
-            if (arrow) arrow.innerText = '▸';
-        }}
-    }}
-
-    // Thay đổi kiểu nền & Chế độ không gian 3D tương phản cao
-    function switchCanvasBg(bgName) {{
-        var wrapper = document.getElementById('network-wrapper');
-        if (!wrapper) return;
-        wrapper.className = 'bg-' + bgName;
-
-        var isLight = (bgName === 'parchment' || bgName === 'nordic-light');
-        var fontColor = isLight ? '#0F172A' : '#F8FAFC';
-        var strokeColor = isLight ? '#FFFFFF' : '#0B0C0E';
-        var strokeWidth = isLight ? 4 : 3.2;
-        var edgeColor = isLight ? 'rgba(71, 85, 105, 0.65)' : 'rgba(100, 116, 139, 0.45)';
-
-        var updates = [];
-        rawNodes.forEach(function(n) {{
-            updates.push({{
-                id: n.id,
-                font: {{
-                    size: (n.font && n.font.size) ? n.font.size : 11,
-                    color: fontColor,
-                    face: 'Plus Jakarta Sans, sans-serif',
-                    strokeWidth: strokeWidth,
-                    strokeColor: strokeColor
-                }}
-            }});
-        }});
-        nodes.update(updates);
-        
-        network.setOptions({{
-            edges: {{
-                color: {{ color: edgeColor, highlight: '#38BDF8', hover: '#60A5FA' }}
-            }}
-        }});
-    }}
+    }}, 400);
 </script>
 </body>
 </html>"""
