@@ -286,7 +286,7 @@ if st.session_state.auth_user and st.session_state.auth_user.get("must_change_pa
 # -----------------------------------------------------------------------------
 # TRÌNH ĐƠN BÊN TRÁI (SIDEBAR NAVIGATION — VIẾT HOA CHUẨN NGỮ PHÁP TIẾNG VIỆT)
 # -----------------------------------------------------------------------------
-cur_auth = st.session_state.auth_user
+cur_auth = st.session_state.auth_user or {}
 is_super_admin = (cur_auth.get("role") == "super_admin")
 is_admin_or_super = (cur_auth.get("role") in ["super_admin", "admin"])
 
@@ -315,13 +315,15 @@ with st.sidebar:
     }
     role_label = role_title_map.get(cur_auth.get("role", "researcher"), "🔬 Chuyên Gia")
     
+    user_email_display = cur_auth.get("email", "guest@scholargraph.pro")
+    
     st.markdown(f"""
     <div style="background:var(--bg-surface-elevated); border:1px solid var(--border-subtle); border-radius:10px; padding:10px 12px; margin-bottom:12px;">
         <div style="display:flex; justify-content:space-between; align-items:center;">
             <span style="font-size:11px; color:var(--text-muted); font-weight:700;">TÀI KHOẢN TRUY CẬP</span>
             <span style="width:8px; height:8px; border-radius:50%; background:#10B981;" title="Online"></span>
         </div>
-        <div style="color:var(--text-primary); font-weight:700; font-size:12.5px; margin-top:2px; word-break:break-all;">{cur_auth['email']}</div>
+        <div style="color:var(--text-primary); font-weight:700; font-size:12.5px; margin-top:2px; word-break:break-all;">{user_email_display}</div>
         <div style="color:var(--primary-accent); font-size:11.5px; font-weight:600; margin-top:2px;">{role_label}</div>
     </div>
     """, unsafe_allow_html=True)
@@ -333,14 +335,14 @@ with st.sidebar:
             old_p_pop = st.text_input("Mật khẩu hiện tại:", type="password", key="pop_old_p")
             new_p_pop = st.text_input("Mật khẩu mới:", type="password", key="pop_new_p")
             if st.button("Cập nhật", key="btn_pop_update_pw", use_container_width=True):
-                ok_up, msg_up = change_user_password(cur_auth["email"], old_p_pop, new_p_pop)
+                ok_up, msg_up = change_user_password(cur_auth.get("email", ""), old_p_pop, new_p_pop)
                 if ok_up:
                     st.success(msg_up)
                 else:
                     st.error(msg_up)
     with col_u_act2:
         if st.button("🚪 Đăng xuất", use_container_width=True, key="btn_sidebar_logout"):
-            log_audit_event(cur_auth["email"], "LOGOUT", "Đăng xuất thành công")
+            log_audit_event(cur_auth.get("email", "guest"), "LOGOUT", "Đăng xuất thành công")
             st.session_state.auth_user = None
             st.rerun()
 
