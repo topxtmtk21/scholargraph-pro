@@ -1253,6 +1253,7 @@ class CiteNetAgent:
             </div>
             
             <div class="dock-btn-group" style="margin-top:10px; border-top:1px solid rgba(var(--theme-glow-rgb),0.15); padding-top:8px;">
+                <button class="dock-icon-btn active" id="dockBtnLayers" onclick="toggleLayerFilterPopover()" title="📑 Chọn Tầng & Lọc Kết Hợp (Checkbox)">📑</button>
                 <button class="dock-icon-btn" id="dockBtnLegend" onclick="toggleLegendDrawer()" title="📖 Ghi chú, Thuật ngữ & Hướng dẫn 10 Layout & 10 Theme">📖</button>
                 <button class="dock-icon-btn active" id="dockBtnTrace" onclick="toggleLineageMode()" title="🧬 Bật/Tắt Truy Vết Phả Hệ">🧬</button>
                 <button class="dock-icon-btn" onclick="cycleThemes()" title="🎨 Chuyển đổi 10 Mẫu Theme Đa Sắc & Đơn Sắc">🎨</button>
@@ -1395,7 +1396,7 @@ class CiteNetAgent:
                 <button type="button" id="layerFilterToggleBtn" class="hud-mini-btn active" onclick="toggleLayerFilterPopover()" title="Chọn hiển thị từng tầng theo ý muốn bằng Checkbox (F0 / R1-R3 / F1-F3 / Độc lập)">📑 Chọn Tầng (Check) ▾</button>
 
                 <!-- POPOVER CHỌN TẦNG CHECKBOX THÔNG MINH -->
-                <div id="layerFilterPopover" style="display:none; position:absolute; top:42px; right:110px; z-index:9999; background:rgba(15, 23, 42, 0.96); border:1.5px solid var(--theme-accent); border-radius:12px; padding:12px 16px; box-shadow:0 12px 36px rgba(0,0,0,0.65); min-width:270px; backdrop-filter:blur(14px); text-align:left;">
+                <div id="layerFilterPopover" onclick="event.stopPropagation();" style="display:none; position:absolute; top:46px; right:8px; z-index:99999; background:rgba(15, 23, 42, 0.97); border:1.5px solid var(--theme-accent); border-radius:12px; padding:12px 16px; box-shadow:0 12px 36px rgba(0,0,0,0.75); min-width:280px; backdrop-filter:blur(16px); text-align:left;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:6px;">
                         <span style="font-size:11.5px; font-weight:800; color:var(--theme-accent); text-transform:uppercase;">📑 Lọc Tầng (Checkbox)</span>
                         <span id="layerFilterCountBadge" style="font-size:10px; background:rgba(56,189,248,0.2); color:#38BDF8; padding:2px 6px; border-radius:4px; font-weight:700;">{len(vis_nodes)}/{len(vis_nodes)} bài</span>
@@ -1573,8 +1574,20 @@ class CiteNetAgent:
 
     var nodes = new vis.DataSet(rawNodes);
     var edges = new vis.DataSet(rawEdges);
+
+    var nodeView = new vis.DataView(nodes, {{
+        filter: function (item) {{
+            return item.hidden !== true;
+        }}
+    }});
+    var edgeView = new vis.DataView(edges, {{
+        filter: function (item) {{
+            return item.hidden !== true;
+        }}
+    }});
+
     var container = document.getElementById('network-container');
-    var data = {{ nodes: nodes, edges: edges }};
+    var data = {{ nodes: nodeView, edges: edgeView }};
 
     var isPhysicsOn = true;
     var isParticlesOn = true;
@@ -2235,6 +2248,16 @@ class CiteNetAgent:
         var badge = document.getElementById('layerFilterCountBadge');
         if (badge) {{
             badge.innerText = visibleNodeIds.size + '/' + rawNodes.length + ' bài';
+        }}
+
+        if (typeof nodeView !== 'undefined' && nodeView.refresh) {{
+            nodeView.refresh();
+        }}
+        if (typeof edgeView !== 'undefined' && edgeView.refresh) {{
+            edgeView.refresh();
+        }}
+        if (typeof network !== 'undefined' && network.redraw) {{
+            network.redraw();
         }}
     }}
 
