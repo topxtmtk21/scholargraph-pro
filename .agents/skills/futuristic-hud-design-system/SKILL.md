@@ -140,15 +140,16 @@ Trên màn hình cảm ứng di động/tablet (không có sự kiện rê chu�
 
 ---
 
-## 🧭 9. Quy Chuẩn Thanh Công Cụ 1 Dòng Tinh Gọn & Popover Tự Đóng (Single-Row Toolbar & Click-Outside Popovers)
+## 🧭 9. Quy Chuẩn Thanh Công Cụ 1 Dòng Tinh Gọn & Menu Dropdown Bật/Tắt Tự Nhiên (Single-Row Toolbar & Dropdown Toggle Menus)
 
 Khi một giao diện trực quan hóa dữ liệu có hơn 10 nút bấm điều khiển:
 1. **Tuyệt đối không để `flex-wrap: wrap` tràn thành 2 hàng** làm che khuất đồ thị hoặc khung hiển thị chính.
-2. **Kiến trúc phân nhóm điều khiển**:
-   - **Thanh chính (Primary Bar)**: Chỉ giữ lại các thao tác cốt lõi nhất: `👁️ Focus Mode`, `🔍 Tìm kiếm`, `📑 Lọc tầng ▾`, `⚡ Phân loại ▾`, `🕸️ Bố cục ▾`, `⚡ Tốc độ (Slider)`, `🔍+`, `🔍-`, `⛶ Toàn màn hình`.
-   - **Khay Popover Tùy Biến (`✨ Hiệu ứng ▾`)**: Gom toàn bộ các toggle hiệu ứng phụ (Hạt photon, Tia laser, Hào quang nhịp thở, Mũi tên động, Đổi chế độ nhãn, Tua năm, Truy vết phả hệ) vào một Popover dạng kính mờ gọn gàng.
-3. **Cơ chế tự đóng khi nhấp ngoài (Click-Outside Auto-Dismiss)**:
-   - Luôn lắng nghe sự kiện `document.addEventListener('click', ...)` để tự động đóng Popover khi người dùng nhấp chuột vào bất kỳ vị trí nào khác trên canvas.
+2. **Loại bỏ hoàn toàn thanh cuộn cục bộ trong toolbar (`overflow: visible !important;`)**: Tránh để `overflow-x: auto` gây ra thanh trượt hẹp hoặc thanh cuộn dọc không mong muốn che mất tính năng.
+3. **Menu Sổ Dropdown Bật/Tắt Nhanh (`✨ Hiệu ứng ▾`)**:
+   - Sử dụng phần tử `<select>` dạng menu sổ tự nhiên đồng bộ với các dropdown khác (`Bố cục`, `Mũi tên`).
+   - Mỗi `<option>` thể hiện rõ trạng thái hiện tại: `🏹 Mũi tên động: [BẬT]`, `✨ Hạt photon: [BẬT]`, `⚡ Tia laser: [BẬT]`, `💓 Nhịp thở: [BẬT]`, `🧬 Truy vết: [BẬT]`, `🏷️ Nhãn: [Gọn]`, `⏯️ Tua lịch sử: [TẮT]`.
+   - Khi chọn một mục, hàm JavaScript xử lý toggle tính năng tức thì, cập nhật text nhãn `[BẬT]/[TẮT]` tương ứng và reset dropdown về placeholder tiêu đề, mang lại trải nghiệm click mượt mà, không bao giờ bị che khuất hay đè lên chữ nền.
+4. **Loại bỏ chữ/tiêu đề nền bị che khuất**: Không đặt các đoạn text overlay tĩnh trong canvas nếu thanh công cụ chiếm dụng diện tích phía trên, đảm bảo nền đồ thị thoáng đãng và sạch sẽ 100%.
 
 ---
 
