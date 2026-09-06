@@ -592,155 +592,203 @@ def generate_theme_css(theme_id: str) -> str:
         margin: 14px 0 6px 4px;
     }}
 
-    /* Menu Chọn Màn Hình Làm Việc Bọc Khối Cao Cấp (Glassmorphism & Colorful Glow per Menu) */
+    /* ẨN HOÀN TOÀN NHÃN WIDGET RỖNG Ở TRÊN CÙNG ĐỂ BỎ KHỐI BỌC LỖI */
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] > label,
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label[data-testid="stWidgetLabel"] {{
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+    }}
+
+    /* Container radiogroup chính */
     section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] {{
         display: flex !important;
         flex-direction: column !important;
         gap: 8px !important;
-        background: rgba(0, 0, 0, 0.35) !important;
-        backdrop-filter: blur(20px) !important;
-        -webkit-backdrop-filter: blur(20px) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-radius: 16px !important;
-        padding: 8px !important;
-        box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.4) !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        box-shadow: none !important;
     }}
 
-    section[data-testid="stSidebar"] div[data-testid="stRadio"] label {{
+    /* TẤT CẢ CÁC Ô MENU HÌNH CHỮ NHẬT CÓ CHIỀU NGANG BẰNG NHAU 100%, BO TRÒN TOÀN BỘ VIỀN */
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] > label {{
         display: flex !important;
         align-items: center !important;
-        background: rgba(255, 255, 255, 0.035) !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        background: #111622 !important;
         backdrop-filter: blur(16px) !important;
         -webkit-backdrop-filter: blur(16px) !important;
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
-        border-radius: 12px !important;
+        border-radius: 10px !important;
         padding: 10px 14px !important;
-        margin-bottom: 0 !important;
+        margin: 0 !important;
         cursor: pointer !important;
-        transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
         position: relative !important;
         overflow: hidden !important;
     }}
     
-    section[data-testid="stSidebar"] div[data-testid="stRadio"] label > div:first-child {{
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] > label > div:first-child {{
         display: none !important;
     }}
 
-    /* 1. KHỞI TẠO & DOI (SKY BLUE GLOW) */
-    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(1) {{
-        border-left: 4px solid #38BDF8 !important;
-        box-shadow: 0 4px 14px rgba(56, 189, 248, 0.12) !important;
+    /* BO MÀU TOÀN BỘ KHUNG HÌNH CHỮ NHẬT (4 CẠNH) & MÀU NỀN ĐẬM RÕ NÉT */
+
+    /* 1. KHỞI TẠO & DOI (SKY BLUE) */
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(1) {{
+        border: 1.5px solid #38BDF8 !important;
+        background: #0B192C !important;
+        box-shadow: 0 2px 10px rgba(56, 189, 248, 0.15) !important;
     }}
-    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(1):hover,
-    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(1):has(input:checked) {{
-        background: linear-gradient(90deg, rgba(56, 189, 248, 0.22) 0%, rgba(56, 189, 248, 0.06) 100%) !important;
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(1):hover,
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(1):has(input:checked) {{
+        background: linear-gradient(135deg, rgba(56, 189, 248, 0.35) 0%, #0B192C 100%) !important;
         border-color: #38BDF8 !important;
-        box-shadow: 0 0 20px rgba(56, 189, 248, 0.45) !important;
-        transform: translateX(3px) !important;
+        box-shadow: 0 0 18px rgba(56, 189, 248, 0.5) !important;
+        transform: translateX(2px) !important;
     }}
 
-    /* 2. MẠNG LƯỚI TRÍCH DẪN (EMERALD GLOW) */
-    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(2) {{
-        border-left: 4px solid #34D399 !important;
-        box-shadow: 0 4px 14px rgba(52, 211, 153, 0.12) !important;
+    /* 2. MẠNG LƯỚI TRÍCH DẪN (EMERALD GREEN) */
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(2) {{
+        border: 1.5px solid #34D399 !important;
+        background: #08211B !important;
+        box-shadow: 0 2px 10px rgba(52, 211, 153, 0.15) !important;
     }}
-    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(2):hover,
-    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(2):has(input:checked) {{
-        background: linear-gradient(90deg, rgba(52, 211, 153, 0.22) 0%, rgba(52, 211, 153, 0.06) 100%) !important;
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(2):hover,
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(2):has(input:checked) {{
+        background: linear-gradient(135deg, rgba(52, 211, 153, 0.35) 0%, #08211B 100%) !important;
         border-color: #34D399 !important;
-        box-shadow: 0 0 20px rgba(52, 211, 153, 0.45) !important;
-        transform: translateX(3px) !important;
+        box-shadow: 0 0 18px rgba(52, 211, 153, 0.5) !important;
+        transform: translateX(2px) !important;
     }}
 
-    /* 3. BẢNG TỔNG HỢP APA 7 (SOLAR AMBER GLOW) */
-    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(3) {{
-        border-left: 4px solid #FBBF24 !important;
-        box-shadow: 0 4px 14px rgba(251, 191, 36, 0.12) !important;
+    /* 3. BẢNG TỔNG HỢP APA 7 (SOLAR AMBER) */
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(3) {{
+        border: 1.5px solid #FBBF24 !important;
+        background: #241A06 !important;
+        box-shadow: 0 2px 10px rgba(251, 191, 36, 0.15) !important;
     }}
-    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(3):hover,
-    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(3):has(input:checked) {{
-        background: linear-gradient(90deg, rgba(251, 191, 36, 0.22) 0%, rgba(251, 191, 36, 0.06) 100%) !important;
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(3):hover,
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(3):has(input:checked) {{
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.35) 0%, #241A06 100%) !important;
         border-color: #FBBF24 !important;
-        box-shadow: 0 0 20px rgba(251, 191, 36, 0.45) !important;
-        transform: translateX(3px) !important;
+        box-shadow: 0 0 18px rgba(251, 191, 36, 0.5) !important;
+        transform: translateX(2px) !important;
     }}
 
-    /* 4. TÓM LƯỢC LUẬN ĐIỂM (PURPLE VIOLET GLOW) */
-    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(4) {{
-        border-left: 4px solid #C084FC !important;
-        box-shadow: 0 4px 14px rgba(192, 132, 252, 0.12) !important;
+    /* 4. TÓM LƯỢC LUẬN ĐIỂM (PURPLE VIOLET) */
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(4) {{
+        border: 1.5px solid #C084FC !important;
+        background: #1B0F29 !important;
+        box-shadow: 0 2px 10px rgba(192, 132, 252, 0.15) !important;
     }}
-    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(4):hover,
-    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(4):has(input:checked) {{
-        background: linear-gradient(90deg, rgba(192, 132, 252, 0.22) 0%, rgba(192, 132, 252, 0.06) 100%) !important;
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(4):hover,
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(4):has(input:checked) {{
+        background: linear-gradient(135deg, rgba(192, 132, 252, 0.35) 0%, #1B0F29 100%) !important;
         border-color: #C084FC !important;
-        box-shadow: 0 0 20px rgba(192, 132, 252, 0.45) !important;
-        transform: translateX(3px) !important;
+        box-shadow: 0 0 18px rgba(192, 132, 252, 0.5) !important;
+        transform: translateX(2px) !important;
     }}
 
-    /* 5. SOẠN THẢO CARS (ROSE RUBY GLOW) */
-    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(5) {{
-        border-left: 4px solid #FB7185 !important;
-        box-shadow: 0 4px 14px rgba(251, 113, 133, 0.12) !important;
+    /* 5. SOẠN THẢO CARS (ROSE RUBY) */
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(5) {{
+        border: 1.5px solid #FB7185 !important;
+        background: #260C14 !important;
+        box-shadow: 0 2px 10px rgba(251, 113, 133, 0.15) !important;
     }}
-    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(5):hover,
-    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(5):has(input:checked) {{
-        background: linear-gradient(90deg, rgba(251, 113, 133, 0.22) 0%, rgba(251, 113, 133, 0.06) 100%) !important;
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(5):hover,
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(5):has(input:checked) {{
+        background: linear-gradient(135deg, rgba(251, 113, 133, 0.35) 0%, #260C14 100%) !important;
         border-color: #FB7185 !important;
-        box-shadow: 0 0 20px rgba(251, 113, 133, 0.45) !important;
-        transform: translateX(3px) !important;
+        box-shadow: 0 0 18px rgba(251, 113, 133, 0.5) !important;
+        transform: translateX(2px) !important;
     }}
 
-    /* 6. TẢI VỀ HỒ SƠ & COPILOT (INDIGO GLOW) */
-    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(6) {{
-        border-left: 4px solid #818CF8 !important;
-        box-shadow: 0 4px 14px rgba(129, 140, 248, 0.12) !important;
+    /* 6. TẢI VỀ HỒ SƠ & COPILOT (INDIGO BLUE) */
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(6) {{
+        border: 1.5px solid #818CF8 !important;
+        background: #111429 !important;
+        box-shadow: 0 2px 10px rgba(129, 140, 248, 0.15) !important;
     }}
-    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(6):hover,
-    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(6):has(input:checked) {{
-        background: linear-gradient(90deg, rgba(129, 140, 248, 0.22) 0%, rgba(129, 140, 248, 0.06) 100%) !important;
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(6):hover,
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(6):has(input:checked) {{
+        background: linear-gradient(135deg, rgba(129, 140, 248, 0.35) 0%, #111429 100%) !important;
         border-color: #818CF8 !important;
-        box-shadow: 0 0 20px rgba(129, 140, 248, 0.45) !important;
-        transform: translateX(3px) !important;
+        box-shadow: 0 0 18px rgba(129, 140, 248, 0.5) !important;
+        transform: translateX(2px) !important;
     }}
 
-    /* 7. CÀI ĐẶT HỆ THỐNG & GEMINI (TEAL CYAN GLOW) */
-    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(7) {{
-        border-left: 4px solid #2DD4BF !important;
-        box-shadow: 0 4px 14px rgba(45, 212, 191, 0.12) !important;
+    /* 7. CÀI ĐẶT HỆ THỐNG & GEMINI (TEAL CYAN) */
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(7) {{
+        border: 1.5px solid #2DD4BF !important;
+        background: #092120 !important;
+        box-shadow: 0 2px 10px rgba(45, 212, 191, 0.15) !important;
     }}
-    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(7):hover,
-    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(7):has(input:checked) {{
-        background: linear-gradient(90deg, rgba(45, 212, 191, 0.22) 0%, rgba(45, 212, 191, 0.06) 100%) !important;
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(7):hover,
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(7):has(input:checked) {{
+        background: linear-gradient(135deg, rgba(45, 212, 191, 0.35) 0%, #092120 100%) !important;
         border-color: #2DD4BF !important;
-        box-shadow: 0 0 20px rgba(45, 212, 191, 0.45) !important;
-        transform: translateX(3px) !important;
+        box-shadow: 0 0 18px rgba(45, 212, 191, 0.5) !important;
+        transform: translateX(2px) !important;
     }}
 
-    /* 8. HƯỚNG DẪN SỬ DỤNG (CORAL ORANGE GLOW) */
-    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(8) {{
-        border-left: 4px solid #FB923C !important;
-        box-shadow: 0 4px 14px rgba(251, 146, 60, 0.12) !important;
+    /* 8. HƯỚNG DẪN SỬ DỤNG (CORAL ORANGE) */
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(8) {{
+        border: 1.5px solid #FB923C !important;
+        background: #241407 !important;
+        box-shadow: 0 2px 10px rgba(251, 146, 60, 0.15) !important;
     }}
-    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(8):hover,
-    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(8):has(input:checked) {{
-        background: linear-gradient(90deg, rgba(251, 146, 60, 0.22) 0%, rgba(251, 146, 60, 0.06) 100%) !important;
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(8):hover,
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(8):has(input:checked) {{
+        background: linear-gradient(135deg, rgba(251, 146, 60, 0.35) 0%, #241407 100%) !important;
         border-color: #FB923C !important;
-        box-shadow: 0 0 20px rgba(251, 146, 60, 0.45) !important;
-        transform: translateX(3px) !important;
+        box-shadow: 0 0 18px rgba(251, 146, 60, 0.5) !important;
+        transform: translateX(2px) !important;
     }}
 
-    /* 9. QUẢN TRỊ NGƯỜI DÙNG (MAGENTA FUCHSIA GLOW) */
-    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(9) {{
-        border-left: 4px solid #E879F9 !important;
-        box-shadow: 0 4px 14px rgba(232, 121, 249, 0.12) !important;
+    /* 9. QUẢN TRỊ NGƯỜI DÙNG (MAGENTA FUCHSIA) */
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(9) {{
+        border: 1.5px solid #E879F9 !important;
+        background: #240C29 !important;
+        box-shadow: 0 2px 10px rgba(232, 121, 249, 0.15) !important;
     }}
-    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(9):hover,
-    section[data-testid="stSidebar"] div[data-testid="stRadio"] label:nth-child(9):has(input:checked) {{
-        background: linear-gradient(90deg, rgba(232, 121, 249, 0.22) 0%, rgba(232, 121, 249, 0.06) 100%) !important;
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(9):hover,
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(9):has(input:checked) {{
+        background: linear-gradient(135deg, rgba(232, 121, 249, 0.35) 0%, #240C29 100%) !important;
         border-color: #E879F9 !important;
-        box-shadow: 0 0 20px rgba(232, 121, 249, 0.45) !important;
-        transform: translateX(3px) !important;
+        box-shadow: 0 0 18px rgba(232, 121, 249, 0.5) !important;
+        transform: translateX(2px) !important;
+    }}
+    
+    /* CHỮ TRONG MENU RÕ RÀNG, ĐỘ TƯƠNG PHẢN TUYỆT ĐỐI KHÔNG BỊ TRỘN LẪN */
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] > label div[data-testid="stMarkdownContainer"] {{
+        width: 100% !important;
+    }}
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] > label div[data-testid="stMarkdownContainer"] p {{
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        color: #FFFFFF !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: block !important;
+        line-height: 1.4 !important;
+        white-space: normal !important;
+        word-break: break-word !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8) !important;
+    }}
+
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] > label:has(input:checked) div[data-testid="stMarkdownContainer"] p {{
+        color: #FFFFFF !important;
+        font-weight: 800 !important;
+        text-shadow: 0 0 12px rgba(255, 255, 255, 0.6) !important;
     }}
     
     section[data-testid="stSidebar"] div[data-testid="stRadio"] label div[data-testid="stMarkdownContainer"] p {{
