@@ -740,6 +740,19 @@ if hasattr(st, "dialog"):
                 st.session_state.show_completion_popup = False
                 st.rerun()
 
+if hasattr(st, "dialog"):
+    @st.dialog("🌐 SƠ ĐỒ MẠNG LƯỚI TRÍCH DẪN — MÀN HÌNH PHỤ", width="large")
+    def show_network_modal(html_content: str):
+        st.markdown("""
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding:8px 14px; background:var(--bg-surface-elevated); border:1px solid var(--border-subtle); border-radius:10px;">
+            <div style="color:var(--primary-accent); font-weight:800; font-size:13.5px; display:flex; align-items:center; gap:6px;">
+                <span>🌐</span> <span>MÀN HÌNH PHỤ TOÀN CẢNH: TƯƠNG TÁC SƠ ĐỒ MẠNG LƯỚI ĐỘC LẬP</span>
+            </div>
+            <span class="status-chip green" style="font-weight:700;">Chế độ tương tác cao</span>
+        </div>
+        """, unsafe_allow_html=True)
+        components.html(html_content, height=750, scrolling=False)
+
 # Hiển thị Popup khi hoàn thành
 if st.session_state.get("show_completion_popup") and st.session_state.pipeline_results:
     if hasattr(st, "dialog"):
@@ -1159,16 +1172,11 @@ elif "02." in workspace_nav:
                 key="btn_dl_active_net_html"
             )
         with col_g3:
-            # Tạo data URI để mở trực tiếp trong tab mới / cửa sổ riêng
-            import base64
-            encoded_html = base64.b64encode(active_network_html.encode('utf-8')).decode('utf-8')
-            html_data_url = f"data:text/html;base64,{encoded_html}"
-            st.link_button(
-                "🪟 Mở Màn Hình Phụ ↗",
-                url=html_data_url,
-                type="primary",
-                use_container_width=True
-            )
+            if st.button("🪟 MỞ MÀN HÌNH PHỤ ↗", type="primary", use_container_width=True, key="btn_open_network_subscreen"):
+                if hasattr(st, "dialog"):
+                    show_network_modal(active_network_html)
+                else:
+                    st.info("💡 Màn hình phụ đang hiển thị trực tiếp bên dưới.")
 
         # Hiển thị sơ đồ tương tác chuẩn quốc tế
         components.html(active_network_html, height=730, scrolling=False)
