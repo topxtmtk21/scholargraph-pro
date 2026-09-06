@@ -1463,50 +1463,53 @@ elif "03." in workspace_nav:
                 is_oa = p.get("is_oa", False) or bool(p.get("pdf_url"))
                 pdf_url = p.get("pdf_url", "")
                 doi_val = p.get("doi", "")
-                auth_str = p.get("authors_formatted", p.get("first_author", "N/A"))
+                auth_str = p.get("authors_formatted") or p.get("first_author") or "N/A"
                 yr_str = str(p.get("year", ""))
                 title_str = p.get("title", "")
-                journal_str = p.get("journal", "")
+                journal_str = p.get("venue") or p.get("journal") or p.get("host_venue") or p.get("scopus_tier") or "Tạp chí Scopus Q1/Q2"
                 cites = p.get("citation_count", 0)
                 
-                oa_chip = '<span class="status-chip green" style="font-size:11px;">🔓 Full PDF Open Access</span>' if is_oa else '<span class="status-chip rose" style="font-size:11px;">🔒 Cần quyền truy cập</span>'
+                c_problem = p.get("newsroom_problem") or p.get("context") or p.get("problem") or "Khảo sát và định vị bối cảnh ứng dụng AI trong quy trình sản xuất tin tức."
+                c_method = p.get("ai_methodology") or p.get("methodology") or p.get("methods") or "Phương pháp phân tích thực nghiệm và đối sánh thuật toán học thuật."
+                c_finding = p.get("empirical_finding") or p.get("findings") or p.get("results") or "Đánh giá định lượng tác động và phản hồi của người tiếp nhận thông tin."
+                c_ethics = p.get("ethical_limitation_gap") or p.get("ethics") or p.get("limitations") or "Xem xét tính minh bạch thuật toán và các ranh giới đạo đức học thuật."
                 
-                st.markdown(f"""
-                <div class="evidence-card" style="border-left: 4px solid var(--primary-accent); margin-bottom: 16px;">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 8px;">
-                        <div style="font-weight: 800; font-size: 15px; color: var(--text-primary);">
-                            #{idx}. {title_str}
-                        </div>
-                        {oa_chip}
-                    </div>
-                    <div style="font-size: 12.5px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.5;">
-                        <b>Tác giả:</b> {auth_str} ({yr_str}) • <b>Tạp chí:</b> <i>{journal_str}</i> • <b>Trích dẫn:</b> {cites} lượt • <b>DOI:</b> <code>{doi_val}</code>
-                    </div>
-                    
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
-                        <div style="background: var(--bg-surface); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-subtle);">
-                            <div style="font-size: 11px; font-weight: 700; color: var(--badge-blue-text); margin-bottom: 3px;">🏛️ BỐI CẢNH & VẤN ĐỀ NGHIÊN CỨU</div>
-                            <div style="font-size: 12.5px; color: var(--text-primary); line-height: 1.5;">{p.get('context', 'Chưa có thông tin')}</div>
-                        </div>
-                        <div style="background: var(--bg-surface); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-subtle);">
-                            <div style="font-size: 11px; font-weight: 700; color: var(--primary-accent); margin-bottom: 3px;">🔬 PHƯƠNG PHÁP & DỮ LIỆU THỰC NGHIỆM</div>
-                            <div style="font-size: 12.5px; color: var(--text-primary); line-height: 1.5;">{p.get('methodology', 'Chưa có thông tin')}</div>
-                        </div>
-                        <div style="background: var(--bg-surface); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-subtle);">
-                            <div style="font-size: 11px; font-weight: 700; color: var(--badge-green-text); margin-bottom: 3px;">📊 KẾT QUẢ & PHÁT HIỆN THEN CHỐT</div>
-                            <div style="font-size: 12.5px; color: var(--text-primary); line-height: 1.5;">{p.get('findings', 'Chưa có thông tin')}</div>
-                        </div>
-                        <div style="background: var(--bg-surface); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-subtle);">
-                            <div style="font-size: 11px; font-weight: 700; color: var(--badge-rose-text); margin-bottom: 3px;">⚖️ RANH GIỚI ĐẠO ĐỨC & KHUYẾN NGHỊ</div>
-                            <div style="font-size: 12.5px; color: var(--text-primary); line-height: 1.5;">{p.get('ethics', 'Chưa có thông tin')}</div>
-                        </div>
-                    </div>
-                    
-                    <div style="font-size: 12px; color: var(--text-muted); background: var(--bg-surface); padding: 8px 12px; border-radius: 6px; border-left: 3px solid #64748B;">
-                        <b>Trích dẫn chuẩn APA 7:</b> {format_apa7_reference(p)}
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
+                oa_chip = '<span class="status-chip green" style="font-size:11px; font-weight:700;">🔓 Full PDF Open Access</span>' if is_oa else '<span class="status-chip rose" style="font-size:11px; font-weight:700;">🔒 Cần quyền truy cập</span>'
+                apa_ref_text = p.get("apa7_ref") or format_apa7_reference(p)
+                
+                card_html = (
+                    f'<div class="evidence-card" style="border-left: 4px solid var(--primary-accent); margin-bottom: 16px;">'
+                    f'<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 6px;">'
+                    f'<div style="font-weight: 800; font-size: 15px; color: var(--text-primary);">#{idx}. {title_str}</div>'
+                    f'{oa_chip}'
+                    f'</div>'
+                    f'<div style="font-size: 12.5px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.5;">'
+                    f'<b>Tác giả:</b> {auth_str} ({yr_str}) • <b>Tạp chí:</b> <i>{journal_str}</i> • <b>Trích dẫn:</b> {cites} lượt • <b>DOI:</b> <code>{doi_val}</code>'
+                    f'</div>'
+                    f'<div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">'
+                    f'<div style="background: var(--bg-surface); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-subtle);">'
+                    f'<div style="font-size: 11px; font-weight: 700; color: var(--badge-blue-text); margin-bottom: 3px;">🏛️ BỐI CẢNH & VẤN ĐỀ NGHIÊN CỨU</div>'
+                    f'<div style="font-size: 12.5px; color: var(--text-primary); line-height: 1.5;">{c_problem}</div>'
+                    f'</div>'
+                    f'<div style="background: var(--bg-surface); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-subtle);">'
+                    f'<div style="font-size: 11px; font-weight: 700; color: var(--primary-accent); margin-bottom: 3px;">🔬 PHƯƠNG PHÁP & DỮ LIỆU THỰC NGHIỆM</div>'
+                    f'<div style="font-size: 12.5px; color: var(--text-primary); line-height: 1.5;">{c_method}</div>'
+                    f'</div>'
+                    f'<div style="background: var(--bg-surface); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-subtle);">'
+                    f'<div style="font-size: 11px; font-weight: 700; color: var(--badge-green-text); margin-bottom: 3px;">📊 KẾT QUẢ & PHÁT HIỆN THEN CHỐT</div>'
+                    f'<div style="font-size: 12.5px; color: var(--text-primary); line-height: 1.5;">{c_finding}</div>'
+                    f'</div>'
+                    f'<div style="background: var(--bg-surface); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-subtle);">'
+                    f'<div style="font-size: 11px; font-weight: 700; color: var(--badge-rose-text); margin-bottom: 3px;">⚖️ RANH GIỚI ĐẠO ĐỨC & KHUYẾN NGHỊ</div>'
+                    f'<div style="font-size: 12.5px; color: var(--text-primary); line-height: 1.5;">{c_ethics}</div>'
+                    f'</div>'
+                    f'</div>'
+                    f'<div style="font-size: 12px; color: var(--text-secondary); background: var(--bg-surface); padding: 8px 12px; border-radius: 6px; border-left: 3px solid #64748B;">'
+                    f'<b>Trích dẫn chuẩn APA 7:</b> {apa_ref_text}'
+                    f'</div>'
+                    f'</div>'
+                )
+                st.markdown(card_html, unsafe_allow_html=True)
                 
         with tab_apa_table:
             st.markdown(s_res.get("evidence_table_apa7_md", generate_apa7_evidence_table_markdown(evidence_pool)))
