@@ -2360,9 +2360,13 @@ class CiteNetAgent:
         edges.update(edgeUpdates);
     }}
 
-    // 10 ACADEMIC LAYOUT ENGINES VỚI CƠ CHẾ CHỐNG ĐÈ TRÙNG NĂM (SAME-YEAR ANTI-COLLISION)
+    // 10 ACADEMIC LAYOUT ENGINES HOẠT ĐỘNG HOÀN TOÀN ĐỘC LẬP TỪ TẬP DOI TRÍCH XUẤT
     function switchLayoutMode(mode) {{
         currentLayoutMode = mode;
+        if (network && network.stopSimulation) {{
+            network.stopSimulation();
+        }}
+
         var sel = document.getElementById('layoutSelector');
         if (sel) sel.value = mode;
 
@@ -2388,7 +2392,7 @@ class CiteNetAgent:
             if (activeB) activeB.classList.add('active');
         }}
 
-        // Group nodes by year for anti-collision
+        // Nhóm bài báo theo năm để chống đè trùng (Anti-collision)
         var yearGroups = {{}};
         rawNodes.forEach(function(n) {{
             var yr = n.year || 2020;
@@ -2396,34 +2400,42 @@ class CiteNetAgent:
             yearGroups[yr].push(n.id);
         }});
 
+        var yrSpan = Math.max(1, maxYrVal - minYrVal);
+        var edgeSmoothType = 'curvedCW';
+        var edgeRoundness = 0.22;
+
         if (mode === 'timeline') {{
-            // 1. DÒNG THỜI GIAN THẲNG NGANG (HISTCITE) - So le trục Y
+            // 1. DÒNG THỜI GIAN TIẾN HÓA THẲNG NGANG (HISTCITE EVOLUTION)
             network.setOptions({{ physics: {{ enabled: false }}, layout: {{ hierarchical: false }} }});
+            edgeSmoothType = 'curvedCW';
+            edgeRoundness = 0.25;
+
             var updates = [];
             rawNodes.forEach(function(n) {{
                 var yr = n.year || 2020;
                 var listInYr = yearGroups[yr] || [n.id];
                 var idxInYr = listInYr.indexOf(n.id);
                 var totalInYr = listInYr.length;
-                // Staggered Y offset
+                var xPos = (yr - minYrVal) * 260 - ((maxYrVal - minYrVal) * 130);
                 var yOffset = (idxInYr - (totalInYr - 1) / 2) * 95 + ((idxInYr % 2 === 0) ? 14 : -14);
-                updates.push({{ id: n.id, x: n.x_timeline, y: yOffset, physics: false }});
+                updates.push({{ id: n.id, x: xPos, y: yOffset, physics: false, level: undefined }});
             }});
             nodes.update(updates);
-            setTimeout(fitView, 220);
 
         }} else if (mode === 'radar') {{
-            // 2. QUỸ ĐẠO RADAR ĐỒNG TÂM (CONCENTRIC RADAR)
+            // 2. QUỸ ĐẠO RADAR ĐỒNG TÂM (CONCENTRIC POLAR RADAR)
             network.setOptions({{ physics: {{ enabled: false }}, layout: {{ hierarchical: false }} }});
+            edgeSmoothType = 'curvedCW';
+            edgeRoundness = 0.30;
+
             var updates = [];
             var seedNode = rawNodes.find(function(n) {{ return (n.level === 0 || n.layer === 'seed'); }}) || rawNodes[0];
             var nonSeeds = rawNodes.filter(function(n) {{ return n.id !== (seedNode ? seedNode.id : ''); }});
             
             if (seedNode) {{
-                updates.push({{ id: seedNode.id, x: 0, y: 0, physics: false }});
+                updates.push({{ id: seedNode.id, x: 0, y: 0, physics: false, level: undefined }});
             }}
 
-            var yrSpan = Math.max(1, maxYrVal - minYrVal);
             nonSeeds.forEach(function(n, idx) {{
                 var yr = n.year || 2020;
                 var yrNorm = (yr - minYrVal) / yrSpan;
@@ -2441,15 +2453,18 @@ class CiteNetAgent:
                     id: n.id,
                     x: Math.round(ringRadius * Math.cos(finalAngle)),
                     y: Math.round(ringRadius * Math.sin(finalAngle)),
-                    physics: false
+                    physics: false,
+                    level: undefined
                 }});
             }});
             nodes.update(updates);
-            setTimeout(fitView, 220);
 
         }} else if (mode === 'fishbone') {{
-            // 3. SƠ ĐỒ XƯƠNG CÁ HỌC THUẬT (ISHIKAWA FISHBONE)
+            // 3. SƠ ĐỒ XƯƠNG CÁ HỌC THUẬT ĐỘC LẬP (ISHIKAWA FISHBONE)
             network.setOptions({{ physics: {{ enabled: false }}, layout: {{ hierarchical: false }} }});
+            edgeSmoothType = 'continuous';
+            edgeRoundness = 0.15;
+
             var updates = [];
             rawNodes.forEach(function(n) {{
                 var yr = n.year || 2020;
@@ -2459,64 +2474,77 @@ class CiteNetAgent:
                 
                 var listInYr = yearGroups[yr] || [n.id];
                 var idxInYr = listInYr.indexOf(n.id);
-                var rankDist = 80 + idxInYr * 85;
+                var rankDist = 85 + idxInYr * 80;
 
                 if (isSeed) {{
-                    updates.push({{ id: n.id, x: 0, y: 0, physics: false }});
+                    updates.push({{ id: n.id, x: 0, y: 0, physics: false, level: undefined }});
                 }} else if (isBack) {{
-                    // Xương cá dưới (45 độ)
-                    updates.push({{ id: n.id, x: xPos - (rankDist * 0.7), y: rankDist, physics: false }});
+                    // Xương cội nguồn bên dưới (hướng chéo 45 độ về phía trước)
+                    updates.push({{ id: n.id, x: xPos - (rankDist * 0.7), y: rankDist, physics: false, level: undefined }});
                 }} else {{
-                    // Xương cá trên (-45 độ)
-                    updates.push({{ id: n.id, x: xPos + (rankDist * 0.7), y: -rankDist, physics: false }});
+                    // Xương kế thừa bên trên (hướng chéo 45 độ về phía sau)
+                    updates.push({{ id: n.id, x: xPos + (rankDist * 0.7), y: -rankDist, physics: false, level: undefined }});
                 }}
             }});
             nodes.update(updates);
-            setTimeout(fitView, 220);
 
         }} else if (mode === 'dendrogram') {{
-            // 4. CÂY THƯ MỤC / NHÁNH CÂY PHÂN CẤP (DENDROGRAM TREE)
+            // 4. CÂY THƯ MỤC / PHÂN BẬC BỨC XẠ (DENDROGRAM TREE)
             network.setOptions({{ physics: {{ enabled: false }}, layout: {{ hierarchical: false }} }});
+            edgeSmoothType = 'cubicBezier';
+            edgeRoundness = 0.35;
+
             var updates = [];
             var seeds = rawNodes.filter(function(n) {{ return (n.level === 0 || n.layer === 'seed'); }});
             var backwardPapers = rawNodes.filter(function(n) {{ return (n.level < 0 || n.layer === 'backward'); }});
             var forwardPapers = rawNodes.filter(function(n) {{ return (n.level > 0 || n.layer === 'forward'); }});
 
             seeds.forEach(function(n, i) {{
-                updates.push({{ id: n.id, x: 0, y: (i * 90) - ((seeds.length - 1) * 45), physics: false }});
+                updates.push({{ id: n.id, x: 0, y: (i * 90) - ((seeds.length - 1) * 45), physics: false, level: undefined }});
             }});
 
             backwardPapers.forEach(function(n, i) {{
                 var lvl = Math.abs(n.level || 1);
                 var xPos = - (lvl * 260);
                 var yOffset = (i - (backwardPapers.length - 1) / 2) * 85 + ((i % 2 === 0) ? 12 : -12);
-                updates.push({{ id: n.id, x: xPos, y: yOffset, physics: false }});
+                updates.push({{ id: n.id, x: xPos, y: yOffset, physics: false, level: undefined }});
             }});
 
             forwardPapers.forEach(function(n, j) {{
                 var lvl = Math.abs(n.level || 1);
                 var xPos = (lvl * 260);
                 var yOffset = (j - (forwardPapers.length - 1) / 2) * 85 + ((j % 2 === 0) ? 12 : -12);
-                updates.push({{ id: n.id, x: xPos, y: yOffset, physics: false }});
+                updates.push({{ id: n.id, x: xPos, y: yOffset, physics: false, level: undefined }});
             }});
             nodes.update(updates);
-            setTimeout(fitView, 220);
 
         }} else if (mode === 'hierarchical') {{
-            // 5. CÂY PHẢ HỆ CÓ HƯỚNG (CITESPACE DAG)
+            // 5. CÂY PHẢ HỆ HƯỚNG NGỌN CẤU TRÚC (CITESPACE DAG TREE)
             var updates = [];
-            rawNodes.forEach(function(n) {{ updates.push({{ id: n.id, physics: true }}); }});
+            rawNodes.forEach(function(n) {{
+                var lvl = 3;
+                if (n.level === 0 || n.layer === 'seed') lvl = 3;
+                else if (n.level === -1) lvl = 2;
+                else if (n.level === -2) lvl = 1;
+                else if (n.level <= -3) lvl = 0;
+                else if (n.level === 1) lvl = 4;
+                else if (n.level === 2) lvl = 5;
+                else if (n.level >= 3) lvl = 6;
+                updates.push({{ id: n.id, level: lvl, physics: true }});
+            }});
             nodes.update(updates);
 
             network.setOptions({{
                 layout: {{ hierarchical: {{ enabled: true, direction: 'UD', sortMethod: 'directed', levelSeparation: 150, nodeSpacing: 180 }} }},
                 physics: {{ hierarchicalRepulsion: {{ nodeDistance: 170 }}, solver: 'hierarchicalRepulsion' }}
             }});
-            setTimeout(fitView, 350);
 
         }} else if (mode === 'matrix') {{
             // 6. MA TRẬN CỤM CHỦ ĐỀ & TẠP CHÍ (CLUSTERED TOPIC MATRIX)
             network.setOptions({{ physics: {{ enabled: false }}, layout: {{ hierarchical: false }} }});
+            edgeSmoothType = 'curvedCW';
+            edgeRoundness = 0.20;
+
             var updates = [];
             var cols = Math.ceil(Math.sqrt(rawNodes.length));
             rawNodes.forEach(function(n, idx) {{
@@ -2524,14 +2552,16 @@ class CiteNetAgent:
                 var col = idx % cols;
                 var xPos = (col - (cols - 1) / 2) * 220;
                 var yPos = (row - (Math.ceil(rawNodes.length / cols) - 1) / 2) * 160;
-                updates.push({{ id: n.id, x: xPos, y: yPos, physics: false }});
+                updates.push({{ id: n.id, x: xPos, y: yPos, physics: false, level: undefined }});
             }});
             nodes.update(updates);
-            setTimeout(fitView, 220);
 
         }} else if (mode === 'quartile') {{
-            // 8. PHÂN LÀN SCOPUS Q1-Q4 (QUARTILE LANES)
+            // 8. PHÂN LÀN THỨ HẠNG SCOPUS Q1-Q4 (SCOPUS QUARTILE LANES)
             network.setOptions({{ physics: {{ enabled: false }}, layout: {{ hierarchical: false }} }});
+            edgeSmoothType = 'curvedCW';
+            edgeRoundness = 0.22;
+
             var lanes = {{ core: [], q1: [], q2: [], other: [] }};
             rawNodes.forEach(function(n) {{
                 var p = metaDict[n.id] || {{}};
@@ -2542,28 +2572,30 @@ class CiteNetAgent:
                 else lanes.other.push(n.id);
             }});
 
-            var laneX = {{ core: -440, q1: -150, q2: 150, other: 440 }};
+            var laneX = {{ core: -480, q1: -160, q2: 160, other: 480 }};
             var updates = [];
             ['core', 'q1', 'q2', 'other'].forEach(function(k) {{
                 var list = lanes[k];
                 list.forEach(function(id, idx) {{
                     var yOffset = (idx - (list.length - 1) / 2) * 95 + ((idx % 2 === 0) ? 14 : -14);
-                    updates.push({{ id: id, x: laneX[k], y: yOffset, physics: false }});
+                    updates.push({{ id: id, x: laneX[k], y: yOffset, physics: false, level: undefined }});
                 }});
             }});
             nodes.update(updates);
-            setTimeout(fitView, 220);
 
         }} else if (mode === 'diamond') {{
             // 9. MẶT PHẲNG KIM CƯƠNG ĐỐI XỨNG (DUAL-DIAMOND HORIZON)
             network.setOptions({{ physics: {{ enabled: false }}, layout: {{ hierarchical: false }} }});
+            edgeSmoothType = 'curvedCW';
+            edgeRoundness = 0.25;
+
             var updates = [];
             var seeds = rawNodes.filter(function(n) {{ return (n.level === 0 || n.layer === 'seed'); }});
             var backwardPapers = rawNodes.filter(function(n) {{ return (n.level < 0 || n.layer === 'backward'); }});
             var forwardPapers = rawNodes.filter(function(n) {{ return (n.level > 0 || n.layer === 'forward'); }});
 
             seeds.forEach(function(n, i) {{
-                updates.push({{ id: n.id, x: (i * 80) - ((seeds.length - 1) * 40), y: 0, physics: false }});
+                updates.push({{ id: n.id, x: (i * 80) - ((seeds.length - 1) * 40), y: 0, physics: false, level: undefined }});
             }});
 
             var bCount = backwardPapers.length || 1;
@@ -2571,7 +2603,7 @@ class CiteNetAgent:
                 var lvl = Math.abs(n.level || 1);
                 var radius = 240 + (lvl - 1) * 140;
                 var angle = Math.PI / 2 + ((Math.PI * (i + 0.5)) / bCount);
-                updates.push({{ id: n.id, x: Math.round(radius * Math.cos(angle)), y: Math.round(radius * Math.sin(angle)), physics: false }});
+                updates.push({{ id: n.id, x: Math.round(radius * Math.cos(angle)), y: Math.round(radius * Math.sin(angle)), physics: false, level: undefined }});
             }});
 
             var fCount = forwardPapers.length || 1;
@@ -2579,61 +2611,76 @@ class CiteNetAgent:
                 var lvl = Math.abs(n.level || 1);
                 var radius = 260 + (lvl - 1) * 150;
                 var angle = -Math.PI / 2 + ((Math.PI * (j + 0.5)) / fCount);
-                updates.push({{ id: n.id, x: Math.round(radius * Math.cos(angle)), y: Math.round(radius * Math.sin(angle)), physics: false }});
+                updates.push({{ id: n.id, x: Math.round(radius * Math.cos(angle)), y: Math.round(radius * Math.sin(angle)), physics: false, level: undefined }});
             }});
             nodes.update(updates);
-            setTimeout(fitView, 220);
 
         }} else if (mode === 'fanchart') {{
             // 10. QUẠT NAN PHẢ HỆ TỎA TRÒN 180 ĐỘ (ANCESTRY FAN CHART)
             network.setOptions({{ physics: {{ enabled: false }}, layout: {{ hierarchical: false }} }});
+            edgeSmoothType = 'curvedCW';
+            edgeRoundness = 0.25;
+
             var updates = [];
             var seeds = rawNodes.filter(function(n) {{ return (n.level === 0 || n.layer === 'seed'); }});
             var otherPapers = rawNodes.filter(function(n) {{ return !(n.level === 0 || n.layer === 'seed'); }});
 
             seeds.forEach(function(n) {{
-                updates.push({{ id: n.id, x: 0, y: 180, physics: false }});
+                updates.push({{ id: n.id, x: 0, y: 180, physics: false, level: undefined }});
             }});
 
             otherPapers.forEach(function(n, i) {{
                 var yr = n.year || 2020;
-                var yrSpan = Math.max(1, maxYrVal - minYrVal);
                 var radius = 220 + ((yr - minYrVal) / yrSpan) * 340;
                 var angle = Math.PI + (i / Math.max(1, otherPapers.length - 1)) * Math.PI;
-                updates.push({{ id: n.id, x: Math.round(radius * Math.cos(angle)), y: 180 + Math.round(radius * Math.sin(angle)), physics: false }});
+                updates.push({{ id: n.id, x: Math.round(radius * Math.cos(angle)), y: 180 + Math.round(radius * Math.sin(angle)), physics: false, level: undefined }});
             }});
             nodes.update(updates);
-            setTimeout(fitView, 220);
 
         }} else {{
             // 7. MẠNG LƯỚI ĐỘNG HỌC LƯỢNG TỬ (FORCE-DIRECTED QUANTUM)
             network.setOptions({{ layout: {{ hierarchical: false }} }});
             var updates = [];
-            rawNodes.forEach(function(n) {{ updates.push({{ id: n.id, physics: true }}); }});
+            rawNodes.forEach(function(n) {{ updates.push({{ id: n.id, physics: true, level: undefined }}); }});
             nodes.update(updates);
             network.setOptions(forceOptions);
-            setTimeout(fitView, 220);
         }}
+
+        // Đồng bộ độ uốn cong mũi tên theo từng chế độ bố cục
+        if (mode !== 'hierarchical') {{
+            var edgeCurveUpdates = rawEdges.map(function(e) {{
+                return {{
+                    id: e.id,
+                    smooth: {{ enabled: true, type: edgeSmoothType, roundness: edgeRoundness }}
+                }};
+            }});
+            edges.update(edgeCurveUpdates);
+        }}
+
+        applyGraphFilters();
+        setTimeout(fitView, 250);
     }}
 
-    // Canvas Background Guides for Timeline & Radar & Fishbone
+    // Canvas Background Guides Độc Lập Cho Từng Bố Cục Học Thuật (beforeDrawing)
     network.on('beforeDrawing', function(ctx) {{
         if (currentLayoutMode === 'radar') {{
+            // 📡 NỀN QUỸ ĐẠO RADAR
             ctx.save();
             ctx.setLineDash([6, 6]);
             ctx.lineWidth = 1.2;
-            [180, 290, 400, 520].forEach(function(r, idx) {{
-                ctx.strokeStyle = 'rgba(56, 189, 248, 0.20)';
+            [180, 280, 380, 480, 560].forEach(function(r, idx) {{
+                ctx.strokeStyle = 'rgba(56, 189, 248, ' + (0.25 - idx * 0.03) + ')';
                 ctx.beginPath();
                 ctx.arc(0, 0, r, 0, 2 * Math.PI, false);
                 ctx.stroke();
             }});
             ctx.font = 'bold 11px JetBrains Mono, monospace';
             ctx.fillStyle = '#38BDF8';
-            ctx.fillText('📡 RADAR RANGE 180px - 520px', 10, -530);
+            ctx.fillText('📡 RADAR RANGE • 180px ➔ 560px', 10, -570);
             ctx.restore();
 
         }} else if (currentLayoutMode === 'timeline') {{
+            // ⏳ NỀN DÒNG THỜI GIAN THEO NĂM
             ctx.save();
             for (var y = minYrVal; y <= maxYrVal; y++) {{
                 var xPos = (y - minYrVal) * 260 - ((maxYrVal - minYrVal) * 130);
@@ -2646,7 +2693,6 @@ class CiteNetAgent:
                 ctx.stroke();
 
                 ctx.setLineDash([]);
-                // Sleek translucent badge with rounded corners
                 ctx.fillStyle = 'rgba(15, 23, 42, 0.90)';
                 ctx.strokeStyle = 'rgba(56, 189, 248, 0.65)';
                 ctx.lineWidth = 1.2;
@@ -2670,19 +2716,92 @@ class CiteNetAgent:
             ctx.restore();
 
         }} else if (currentLayoutMode === 'fishbone') {{
+            // 🐟 NỀN SƠ ĐỒ XƯƠNG CÁ
             ctx.save();
-            ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
-            ctx.lineWidth = 2.5;
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.45)';
+            ctx.lineWidth = 3.0;
             ctx.beginPath();
-            ctx.moveTo(-650, 0);
-            ctx.lineTo(650, 0);
+            ctx.moveTo(-680, 0);
+            ctx.lineTo(680, 0);
             ctx.stroke();
 
-            ctx.font = 'bold 12px Plus Jakarta Sans, sans-serif';
+            // Mũi tên trục sống lưng
             ctx.fillStyle = 'rgba(56, 189, 248, 0.85)';
-            ctx.fillText('🐟 TRỤC SỐNG LƯNG THỜI GIAN (CHRONO-BACKBONE)', -620, -12);
-            ctx.fillText('🏛️ CỘI NGUỒN (R) ➔', -450, 45);
-            ctx.fillText('🚀 KẾ THỪA (F) ➔', 250, -45);
+            ctx.beginPath();
+            ctx.moveTo(680, 0);
+            ctx.lineTo(660, -10);
+            ctx.lineTo(660, 10);
+            ctx.fill();
+
+            ctx.font = 'bold 11.5px Plus Jakarta Sans, sans-serif';
+            ctx.fillStyle = 'rgba(56, 189, 248, 0.90)';
+            ctx.fillText('🐟 TRỤC SỐNG LƯNG THỜI GIAN (CHRONO-BACKBONE)', -660, -14);
+            ctx.fillStyle = '#C084FC';
+            ctx.fillText('🏛️ CỘI NGUỒN LÝ THUYẾT (R1-R3) ↓', -480, 45);
+            ctx.fillStyle = '#38BDF8';
+            ctx.fillText('🚀 BƯỚC TIẾN KẾ THỪA (F1-F3) ↑', 220, -45);
+            ctx.restore();
+
+        }} else if (currentLayoutMode === 'quartile') {{
+            // 📊 NỀN PHÂN LÀN SCOPUS Q1-Q4
+            ctx.save();
+            var laneConfigs = [
+                {{ name: '★ BÀI GỐC F0 (CORE)', x: -480, color: '#F43F5E' }},
+                {{ name: '🔵 SCOPUS Q1 (TOP TIER)', x: -160, color: '#38BDF8' }},
+                {{ name: '🟢 SCOPUS Q2 (MID TIER)', x: 160, color: '#34D399' }},
+                {{ name: '🟣 SCOPUS Q3-Q4 / KHÁC', x: 480, color: '#A855F7' }}
+            ];
+
+            laneConfigs.forEach(function(lane) {{
+                // Cột phủ mờ
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.02)';
+                ctx.fillRect(lane.x - 130, -420, 260, 840);
+
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+                ctx.setLineDash([4, 4]);
+                ctx.strokeRect(lane.x - 130, -420, 260, 840);
+                ctx.setLineDash([]);
+
+                // Tiêu đề làn
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+                ctx.strokeStyle = lane.color;
+                ctx.lineWidth = 1.4;
+                if (ctx.roundRect) {{
+                    ctx.beginPath();
+                    ctx.roundRect(lane.x - 110, -445, 220, 26, 6);
+                    ctx.fill();
+                    ctx.stroke();
+                }}
+                ctx.font = 'bold 10px Plus Jakarta Sans, sans-serif';
+                ctx.fillStyle = lane.color;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(lane.name, lane.x, -432);
+            }});
+            ctx.restore();
+
+        }} else if (currentLayoutMode === 'dendrogram') {{
+            // 🌿 NỀN CÂY THƯ MỤC PHÂN NHÁNH
+            ctx.save();
+            ctx.setLineDash([4, 4]);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            [-520, -260, 0, 260, 520].forEach(function(xP) {{
+                ctx.beginPath();
+                ctx.moveTo(xP, -400);
+                ctx.lineTo(xP, 400);
+                ctx.stroke();
+            }});
+            ctx.setLineDash([]);
+            ctx.font = 'bold 10px Plus Jakarta Sans, sans-serif';
+            ctx.fillStyle = '#C084FC';
+            ctx.textAlign = 'center';
+            ctx.fillText('🏛️ R2 CỘI NGUỒN', -520, -410);
+            ctx.fillText('🏛️ R1 NỀN TẢNG', -260, -410);
+            ctx.fillStyle = '#FDE047';
+            ctx.fillText('★ F0 GỐC', 0, -410);
+            ctx.fillStyle = '#38BDF8';
+            ctx.fillText('🚀 F1 KẾ THỪA', 260, -410);
+            ctx.fillText('🚀 F2 MỞ RỘNG', 520, -410);
             ctx.restore();
         }}
     }});
