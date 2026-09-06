@@ -208,6 +208,21 @@ class CiteNetAgent:
             3: {"background": "#D97706", "border": "#FBBF24", "highlight": "#FFFBEB"}    # F3: Chân trời nghiên cứu mới (Amber Gold)
         }
 
+        if isinstance(nodes, list):
+            nodes_dict = {}
+            for n in nodes:
+                nid = n.get("id") or n.get("doi") or str(n)
+                nodes_dict[nid] = n
+            nodes = nodes_dict
+
+        norm_edges = []
+        for e in edges:
+            if isinstance(e, (tuple, list)):
+                norm_edges.append((e[0], e[1]))
+            elif isinstance(e, dict):
+                norm_edges.append((e.get("from") or e.get("source"), e.get("to") or e.get("target")))
+        edges = norm_edges
+
         years_list = []
         for n in nodes.values():
             try:
@@ -948,6 +963,248 @@ class CiteNetAgent:
             letter-spacing: 0.03em;
         }}
 
+        /* DEDICATED INDEPENDENT ACADEMIC VIEW CONTAINERS (FISHBONE, TIMELINE, QUARTILE, RADAR, DENDROGRAM, MATRIX) */
+        .dedicated-view-container {{
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: auto;
+            padding: 56px 16px 16px 64px;
+            box-sizing: border-box;
+            display: none;
+            z-index: 10;
+            background: radial-gradient(circle at 50% 30%, rgba(var(--theme-glow-rgb), 0.05) 0%, transparent 75%);
+        }}
+        @media (max-width: 900px) {{
+            .dedicated-view-container {{
+                padding: 56px 8px 12px 48px;
+            }}
+        }}
+        
+        /* DEDICATED PAPER CARD (REUSABLE ACROSS ALL 6 DEDICATED VIEWS) */
+        .dedicated-paper-card {{
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            background: var(--theme-panel-bg);
+            border: 1px solid var(--theme-panel-border);
+            border-radius: 10px;
+            padding: 8px 10px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+            position: relative;
+        }}
+        .dedicated-paper-card:hover {{
+            border-color: var(--theme-accent);
+            transform: translateY(-2px);
+            box-shadow: 0 0 16px rgba(var(--theme-glow-rgb), 0.4), 0 6px 20px rgba(0,0,0,0.6);
+            z-index: 5;
+        }}
+        .dedicated-paper-card.selected {{
+            border-color: #F59E0B !important;
+            box-shadow: 0 0 18px rgba(245, 158, 11, 0.6), 0 4px 16px rgba(0,0,0,0.7) !important;
+            background: rgba(var(--theme-glow-rgb), 0.16) !important;
+        }}
+        .card-top-row {{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+        }}
+        .card-author-year {{
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--theme-text-main);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }}
+        .card-cites-badge {{
+            font-size: 9.5px;
+            font-weight: 800;
+            padding: 1px 6px;
+            border-radius: 6px;
+            background: rgba(var(--theme-glow-rgb), 0.18);
+            color: var(--theme-accent);
+            border: 1px solid rgba(var(--theme-glow-rgb), 0.3);
+            white-space: nowrap;
+        }}
+        .card-title-text {{
+            font-size: 11px;
+            line-height: 1.35;
+            color: var(--theme-text-dim);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }}
+        .card-meta-tags {{
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 2px;
+            flex-wrap: wrap;
+        }}
+        .card-tier-tag {{
+            font-size: 8.5px;
+            font-weight: 700;
+            padding: 1px 5px;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.06);
+            color: #94A3B8;
+        }}
+        .card-layer-tag {{
+            font-size: 8.5px;
+            font-weight: 800;
+            padding: 1px 5px;
+            border-radius: 4px;
+        }}
+
+        /* 1. FISHBONE VIEW STYLES */
+        .fishbone-wrapper {{
+            display: flex;
+            flex-direction: column;
+            min-width: 950px;
+            padding: 10px;
+            gap: 16px;
+        }}
+        .fishbone-head-container {{
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 20px;
+        }}
+        .fishbone-seed-card {{
+            background: linear-gradient(135deg, rgba(234, 67, 53, 0.28) 0%, rgba(20, 10, 15, 0.95) 100%);
+            border: 2px solid #EA4335;
+            border-radius: 14px;
+            padding: 12px 18px;
+            box-shadow: 0 0 24px rgba(234, 67, 53, 0.45);
+            max-width: 360px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }}
+        .fishbone-seed-card:hover {{
+            transform: scale(1.02);
+            box-shadow: 0 0 32px rgba(234, 67, 53, 0.65);
+        }}
+        .fishbone-rib-column {{
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.22);
+            border: 1px solid var(--theme-panel-border);
+            border-radius: 12px;
+            padding: 10px;
+        }}
+        .fishbone-rib-header {{
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 5px 9px;
+            border-radius: 7px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }}
+
+        /* 2. TIMELINE VIEW STYLES */
+        .timeline-lanes-board {{
+            display: flex;
+            gap: 16px;
+            min-width: 100%;
+            padding-bottom: 20px;
+        }}
+        .timeline-year-col {{
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-width: 220px;
+            max-width: 260px;
+            flex-shrink: 0;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--theme-panel-border);
+            border-radius: 12px;
+            padding: 10px;
+        }}
+        .timeline-year-header {{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 10px;
+            background: rgba(var(--theme-glow-rgb), 0.12);
+            border: 1px solid rgba(var(--theme-glow-rgb), 0.25);
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--theme-accent);
+        }}
+
+        /* 3. SCOPUS QUARTILE BOARD */
+        .quartile-board-grid {{
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            min-width: 900px;
+        }}
+        .quartile-lane-col {{
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--theme-panel-border);
+            border-radius: 12px;
+            padding: 12px;
+        }}
+        .quartile-lane-header {{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }}
+
+        /* 4. RADAR VIEW STYLES */
+        .radar-orbit-board {{
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            align-items: center;
+            min-width: 850px;
+        }}
+        .radar-rings-grid {{
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            width: 100%;
+        }}
+
+        /* 5. DENDROGRAM TREE STYLES */
+        .dendrogram-tree-board {{
+            display: grid;
+            grid-template-columns: 1fr 0.8fr 1fr;
+            gap: 20px;
+            min-width: 900px;
+        }}
+
+        /* 6. TOPIC MATRIX STYLES */
+        .topic-matrix-board {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 14px;
+            width: 100%;
+        }}
+
         /* SLIDE-OUT LEGEND DRAWER FROM SLIM DOCK (ĐỔ BÓNG ĐỀU TOÀN KHUNG) */
         .dock-legend-drawer {{
             position: absolute;
@@ -1242,13 +1499,13 @@ class CiteNetAgent:
         <!-- SLIM VERTICAL DOCK (10 CHẾ ĐỘ BỐ CỤC HỌC THUẬT) -->
         <nav class="synapse-vertical-dock" style="position:relative;">
             <div class="dock-btn-group">
-                <button class="dock-icon-btn active" id="dockBtnTimeline" onclick="switchLayoutMode('timeline')" title="1. Dòng Thời Gian Thẳng Ngang (Linear Timeline Evolution)">⏳</button>
-                <button class="dock-icon-btn" id="dockBtnRadar" onclick="switchLayoutMode('radar')" title="2. Quỹ Đạo Radar Đồng Tâm (Concentric Radar Timeline)">📡</button>
-                <button class="dock-icon-btn" id="dockBtnFishbone" onclick="switchLayoutMode('fishbone')" title="3. Sơ Đồ Xương Cá Học Thuật (Ishikawa Fishbone Diagram)">🐟</button>
-                <button class="dock-icon-btn" id="dockBtnDendrogram" onclick="switchLayoutMode('dendrogram')" title="4. Cây Thư Mục Phân Cấp (Dendrogram Branching Tree)">🌿</button>
-                <button class="dock-icon-btn" id="dockBtnHierarchical" onclick="switchLayoutMode('hierarchical')" title="5. Cây Phả Hệ Có Hướng (CiteSpace DAG)">🌳</button>
-                <button class="dock-icon-btn" id="dockBtnMatrix" onclick="switchLayoutMode('matrix')" title="6. Ma Trận Cụm Chủ Đề (Clustered Topic Matrix)">▦</button>
-                <button class="dock-icon-btn" id="dockBtnForce" onclick="switchLayoutMode('force')" title="7. Mạng Động Học Lượng Tử (Force-Directed Quantum)">🕸️</button>
+                <button class="dock-icon-btn active" id="dockBtnForce" onclick="switchLayoutMode('force')" title="1. Mạng Động Học Lượng Tử (Force-Directed Quantum)">🕸️</button>
+                <button class="dock-icon-btn" id="dockBtnTimeline" onclick="switchLayoutMode('timeline')" title="2. Dòng Thời Gian Thẳng Ngang (Linear Timeline Evolution)">⏳</button>
+                <button class="dock-icon-btn" id="dockBtnRadar" onclick="switchLayoutMode('radar')" title="3. Quỹ Đạo Radar Đồng Tâm (Concentric Radar Timeline)">📡</button>
+                <button class="dock-icon-btn" id="dockBtnFishbone" onclick="switchLayoutMode('fishbone')" title="4. Sơ Đồ Xương Cá Học Thuật (Ishikawa Fishbone Diagram)">🐟</button>
+                <button class="dock-icon-btn" id="dockBtnDendrogram" onclick="switchLayoutMode('dendrogram')" title="5. Cây Thư Mục Phân Cấp (Dendrogram Branching Tree)">🌿</button>
+                <button class="dock-icon-btn" id="dockBtnHierarchical" onclick="switchLayoutMode('hierarchical')" title="6. Cây Phả Hệ Có Hướng (CiteSpace DAG)">🌳</button>
+                <button class="dock-icon-btn" id="dockBtnMatrix" onclick="switchLayoutMode('matrix')" title="7. Ma Trận Cụm Chủ Đề (Clustered Topic Matrix)">▦</button>
                 <button class="dock-icon-btn" id="dockBtnQuartile" onclick="switchLayoutMode('quartile')" title="8. Phân Làn Thứ Hạng Scopus (Quartile Lanes Q1-Q4)">📊</button>
                 <button class="dock-icon-btn" id="dockBtnDiamond" onclick="switchLayoutMode('diamond')" title="9. Mặt Phẳng Kim Cương Đối Xứng (Dual-Diamond Horizon)">💎</button>
                 <button class="dock-icon-btn" id="dockBtnFanChart" onclick="switchLayoutMode('fanchart')" title="10. Quạt Nan Phả Hệ Tỏa Tròn (Ancestry Fan Chart)">🪭</button>
@@ -1484,28 +1741,29 @@ class CiteNetAgent:
 
                 <!-- BỘ CHỌN 10 BỐ CỤC HỌC THUẬT -->
                 <select id="layoutSelector" onchange="switchLayoutMode(this.value)" style="background:var(--theme-panel-bg); border:1px solid var(--theme-panel-border); color:var(--theme-accent); border-radius:8px; padding:4px 6px; font-size:11px; font-weight:700; outline:none; cursor:pointer;" title="Chọn 1 trong 10 Chế độ Bố Cục Học Thuật">
-                    <option value="timeline">1. ⏳ Linear Timeline (HistCite)</option>
-                    <option value="radar">2. 📡 Concentric Radar Timeline</option>
-                    <option value="fishbone">3. 🐟 Ishikawa Fishbone Diagram</option>
-                    <option value="dendrogram">4. 🌿 Dendrogram Branching Tree</option>
-                    <option value="hierarchical">5. 🌳 CiteSpace DAG Tree</option>
-                    <option value="matrix">6. ▦ Clustered Topic Matrix</option>
-                    <option value="force">7. 🕸️ Force-Directed Quantum</option>
+                    <option value="force" selected>1. 🕸️ Force-Directed Quantum (Mặc Định)</option>
+                    <option value="timeline">2. ⏳ Linear Timeline (HistCite)</option>
+                    <option value="radar">3. 📡 Concentric Radar Timeline</option>
+                    <option value="fishbone">4. 🐟 Ishikawa Fishbone Diagram</option>
+                    <option value="dendrogram">5. 🌿 Dendrogram Branching Tree</option>
+                    <option value="hierarchical">6. 🌳 CiteSpace DAG Tree</option>
+                    <option value="matrix">7. ▦ Clustered Topic Matrix</option>
                     <option value="quartile">8. 📊 Scopus Quartile Lanes</option>
                     <option value="diamond">9. 💎 Dual-Diamond Horizon</option>
                     <option value="fanchart">10. 🪭 Ancestry Fan Chart</option>
                 </select>
 
-                <!-- THANH TRƯỢT ĐIỀU TỐC PHOTON & TIA SÁNG HOVER -->
-                <div class="speed-control-cluster" title="Điều chỉnh tốc độ di chuyển hạt Photon & Tia sáng kết nối (0x: Đứng yên -> 3x: Nhanh tối đa)">
+                <!-- THANH TRƯỢT ĐIỀU TỐC PHOTON, MŨI TÊN NHÂN QUẢ & TIA SÁNG HOVER -->
+                <div class="speed-control-cluster" title="Điều chỉnh tốc độ di chuyển Mũi tên Nhân quả, Hạt Photon & Tia sáng kết nối (0x: Đứng yên -> 3x: Nhanh tối đa)">
                     <span style="font-size:10.5px; font-weight:700; color:var(--theme-accent);">⚡ Tốc độ:</span>
                     <input type="range" id="photonSpeedSlider" class="speed-slider-input" min="0" max="3" step="0.2" value="1.0" oninput="setPhotonSpeed(this.value)">
                     <span id="photonSpeedVal" style="font-size:10.5px; font-family:'JetBrains Mono', monospace; font-weight:700; color:#FDE047; min-width:24px;">1.0x</span>
                 </div>
 
                 <button class="hud-mini-btn active" id="labelModeBtn" onclick="cycleLabelMode()" title="Chuyển chế độ nhãn (Gọn / Đầy Đủ / Ẩn)">🏷️ Nhãn: Gọn</button>
-                <button class="hud-mini-btn active" id="laserBtn" onclick="toggleLaserBeam()" title="Bật/Tắt Tia Laser Neon & Đường kết nối khi chọn/hover">⚡ Tia Laser</button>
+                <button class="hud-mini-btn active" id="arrowMotionBtn" onclick="toggleArrowMotion()" title="Bật/Tắt Mũi tên Nhân quả Chuyển động (Causal Directional Flow)">🏹 Mũi Tên Động</button>
                 <button class="hud-mini-btn active" id="particlesBtn" onclick="toggleParticles()" title="Bật/Tắt Dòng Hạt Photon di chuyển">✨ Hạt Photon</button>
+                <button class="hud-mini-btn active" id="laserBtn" onclick="toggleLaserBeam()" title="Bật/Tắt Tia Laser Neon & Đường kết nối khi chọn/hover">⚡ Tia Laser</button>
                 <button class="hud-mini-btn active" id="pulseBtn" onclick="togglePulseGlow()" title="Bật/Tắt Hào Quang Nhịp Thở Node">💓 Nhịp Thở</button>
                 <button class="hud-mini-btn active" id="lineageBtn" onclick="toggleLineageMode()" title="Bật/Tắt Chế độ Truy Vết Phả Hệ">🧬 Truy Vết</button>
                 <button class="hud-mini-btn" id="timeplayBtn" onclick="toggleTimelinePlayback()" title="Tua Lịch Sử Phát Triển Theo Năm">⏯️ Tua Năm</button>
@@ -1524,6 +1782,14 @@ class CiteNetAgent:
             </div>
 
             <div id="network-container"></div>
+
+            <!-- DEDICATED INDEPENDENT ACADEMIC VIEW CONTAINERS -->
+            <div id="view-timeline-container" class="dedicated-view-container"></div>
+            <div id="view-fishbone-container" class="dedicated-view-container"></div>
+            <div id="view-quartile-container" class="dedicated-view-container"></div>
+            <div id="view-radar-container" class="dedicated-view-container"></div>
+            <div id="view-dendrogram-container" class="dedicated-view-container"></div>
+            <div id="view-matrix-container" class="dedicated-view-container"></div>
         </div>
     </div>
 
@@ -1609,6 +1875,7 @@ class CiteNetAgent:
 
     var isPhysicsOn = true;
     var isParticlesOn = true;
+    var isArrowsMotionOn = true;
     var isLaserBeamOn = true;
     var isPulsingOn = true;
     var isLineageTracingOn = false;
@@ -1618,7 +1885,7 @@ class CiteNetAgent:
     var playbackIntervalMs = 1200;
     var currentPlaybackYear = maxYrVal;
     var selectedLineageNodeId = null;
-    var currentLayoutMode = 'timeline';
+    var currentLayoutMode = 'force';
     var currentLabelMode = 'short';
     var currentThemeIndex = 0;
     
@@ -1824,7 +2091,7 @@ class CiteNetAgent:
     }}
     renderRelatedPapersTable();
 
-    // Select Paper from Table or Canvas
+    // Select Paper from Table or Canvas or Dedicated View Cards
     function selectPaperFromTable(nodeId) {{
         var allRows = document.querySelectorAll('.related-row');
         allRows.forEach(function(r) {{ r.classList.remove('selected'); }});
@@ -1834,16 +2101,144 @@ class CiteNetAgent:
             activeRow.scrollIntoView({{ behavior: 'smooth', block: 'nearest' }});
         }}
 
-        network.selectNodes([nodeId]);
-        network.focus(nodeId, {{
-            scale: 1.35,
-            animation: {{ duration: 350, easingFunction: 'easeInOutQuad' }}
+        var allCards = document.querySelectorAll('.dedicated-paper-card');
+        allCards.forEach(function(c) {{ c.classList.remove('selected'); }});
+        var activeCards = document.querySelectorAll('.dedicated-paper-card[data-node-id="' + nodeId + '"]');
+        activeCards.forEach(function(c) {{
+            c.classList.add('selected');
+            c.scrollIntoView({{ behavior: 'smooth', block: 'nearest' }});
         }});
 
+        hoveredNodeId = nodeId;
+        hoveredEdgeId = null;
+
+        // TỰ ĐỘNG FOCUS NHÁNH TRÍCH DẪN & LÀM MỜ VÙNG KHÁC (CONNECTED PAPERS & LITMAPS STANDARD)
+        var connectedNodeIds = new Set([nodeId]);
+        var connectedEdgeIds = new Set();
+        rawEdges.forEach(function(e) {{
+            if (e.from === nodeId || e.to === nodeId) {{
+                connectedNodeIds.add(e.from);
+                connectedNodeIds.add(e.to);
+                connectedEdgeIds.add(e.id);
+            }}
+        }});
+
+        var nodeUpdates = [];
+        rawNodes.forEach(function(n) {{
+            var isFocus = (n.id === nodeId);
+            var isConnected = connectedNodeIds.has(n.id);
+            nodeUpdates.push({{
+                id: n.id,
+                opacity: isConnected ? 1.0 : 0.15,
+                borderWidth: isFocus ? 4.5 : (isConnected ? 3.0 : 1.2),
+                shadow: isFocus ? {{ enabled: true, color: 'var(--theme-accent)', size: 24, x:0, y:0 }} : (isConnected ? {{ enabled: true, color: 'rgba(255,255,255,0.4)', size: 10, x:0, y:0 }} : {{ enabled: false }})
+            }});
+        }});
+        nodes.update(nodeUpdates);
+
+        var edgeUpdates = [];
+        rawEdges.forEach(function(e) {{
+            var isConnected = connectedEdgeIds.has(e.id);
+            edgeUpdates.push({{
+                id: e.id,
+                width: isConnected ? 3.2 : 0.8,
+                color: isConnected ? e.color : {{ color: 'rgba(100,116,139,0.06)', opacity: 0.06 }}
+            }});
+        }});
+        edges.update(edgeUpdates);
+
+        if (typeof network !== 'undefined' && network.selectNodes) {{
+            try {{
+                network.selectNodes([nodeId]);
+                network.focus(nodeId, {{
+                    scale: 1.35,
+                    animation: {{ duration: 350, easingFunction: 'easeInOutQuad' }}
+                }});
+            }} catch(e) {{}}
+        }}
+
+        updateHoverInspectorNode(nodeId);
         updateSelectedDetailsPane(nodeId);
 
         if (isLineageTracingOn) {{
             traceAncestryAndDescendants(nodeId);
+        }}
+    }}
+
+    // Focus vào Đường liên kết (Mũi tên) & Làm mờ các vùng khác
+    function focusEdgeLinkage(edgeId) {{
+        hoveredEdgeId = edgeId;
+        hoveredNodeId = null;
+
+        var targetEdge = rawEdges.find(function(e) {{ return e.id === edgeId; }});
+        if (!targetEdge) return;
+
+        var sId = targetEdge.from;
+        var dId = targetEdge.to;
+
+        // Làm mờ toàn bộ các node khác, chỉ làm nổi bật Điểm Đầu & Điểm Cuối
+        var nodeUpdates = [];
+        rawNodes.forEach(function(n) {{
+            var isEnd = (n.id === sId || n.id === dId);
+            nodeUpdates.push({{
+                id: n.id,
+                opacity: isEnd ? 1.0 : 0.15,
+                borderWidth: isEnd ? 4.0 : 1.0,
+                shadow: isEnd ? {{ enabled: true, color: (n.id === sId ? '#38BDF8' : '#34D399'), size: 22, x:0, y:0 }} : {{ enabled: false }}
+            }});
+        }});
+        nodes.update(nodeUpdates);
+
+        var edgeUpdates = [];
+        rawEdges.forEach(function(e) {{
+            var isTarget = (e.id === edgeId);
+            edgeUpdates.push({{
+                id: e.id,
+                width: isTarget ? 4.5 : 0.8,
+                color: isTarget ? {{ color: '#F59E0B', highlight: '#F59E0B', hover: '#F59E0B' }} : {{ color: 'rgba(100,116,139,0.05)', opacity: 0.05 }}
+            }});
+        }});
+        edges.update(edgeUpdates);
+
+        updateHoverInspectorEdge(edgeId);
+
+        if (typeof network !== 'undefined' && network.selectEdges) {{
+            try {{
+                network.selectEdges([edgeId]);
+            }} catch(e) {{}}
+        }}
+    }}
+
+    // Khôi phục hiển thị toàn bộ đồ thị khi bấm ra nền trống
+    function resetGraphFocus() {{
+        hoveredNodeId = null;
+        hoveredEdgeId = null;
+        hideHoverInspector();
+
+        var nodeUpdates = [];
+        rawNodes.forEach(function(n) {{
+            var isSeed = (n.level === 0 || n.layer === 'seed');
+            nodeUpdates.push({{
+                id: n.id,
+                opacity: 1.0,
+                borderWidth: isSeed ? 3.5 : (n.is_isolated ? 2.6 : 1.8),
+                shadow: {{ enabled: true, color: 'rgba(0,0,0,0.5)', size: 10, x:0, y:0 }}
+            }});
+        }});
+        nodes.update(nodeUpdates);
+
+        var edgeUpdates = [];
+        rawEdges.forEach(function(e) {{
+            edgeUpdates.push({{
+                id: e.id,
+                width: e.width,
+                color: e.color
+            }});
+        }});
+        edges.update(edgeUpdates);
+
+        if (isLineageTracingOn) {{
+            resetLineageHighlight();
         }}
     }}
 
@@ -1951,22 +2346,12 @@ class CiteNetAgent:
     network.on('click', function(params) {{
         if (params.nodes.length > 0) {{
             var nodeId = params.nodes[0];
-            hoveredNodeId = nodeId;
-            hoveredEdgeId = null;
-            updateHoverInspectorNode(nodeId);
             selectPaperFromTable(nodeId);
         }} else if (params.edges.length > 0) {{
             var edgeId = params.edges[0];
-            hoveredEdgeId = edgeId;
-            hoveredNodeId = null;
-            updateHoverInspectorEdge(edgeId);
+            focusEdgeLinkage(edgeId);
         }} else {{
-            hoveredNodeId = null;
-            hoveredEdgeId = null;
-            hideHoverInspector();
-            if (isLineageTracingOn) {{
-                resetLineageHighlight();
-            }}
+            resetGraphFocus();
         }}
     }});
 
@@ -2041,7 +2426,13 @@ class CiteNetAgent:
         }}
     }}
 
-    // Toggle Particle Photons & Pulsing Glow & Laser Beam Stream
+    // Toggle Particle Photons & Causal Arrow Motion & Pulsing Glow & Laser Beam Stream
+    function toggleArrowMotion() {{
+        isArrowsMotionOn = !isArrowsMotionOn;
+        var btn = document.getElementById('arrowMotionBtn');
+        if (btn) btn.className = isArrowsMotionOn ? 'hud-mini-btn active' : 'hud-mini-btn';
+        network.redraw();
+    }}
     function toggleParticles() {{
         isParticlesOn = !isParticlesOn;
         var btn = document.getElementById('particlesBtn');
@@ -2263,6 +2654,16 @@ class CiteNetAgent:
         }});
         edges.update(edgeUpdates);
 
+        // Filter cards across all dedicated views (Fishbone, Timeline, Quartile, Radar, Dendrogram, Matrix)
+        var allCards = document.querySelectorAll('.dedicated-paper-card');
+        allCards.forEach(function(card) {{
+            var nid = card.getAttribute('data-node-id');
+            if (nid) {{
+                var isVis = visibleNodeIds.has(nid);
+                card.style.display = isVis ? 'flex' : 'none';
+            }}
+        }});
+
         var badge = document.getElementById('layerFilterCountBadge');
         if (badge) {{
             badge.innerText = visibleNodeIds.size + '/' + rawNodes.length + ' bài';
@@ -2360,7 +2761,381 @@ class CiteNetAgent:
         edges.update(edgeUpdates);
     }}
 
-    // 10 ACADEMIC LAYOUT ENGINES HOẠT ĐỘNG HOÀN TOÀN ĐỘC LẬP TỪ TẬP DOI TRÍCH XUẤT
+    // HELPER: CREATE REUSABLE PAPER CARD HTML FOR DEDICATED INDEPENDENT ACADEMIC VIEWS
+    function createPaperCardHtml(n) {{
+        var p = metaDict[n.id] || {{}};
+        var isSeed = (p.level === 0 || p.layer === 'seed');
+        var isBack = (p.level < 0 || p.layer === 'backward');
+        var lvlTag = isSeed ? '★ F0 GỐC' : (isBack ? '🏛️ R' + Math.abs(p.level || 1) : '🚀 F' + (p.level || 1));
+        var lvlColor = isSeed ? '#EA4335' : (isBack ? '#A78BFA' : '#38BDF8');
+        var tierBadge = p.scopus_tier || 'Scopus Indexed';
+        var citesCount = p.citation_count || 0;
+        var rawTitle = p.title || 'Untitled Paper';
+        var cleanTitle = String(rawTitle).replace(/"/g, '&quot;');
+        var oaTag = (p.is_oa || p.pdf_url) ? '<span class="card-tier-tag" style="background:rgba(16,185,129,0.18); color:#34D399; border:1px solid rgba(16,185,129,0.35);">🔓 OA</span>' : '';
+        var doiBtn = (p.doi_url || p.doi) ? '<a href="' + (p.doi_url || ('https://doi.org/' + p.doi)) + '" target="_blank" onclick="event.stopPropagation();" style="color:var(--theme-accent); text-decoration:none; font-size:9.5px; font-weight:700; margin-left:auto;">DOI ↗</a>' : '';
+
+        return '<div class="dedicated-paper-card ' + (isSeed ? 'seed-card-glow' : '') + '" data-node-id="' + n.id + '" onclick="selectPaperFromTable(\\'' + n.id + '\\')" onmouseenter="updateHoverInspectorNode(\\'' + n.id + '\\')" onmouseleave="hideHoverInspector()">' +
+            '<div class="card-top-row">' +
+                '<span class="card-author-year"><b>' + (p.first_author || 'Author') + '</b> (' + (p.year || 'n.d.') + ')</span>' +
+                '<span class="card-cites-badge">★ ' + citesCount + ' tc</span>' +
+            '</div>' +
+            '<div class="card-title-text" title="' + cleanTitle + '">' + cleanTitle + '</div>' +
+            '<div class="card-meta-tags">' +
+                '<span class="card-layer-tag" style="background:' + lvlColor + '22; color:' + lvlColor + '; border:1px solid ' + lvlColor + '55;">' + lvlTag + '</span>' +
+                '<span class="card-tier-tag">' + tierBadge + '</span>' +
+                oaTag +
+                doiBtn +
+            '</div>' +
+        '</div>';
+    }}
+
+    // 1. DEDICATED ISHIKAWA FISHBONE VIEW ENGINE
+    function renderDedicatedFishboneView() {{
+        var fb = document.getElementById('view-fishbone-container');
+        if (!fb) return;
+
+        var seeds = rawNodes.filter(function(n) {{ return (n.level === 0 || n.layer === 'seed'); }});
+        var seedNode = seeds[0] || rawNodes[0];
+        var seedP = metaDict[seedNode.id] || {{}};
+
+        var f1List = rawNodes.filter(function(n) {{ return n.level === 1; }});
+        var f2List = rawNodes.filter(function(n) {{ return n.level === 2; }});
+        var f3List = rawNodes.filter(function(n) {{ return n.level >= 3 || (n.level > 0 && n.level !== 1 && n.level !== 2); }});
+
+        var r1List = rawNodes.filter(function(n) {{ return n.level === -1; }});
+        var r2List = rawNodes.filter(function(n) {{ return n.level === -2; }});
+        var r3List = rawNodes.filter(function(n) {{ return n.level <= -3 || (n.level < 0 && n.level !== -1 && n.level !== -2); }});
+
+        var html = '<div class="fishbone-wrapper">' +
+            '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">' +
+                '<div style="font-size:13px; font-weight:800; color:var(--theme-accent); text-transform:uppercase; letter-spacing:0.06em;">🐟 SƠ ĐỒ XƯƠNG CÁ HỌC THUẬT (ISHIKAWA KNOWLEDGE FISHBONE)</div>' +
+                '<div style="font-size:11px; color:var(--theme-text-dim);">Xương trên: <b>🚀 Kế Thừa (F1-F3)</b> | Sống lưng: <b>Đề tài hạt nhân (F0)</b> | Xương dưới: <b>🏛️ Cội Nguồn (R1-R3)</b></div>' +
+            '</div>' +
+            
+            '<!-- UPPER RIBS (FORWARD DERIVATIVE & EXTENSIONS) -->' +
+            '<div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:16px; margin-bottom:12px;">' +
+                '<div class="fishbone-rib-column">' +
+                    '<div class="fishbone-rib-header" style="background:rgba(56,189,248,0.15); color:#38BDF8; border:1px solid rgba(56,189,248,0.35);">' +
+                        '<span>🚀 F1: KẾ THỪA TRỰC TIẾP</span><span style="font-size:9.5px; opacity:0.8;">' + f1List.length + ' bài</span>' +
+                    '</div>' +
+                    '<div style="display:flex; flex-direction:column; gap:8px;">' +
+                        (f1List.length ? f1List.map(function(n){{ return createPaperCardHtml(n); }}).join('') : '<div style="color:var(--theme-text-dim); font-size:11px; font-style:italic; padding:6px;">Chưa có bài báo F1</div>') +
+                    '</div>' +
+                '</div>' +
+                '<div class="fishbone-rib-column">' +
+                    '<div class="fishbone-rib-header" style="background:rgba(52,211,153,0.15); color:#34D399; border:1px solid rgba(52,211,153,0.35);">' +
+                        '<span>🚀 F2: BƯỚC TIẾN PHÁI SINH</span><span style="font-size:9.5px; opacity:0.8;">' + f2List.length + ' bài</span>' +
+                    '</div>' +
+                    '<div style="display:flex; flex-direction:column; gap:8px;">' +
+                        (f2List.length ? f2List.map(function(n){{ return createPaperCardHtml(n); }}).join('') : '<div style="color:var(--theme-text-dim); font-size:11px; font-style:italic; padding:6px;">Chưa có bài báo F2</div>') +
+                    '</div>' +
+                '</div>' +
+                '<div class="fishbone-rib-column">' +
+                    '<div class="fishbone-rib-header" style="background:rgba(251,191,36,0.15); color:#FBBF24; border:1px solid rgba(251,191,36,0.35);">' +
+                        '<span>🚀 F3: CHÂN TRỜI MỞ RỘNG</span><span style="font-size:9.5px; opacity:0.8;">' + f3List.length + ' bài</span>' +
+                    '</div>' +
+                    '<div style="display:flex; flex-direction:column; gap:8px;">' +
+                        (f3List.length ? f3List.map(function(n){{ return createPaperCardHtml(n); }}).join('') : '<div style="color:var(--theme-text-dim); font-size:11px; font-style:italic; padding:6px;">Chưa có bài báo F3</div>') +
+                    '</div>' +
+                '</div>' +
+            '</div>' +
+
+            '<!-- CENTRAL MAIN SPINE & FISH HEAD -->' +
+            '<div style="display:flex; align-items:center; gap:14px; margin: 10px 0; padding:12px 16px; background:rgba(0,0,0,0.4); border-radius:14px; border:1px solid rgba(var(--theme-glow-rgb),0.2);">' +
+                '<div style="flex:1; height:6px; background:linear-gradient(90deg, #7C3AED 0%, #0284C7 50%, #EA4335 100%); border-radius:3px; box-shadow:0 0 12px var(--theme-glow); position:relative;">' +
+                    '<div style="position:absolute; top:-20px; left:10px; font-size:10px; color:#A78BFA; font-weight:700;">◀ CỘI NGUỒN LÝ THUYẾT</div>' +
+                    '<div style="position:absolute; top:-20px; right:10px; font-size:10px; color:#38BDF8; font-weight:700;">TIẾN HÓA KẾ THỪA ▶</div>' +
+                '</div>' +
+                '<div class="fishbone-seed-card" data-node-id="' + seedNode.id + '" onclick="selectPaperFromTable(\\'' + seedNode.id + '\\')" onmouseenter="updateHoverInspectorNode(\\'' + seedNode.id + '\\')" onmouseleave="hideHoverInspector()">' +
+                    '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">' +
+                        '<span style="font-size:10px; font-weight:800; color:#FF8A80; background:rgba(234,67,53,0.25); padding:2px 6px; border-radius:4px; border:1px solid #EA4335;">🔴 ĐẦU CÁ: TÂM ĐIỂM F0</span>' +
+                        '<span style="font-size:10.5px; color:#FDE047; font-weight:800;">★ ' + (seedP.citation_count || 0) + ' trích dẫn</span>' +
+                    '</div>' +
+                    '<div style="font-size:12px; font-weight:800; color:#FFFFFF; line-height:1.35; margin-bottom:4px;">' + (seedP.title || 'Seed Paper') + '</div>' +
+                    '<div style="font-size:10.5px; color:#FECDD3;">✍️ ' + (seedP.authors || seedP.first_author || 'Author') + ' (' + (seedP.year || 'n.d.') + ') • ' + (seedP.venue || 'Venue') + '</div>' +
+                '</div>' +
+            '</div>' +
+
+            '<!-- LOWER RIBS (BACKWARD THEORETICAL ROOTS) -->' +
+            '<div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:16px; margin-top:12px;">' +
+                '<div class="fishbone-rib-column">' +
+                    '<div class="fishbone-rib-header" style="background:rgba(124,58,237,0.15); color:#A78BFA; border:1px solid rgba(124,58,237,0.35);">' +
+                        '<span>🏛️ R1: NỀN TẢNG TRỰC TIẾP</span><span style="font-size:9.5px; opacity:0.8;">' + r1List.length + ' bài</span>' +
+                    '</div>' +
+                    '<div style="display:flex; flex-direction:column; gap:8px;">' +
+                        (r1List.length ? r1List.map(function(n){{ return createPaperCardHtml(n); }}).join('') : '<div style="color:var(--theme-text-dim); font-size:11px; font-style:italic; padding:6px;">Chưa có bài báo R1</div>') +
+                    '</div>' +
+                '</div>' +
+                '<div class="fishbone-rib-column">' +
+                    '<div class="fishbone-rib-header" style="background:rgba(99,102,241,0.15); color:#818CF8; border:1px solid rgba(99,102,241,0.35);">' +
+                        '<span>🏛️ R2: CỘI NGUỒN LÝ THUYẾT</span><span style="font-size:9.5px; opacity:0.8;">' + r2List.length + ' bài</span>' +
+                    '</div>' +
+                    '<div style="display:flex; flex-direction:column; gap:8px;">' +
+                        (r2List.length ? r2List.map(function(n){{ return createPaperCardHtml(n); }}).join('') : '<div style="color:var(--theme-text-dim); font-size:11px; font-style:italic; padding:6px;">Chưa có bài báo R2</div>') +
+                    '</div>' +
+                '</div>' +
+                '<div class="fishbone-rib-column">' +
+                    '<div class="fishbone-rib-header" style="background:rgba(67,56,202,0.15); color:#C084FC; border:1px solid rgba(67,56,202,0.35);">' +
+                        '<span>🏛️ R3: KINH ĐIỂN SÂU XA</span><span style="font-size:9.5px; opacity:0.8;">' + r3List.length + ' bài</span>' +
+                    '</div>' +
+                    '<div style="display:flex; flex-direction:column; gap:8px;">' +
+                        (r3List.length ? r3List.map(function(n){{ return createPaperCardHtml(n); }}).join('') : '<div style="color:var(--theme-text-dim); font-size:11px; font-style:italic; padding:6px;">Chưa có bài báo R3</div>') +
+                    '</div>' +
+                '</div>' +
+            '</div>' +
+        '</div>';
+
+        fb.innerHTML = html;
+    }}
+
+    // 2. DEDICATED HISTCITE CHRONOLOGICAL TIMELINE VIEW ENGINE
+    function renderDedicatedTimelineView() {{
+        var tl = document.getElementById('view-timeline-container');
+        if (!tl) return;
+
+        var yearMap = {{}};
+        for (var y = minYrVal; y <= maxYrVal; y++) {{
+            yearMap[y] = [];
+        }}
+        rawNodes.forEach(function(n) {{
+            var yr = n.year || 2020;
+            if (!yearMap[yr]) yearMap[yr] = [];
+            yearMap[yr].push(n);
+        }});
+
+        var activeYears = Object.keys(yearMap).map(Number).sort(function(a,b){{ return a - b; }});
+
+        var html = '<div style="display:flex; flex-direction:column; gap:12px; min-width:100%;">' +
+            '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">' +
+                '<div style="font-size:13px; font-weight:800; color:var(--theme-accent); text-transform:uppercase; letter-spacing:0.06em;">⏳ DÒNG THỜI GIAN TIẾN HÓA TRI THỨC (HISTCITE CHRONOLOGICAL TIMELINE)</div>' +
+                '<div style="font-size:11px; color:var(--theme-text-dim);">Giai đoạn: <b>' + minYrVal + ' ➔ ' + maxYrVal + '</b> (' + rawNodes.length + ' công trình)</div>' +
+            '</div>' +
+            '<div class="timeline-lanes-board">';
+
+        activeYears.forEach(function(yr) {{
+            var list = yearMap[yr] || [];
+            var totalCitesInYr = list.reduce(function(acc, item){{ return acc + (item.citations || 0); }}, 0);
+            
+            html += '<div class="timeline-year-col">' +
+                '<div class="timeline-year-header">' +
+                    '<span>📅 ' + yr + '</span>' +
+                    '<span style="font-size:10px; font-weight:700; color:#FDE047;">' + list.length + ' bài (' + totalCitesInYr + ' tc)</span>' +
+                '</div>' +
+                '<div style="display:flex; flex-direction:column; gap:8px; overflow-y:auto; max-height:calc(100vh - 240px);">' +
+                    (list.length ? list.map(function(n){{ return createPaperCardHtml(n); }}).join('') : '<div style="color:var(--theme-text-dim); font-size:10.5px; font-style:italic; padding:6px; text-align:center;">Trống</div>') +
+                '</div>' +
+            '</div>';
+        }});
+
+        html += '</div></div>';
+        tl.innerHTML = html;
+    }}
+
+    // 3. DEDICATED SCOPUS QUARTILE LANES VIEW ENGINE
+    function renderDedicatedQuartileView() {{
+        var qb = document.getElementById('view-quartile-container');
+        if (!qb) return;
+
+        var coreList = [];
+        var q1List = [];
+        var q2List = [];
+        var otherList = [];
+
+        rawNodes.forEach(function(n) {{
+            var p = metaDict[n.id] || {{}};
+            var tier = (p.scopus_tier || '').toLowerCase();
+            if (p.level === 0 || p.layer === 'seed') coreList.push(n);
+            else if (tier.indexOf('q1') !== -1) q1List.push(n);
+            else if (tier.indexOf('q2') !== -1) q2List.push(n);
+            else otherList.push(n);
+        }});
+
+        var html = '<div style="display:flex; flex-direction:column; gap:12px; min-width:100%;">' +
+            '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">' +
+                '<div style="font-size:13px; font-weight:800; color:var(--theme-accent); text-transform:uppercase; letter-spacing:0.06em;">📊 PHÂN LÀN THỨ HẠNG SCOPUS (QUARTILE LANES Q1-Q4)</div>' +
+                '<div style="font-size:11px; color:var(--theme-text-dim);">Xếp hạng tạp chí quốc tế & Chỉ số trích dẫn</div>' +
+            '</div>' +
+            '<div class="quartile-board-grid">' +
+                '<!-- COL 1: F0 CORE -->' +
+                '<div class="quartile-lane-col">' +
+                    '<div class="quartile-lane-header" style="background:rgba(234,67,53,0.18); color:#FF8A80; border:1px solid #EA4335;">' +
+                        '<span>🔴 TÂM ĐIỂM F0</span><span>' + coreList.length + ' bài</span>' +
+                    '</div>' +
+                    '<div style="display:flex; flex-direction:column; gap:8px;">' +
+                        coreList.map(function(n){{ return createPaperCardHtml(n); }}).join('') +
+                    '</div>' +
+                '</div>' +
+                '<!-- COL 2: SCOPUS Q1 -->' +
+                '<div class="quartile-lane-col">' +
+                    '<div class="quartile-lane-header" style="background:rgba(56,189,248,0.18); color:#38BDF8; border:1px solid #38BDF8;">' +
+                        '<span>🥇 SCOPUS Q1</span><span>' + q1List.length + ' bài</span>' +
+                    '</div>' +
+                    '<div style="display:flex; flex-direction:column; gap:8px; overflow-y:auto; max-height:calc(100vh - 240px);">' +
+                        (q1List.length ? q1List.map(function(n){{ return createPaperCardHtml(n); }}).join('') : '<div style="color:var(--theme-text-dim); font-size:10.5px; font-style:italic;">Không có bài báo</div>') +
+                    '</div>' +
+                '</div>' +
+                '<!-- COL 3: SCOPUS Q2 -->' +
+                '<div class="quartile-lane-col">' +
+                    '<div class="quartile-lane-header" style="background:rgba(52,211,153,0.18); color:#34D399; border:1px solid #34D399;">' +
+                        '<span>🥈 SCOPUS Q2</span><span>' + q2List.length + ' bài</span>' +
+                    '</div>' +
+                    '<div style="display:flex; flex-direction:column; gap:8px; overflow-y:auto; max-height:calc(100vh - 240px);">' +
+                        (q2List.length ? q2List.map(function(n){{ return createPaperCardHtml(n); }}).join('') : '<div style="color:var(--theme-text-dim); font-size:10.5px; font-style:italic;">Không có bài báo</div>') +
+                    '</div>' +
+                '</div>' +
+                '<!-- COL 4: SCOPUS Q3-Q4 & OTHER -->' +
+                '<div class="quartile-lane-col">' +
+                    '<div class="quartile-lane-header" style="background:rgba(245,158,11,0.18); color:#FBBF24; border:1px solid #F59E0B;">' +
+                        '<span>🥉 Q3-Q4 & KHÁC</span><span>' + otherList.length + ' bài</span>' +
+                    '</div>' +
+                    '<div style="display:flex; flex-direction:column; gap:8px; overflow-y:auto; max-height:calc(100vh - 240px);">' +
+                        (otherList.length ? otherList.map(function(n){{ return createPaperCardHtml(n); }}).join('') : '<div style="color:var(--theme-text-dim); font-size:10.5px; font-style:italic;">Không có bài báo</div>') +
+                    '</div>' +
+                '</div>' +
+            '</div></div>';
+
+        qb.innerHTML = html;
+    }}
+
+    // 4. DEDICATED CONCENTRIC POLAR RADAR VIEW ENGINE
+    function renderDedicatedRadarView() {{
+        var rd = document.getElementById('view-radar-container');
+        if (!rd) return;
+
+        var seedNode = rawNodes.find(function(n){{ return (n.level === 0 || n.layer === 'seed'); }}) || rawNodes[0];
+        var ring1 = rawNodes.filter(function(n){{ return n.level === 1 || n.level === -1; }});
+        var ring2 = rawNodes.filter(function(n){{ return n.level === 2 || n.level === -2; }});
+        var ring3 = rawNodes.filter(function(n){{ return n.level >= 3 || n.level <= -3 || (n.id !== seedNode.id && n.level !== 1 && n.level !== -1 && n.level !== 2 && n.level !== -2); }});
+
+        var html = '<div class="radar-orbit-board">' +
+            '<div style="display:flex; justify-content:space-between; align-items:center; width:100%;">' +
+                '<div style="font-size:13px; font-weight:800; color:var(--theme-accent); text-transform:uppercase; letter-spacing:0.06em;">📡 QUỸ ĐẠO RADAR ĐỒNG TÂM (CONCENTRIC POLAR RADAR)</div>' +
+                '<div style="font-size:11px; color:var(--theme-text-dim);">Tâm điểm ➔ Vành đai thế hệ kế thừa & cội nguồn</div>' +
+            '</div>' +
+            '<!-- CENTER HUB -->' +
+            '<div style="width:100%; max-width:480px; text-align:center;">' +
+                '<div style="font-size:10px; font-weight:800; color:#FF8A80; margin-bottom:4px;">🎯 TÂM ĐIỂM RADAR (ORBITAL CORE)</div>' +
+                (seedNode ? createPaperCardHtml(seedNode) : '') +
+            '</div>' +
+            '<!-- RINGS GRID -->' +
+            '<div class="radar-rings-grid">' +
+                '<div class="fishbone-rib-column">' +
+                    '<div class="fishbone-rib-header" style="background:rgba(56,189,248,0.15); color:#38BDF8; border:1px solid #38BDF8;">' +
+                        '<span>📡 VÀNH ĐAI 1: TRỰC TIẾP (F1/R1)</span><span>' + ring1.length + ' bài</span>' +
+                    '</div>' +
+                    '<div style="display:flex; flex-direction:column; gap:8px;">' +
+                        ring1.map(function(n){{ return createPaperCardHtml(n); }}).join('') +
+                    '</div>' +
+                '</div>' +
+                '<div class="fishbone-rib-column">' +
+                    '<div class="fishbone-rib-header" style="background:rgba(192,132,252,0.15); color:#C084FC; border:1px solid #C084FC;">' +
+                        '<span>📡 VÀNH ĐAI 2: THẾ HỆ 2 (F2/R2)</span><span>' + ring2.length + ' bài</span>' +
+                    '</div>' +
+                    '<div style="display:flex; flex-direction:column; gap:8px;">' +
+                        ring2.map(function(n){{ return createPaperCardHtml(n); }}).join('') +
+                    '</div>' +
+                '</div>' +
+                '<div class="fishbone-rib-column">' +
+                    '<div class="fishbone-rib-header" style="background:rgba(245,158,11,0.15); color:#FBBF24; border:1px solid #F59E0B;">' +
+                        '<span>📡 VÀNH ĐAI 3: MỞ RỘNG (F3/R3)</span><span>' + ring3.length + ' bài</span>' +
+                    '</div>' +
+                    '<div style="display:flex; flex-direction:column; gap:8px;">' +
+                        ring3.map(function(n){{ return createPaperCardHtml(n); }}).join('') +
+                    '</div>' +
+                '</div>' +
+            '</div></div>';
+
+        rd.innerHTML = html;
+    }}
+
+    // 5. DEDICATED DENDROGRAM HIERARCHY TREE VIEW ENGINE
+    function renderDedicatedDendrogramView() {{
+        var dg = document.getElementById('view-dendrogram-container');
+        if (!dg) return;
+
+        var seeds = rawNodes.filter(function(n){{ return (n.level === 0 || n.layer === 'seed'); }});
+        var backwardPapers = rawNodes.filter(function(n){{ return (n.level < 0 || n.layer === 'backward'); }});
+        var forwardPapers = rawNodes.filter(function(n){{ return (n.level > 0 || n.layer === 'forward'); }});
+
+        var html = '<div style="display:flex; flex-direction:column; gap:12px; min-width:100%;">' +
+            '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">' +
+                '<div style="font-size:13px; font-weight:800; color:var(--theme-accent); text-transform:uppercase; letter-spacing:0.06em;">🌿 CÂY THƯ MỤC / PHÂN BẬC BỨC XẠ (DENDROGRAM TREE)</div>' +
+                '<div style="font-size:11px; color:var(--theme-text-dim);">Cội nguồn ➔ Gốc trung tâm ➔ Tỏa nhánh kế thừa</div>' +
+            '</div>' +
+            '<div class="dendrogram-tree-board">' +
+                '<div class="fishbone-rib-column">' +
+                    '<div class="fishbone-rib-header" style="background:rgba(124,58,237,0.18); color:#A78BFA; border:1px solid #7C3AED;">' +
+                        '<span>🏛️ NHÁNH CỘI NGUỒN (R1-R3)</span><span>' + backwardPapers.length + ' bài</span>' +
+                    '</div>' +
+                    '<div style="display:flex; flex-direction:column; gap:8px;">' +
+                        (backwardPapers.length ? backwardPapers.map(function(n){{ return createPaperCardHtml(n); }}).join('') : '<div style="color:var(--theme-text-dim); font-size:10.5px; font-style:italic;">Trống</div>') +
+                    '</div>' +
+                '</div>' +
+                '<div class="fishbone-rib-column">' +
+                    '<div class="fishbone-rib-header" style="background:rgba(234,67,53,0.18); color:#FF8A80; border:1px solid #EA4335;">' +
+                        '<span>🔴 ĐỀ TÀI GỐC F0</span><span>' + seeds.length + ' bài</span>' +
+                    '</div>' +
+                    '<div style="display:flex; flex-direction:column; gap:8px;">' +
+                        seeds.map(function(n){{ return createPaperCardHtml(n); }}).join('') +
+                    '</div>' +
+                '</div>' +
+                '<div class="fishbone-rib-column">' +
+                    '<div class="fishbone-rib-header" style="background:rgba(56,189,248,0.18); color:#38BDF8; border:1px solid #38BDF8;">' +
+                        '<span>🚀 NHÁNH KẾ THỪA (F1-F3)</span><span>' + forwardPapers.length + ' bài</span>' +
+                    '</div>' +
+                    '<div style="display:flex; flex-direction:column; gap:8px;">' +
+                        (forwardPapers.length ? forwardPapers.map(function(n){{ return createPaperCardHtml(n); }}).join('') : '<div style="color:var(--theme-text-dim); font-size:10.5px; font-style:italic;">Trống</div>') +
+                    '</div>' +
+                '</div>' +
+            '</div></div>';
+
+        dg.innerHTML = html;
+    }}
+
+    // 6. DEDICATED TOPIC & JOURNAL MATRIX VIEW ENGINE
+    function renderDedicatedMatrixView() {{
+        var mx = document.getElementById('view-matrix-container');
+        if (!mx) return;
+
+        var venueGroups = {{}};
+        rawNodes.forEach(function(n) {{
+            var p = metaDict[n.id] || {{}};
+            var v = p.venue || 'Khác / Working Papers';
+            if (!venueGroups[v]) venueGroups[v] = [];
+            venueGroups[v].push(n);
+        }});
+
+        var sortedVenues = Object.keys(venueGroups).sort(function(a,b){{
+            return venueGroups[b].length - venueGroups[a].length;
+        }});
+
+        var html = '<div style="display:flex; flex-direction:column; gap:12px; min-width:100%;">' +
+            '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">' +
+                '<div style="font-size:13px; font-weight:800; color:var(--theme-accent); text-transform:uppercase; letter-spacing:0.06em;">▦ MA TRẬN CỤM CHỦ ĐỀ & TẠP CHÍ (CLUSTERED TOPIC MATRIX)</div>' +
+                '<div style="font-size:11px; color:var(--theme-text-dim);">' + sortedVenues.length + ' Tạp chí & Diễn đàn học thuật</div>' +
+            '</div>' +
+            '<div class="topic-matrix-board">';
+
+        sortedVenues.forEach(function(venueName) {{
+            var list = venueGroups[venueName] || [];
+            var totalCites = list.reduce(function(acc, item){{ return acc + (item.citations || 0); }}, 0);
+            html += '<div class="quartile-lane-col">' +
+                '<div class="quartile-lane-header" style="background:rgba(var(--theme-glow-rgb),0.12); color:var(--theme-accent); border:1px solid rgba(var(--theme-glow-rgb),0.25);">' +
+                    '<span style="font-size:11px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:180px;" title="' + venueName + '">🏛️ ' + venueName + '</span>' +
+                    '<span style="font-size:10px; font-weight:700; color:#FDE047;">' + list.length + ' bài (' + totalCites + ' tc)</span>' +
+                '</div>' +
+                '<div style="display:flex; flex-direction:column; gap:8px;">' +
+                    list.map(function(n){{ return createPaperCardHtml(n); }}).join('') +
+                '</div>' +
+            '</div>';
+        }});
+
+        html += '</div></div>';
+        mx.innerHTML = html;
+    }}
+
+    // 10 ACADEMIC LAYOUT ENGINES HOẠT ĐỘNG TOÀN DIỆN TRÊN CANVAS MẠNG LƯỢNG TỬ
     function switchLayoutMode(mode) {{
         currentLayoutMode = mode;
         if (network && network.stopSimulation) {{
@@ -2392,134 +3167,213 @@ class CiteNetAgent:
             if (activeB) activeB.classList.add('active');
         }}
 
-        // Nhóm bài báo theo năm để chống đè trùng (Anti-collision)
+        var net = document.getElementById('network-container');
+        if (net) net.style.display = 'block';
+
+        var dedicatedContainers = [
+            'view-timeline-container',
+            'view-radar-container',
+            'view-fishbone-container',
+            'view-dendrogram-container',
+            'view-quartile-container',
+            'view-matrix-container'
+        ];
+        dedicatedContainers.forEach(function(cid) {{
+            var el = document.getElementById(cid);
+            if (el) el.style.display = 'none';
+        }});
+
         var yearGroups = {{}};
         rawNodes.forEach(function(n) {{
             var yr = n.year || 2020;
             if (!yearGroups[yr]) yearGroups[yr] = [];
             yearGroups[yr].push(n.id);
         }});
-
         var yrSpan = Math.max(1, maxYrVal - minYrVal);
         var edgeSmoothType = 'curvedCW';
         var edgeRoundness = 0.22;
 
+        // Thuật toán so le trục Y chống đè trùng năm (Anti-collision staggering)
+        var getStaggerY = function(nodeId, yr) {{
+            var group = yearGroups[yr] || [nodeId];
+            var idxInYr = group.indexOf(nodeId);
+            var totalInYr = group.length;
+            return (idxInYr - (totalInYr - 1) / 2) * 90;
+        }};
+
         if (mode === 'timeline') {{
-            // 1. DÒNG THỜI GIAN TIẾN HÓA THẲNG NGANG (HISTCITE EVOLUTION)
+            // 2. ⏳ DÒNG THỜI GIAN TUYẾN TÍNH (HISTCITE TIMELINE)
+            network.setOptions({{ physics: {{ enabled: false }}, layout: {{ hierarchical: false }} }});
+            edgeSmoothType = 'curvedCW';
+            edgeRoundness = 0.20;
+
+            var updates = [];
+            rawNodes.forEach(function(n) {{
+                var yr = n.year || 2020;
+                var xPos = (yr - minYrVal) * 260 - ((maxYrVal - minYrVal) * 130);
+                var yPos = getStaggerY(n.id, yr);
+                updates.push({{ id: n.id, x: xPos, y: yPos, physics: false, level: undefined }});
+            }});
+            nodes.update(updates);
+
+        }} else if (mode === 'fishbone') {{
+            // 4. 🐟 SƠ ĐỒ XƯƠNG CÁ HỌC THUẬT (ISHIKAWA FISHBONE)
+            network.setOptions({{ physics: {{ enabled: false }}, layout: {{ hierarchical: false }} }});
+            edgeSmoothType = 'curvedCW';
+            edgeRoundness = 0.24;
+
+            var updates = [];
+            var seeds = rawNodes.filter(function(n) {{ return (n.level === 0 || n.layer === 'seed'); }});
+            var seedNode = seeds[0] || rawNodes[0];
+
+            var f1List = rawNodes.filter(function(n) {{ return n.level === 1; }});
+            var f2List = rawNodes.filter(function(n) {{ return n.level === 2; }});
+            var f3List = rawNodes.filter(function(n) {{ return n.level >= 3 || (n.level > 0 && n.level !== 1 && n.level !== 2); }});
+
+            var r1List = rawNodes.filter(function(n) {{ return n.level === -1; }});
+            var r2List = rawNodes.filter(function(n) {{ return n.level === -2; }});
+            var r3List = rawNodes.filter(function(n) {{ return n.level <= -3 || (n.level < 0 && n.level !== -1 && n.level !== -2); }});
+
+            // Tâm điểm F0 ở đầu cá (Head of Fish)
+            if (seedNode) {{
+                updates.push({{ id: seedNode.id, x: 260, y: 0, physics: false, level: undefined }});
+            }}
+            seeds.slice(1).forEach(function(n, i) {{
+                updates.push({{ id: n.id, x: 260 + (i + 1) * 75, y: 0, physics: false, level: undefined }});
+            }});
+
+            // Xương trên: Kế thừa (F1, F2, F3) chéo lên trên Y < 0 (+45 độ)
+            f1List.forEach(function(n, i) {{
+                var x = 80 - (i * 55);
+                var y = -140 - ((i % 3) * 60);
+                updates.push({{ id: n.id, x: x, y: y, physics: false, level: undefined }});
+            }});
+            f2List.forEach(function(n, i) {{
+                var x = -140 - (i * 55);
+                var y = -170 - ((i % 3) * 60);
+                updates.push({{ id: n.id, x: x, y: y, physics: false, level: undefined }});
+            }});
+            f3List.forEach(function(n, i) {{
+                var x = -360 - (i * 55);
+                var y = -200 - ((i % 3) * 60);
+                updates.push({{ id: n.id, x: x, y: y, physics: false, level: undefined }});
+            }});
+
+            // Xương dưới: Cội nguồn (R1, R2, R3) chéo xuống dưới Y > 0 (-45 độ)
+            r1List.forEach(function(n, i) {{
+                var x = 80 - (i * 55);
+                var y = 140 + ((i % 3) * 60);
+                updates.push({{ id: n.id, x: x, y: y, physics: false, level: undefined }});
+            }});
+            r2List.forEach(function(n, i) {{
+                var x = -140 - (i * 55);
+                var y = 170 + ((i % 3) * 60);
+                updates.push({{ id: n.id, x: x, y: y, physics: false, level: undefined }});
+            }});
+            r3List.forEach(function(n, i) {{
+                var x = -360 - (i * 55);
+                var y = 200 + ((i % 3) * 60);
+                updates.push({{ id: n.id, x: x, y: y, physics: false, level: undefined }});
+            }});
+
+            nodes.update(updates);
+
+        }} else if (mode === 'radar') {{
+            // 3. 📡 QUỸ ĐẠO RADAR ĐỒNG TÂM (CONCENTRIC POLAR RADAR)
             network.setOptions({{ physics: {{ enabled: false }}, layout: {{ hierarchical: false }} }});
             edgeSmoothType = 'curvedCW';
             edgeRoundness = 0.25;
 
             var updates = [];
-            rawNodes.forEach(function(n) {{
-                var yr = n.year || 2020;
-                var listInYr = yearGroups[yr] || [n.id];
-                var idxInYr = listInYr.indexOf(n.id);
-                var totalInYr = listInYr.length;
-                var xPos = (yr - minYrVal) * 260 - ((maxYrVal - minYrVal) * 130);
-                var yOffset = (idxInYr - (totalInYr - 1) / 2) * 95 + ((idxInYr % 2 === 0) ? 14 : -14);
-                updates.push({{ id: n.id, x: xPos, y: yOffset, physics: false, level: undefined }});
+            var seeds = rawNodes.filter(function(n) {{ return (n.level === 0 || n.layer === 'seed'); }});
+            var ring1 = rawNodes.filter(function(n) {{ return n.level === 1 || n.level === -1; }});
+            var ring2 = rawNodes.filter(function(n) {{ return n.level === 2 || n.level === -2; }});
+            var ring3 = rawNodes.filter(function(n) {{ return n.level >= 3 || n.level <= -3 || (!seeds.includes(n) && !ring1.includes(n) && !ring2.includes(n)); }});
+
+            seeds.forEach(function(n, i) {{
+                updates.push({{ id: n.id, x: (i * 60) - ((seeds.length - 1) * 30), y: 0, physics: false, level: undefined }});
             }});
+
+            var c1 = ring1.length || 1;
+            ring1.forEach(function(n, i) {{
+                var angle = (i / c1) * 2 * Math.PI;
+                var r = 200;
+                updates.push({{ id: n.id, x: Math.round(r * Math.cos(angle)), y: Math.round(r * Math.sin(angle)), physics: false, level: undefined }});
+            }});
+
+            var c2 = ring2.length || 1;
+            ring2.forEach(function(n, i) {{
+                var angle = (i / c2) * 2 * Math.PI + 0.35;
+                var r = 380;
+                updates.push({{ id: n.id, x: Math.round(r * Math.cos(angle)), y: Math.round(r * Math.sin(angle)), physics: false, level: undefined }});
+            }});
+
+            var c3 = ring3.length || 1;
+            ring3.forEach(function(n, i) {{
+                var angle = (i / c3) * 2 * Math.PI + 0.7;
+                var r = 540;
+                updates.push({{ id: n.id, x: Math.round(r * Math.cos(angle)), y: Math.round(r * Math.sin(angle)), physics: false, level: undefined }});
+            }});
+
             nodes.update(updates);
 
-        }} else if (mode === 'radar') {{
-            // 2. QUỸ ĐẠO RADAR ĐỒNG TÂM (CONCENTRIC POLAR RADAR)
+        }} else if (mode === 'quartile') {{
+            // 8. 📊 PHÂN LÀN SCOPUS QUARTILE LANES (Q1-Q4)
             network.setOptions({{ physics: {{ enabled: false }}, layout: {{ hierarchical: false }} }});
             edgeSmoothType = 'curvedCW';
-            edgeRoundness = 0.30;
+            edgeRoundness = 0.22;
 
-            var updates = [];
-            var seedNode = rawNodes.find(function(n) {{ return (n.level === 0 || n.layer === 'seed'); }}) || rawNodes[0];
-            var nonSeeds = rawNodes.filter(function(n) {{ return n.id !== (seedNode ? seedNode.id : ''); }});
-            
-            if (seedNode) {{
-                updates.push({{ id: seedNode.id, x: 0, y: 0, physics: false, level: undefined }});
-            }}
+            var coreList = [];
+            var q1List = [];
+            var q2List = [];
+            var otherList = [];
 
-            nonSeeds.forEach(function(n, idx) {{
-                var yr = n.year || 2020;
-                var yrNorm = (yr - minYrVal) / yrSpan;
-                var ringRadius = 180 + yrNorm * 380;
-                
-                var listInYr = yearGroups[yr] || [n.id];
-                var idxInYr = listInYr.indexOf(n.id);
-                var totalInYr = listInYr.length;
-                
-                var baseAngle = ((idx + 0.5) / nonSeeds.length) * 2 * Math.PI;
-                var angleOffset = (idxInYr - (totalInYr - 1) / 2) * (Math.PI / 10);
-                var finalAngle = baseAngle + angleOffset;
-
-                updates.push({{
-                    id: n.id,
-                    x: Math.round(ringRadius * Math.cos(finalAngle)),
-                    y: Math.round(ringRadius * Math.sin(finalAngle)),
-                    physics: false,
-                    level: undefined
-                }});
-            }});
-            nodes.update(updates);
-
-        }} else if (mode === 'fishbone') {{
-            // 3. SƠ ĐỒ XƯƠNG CÁ HỌC THUẬT ĐỘC LẬP (ISHIKAWA FISHBONE)
-            network.setOptions({{ physics: {{ enabled: false }}, layout: {{ hierarchical: false }} }});
-            edgeSmoothType = 'continuous';
-            edgeRoundness = 0.15;
-
-            var updates = [];
             rawNodes.forEach(function(n) {{
-                var yr = n.year || 2020;
-                var xPos = (yr - minYrVal) * 250 - ((maxYrVal - minYrVal) * 125);
-                var isSeed = (n.level === 0 || n.layer === 'seed');
-                var isBack = (n.level < 0 || n.layer === 'backward');
-                
-                var listInYr = yearGroups[yr] || [n.id];
-                var idxInYr = listInYr.indexOf(n.id);
-                var rankDist = 85 + idxInYr * 80;
+                var p = metaDict[n.id] || {{}};
+                var tier = (p.scopus_tier || '').toLowerCase();
+                if (p.level === 0 || p.layer === 'seed') coreList.push(n);
+                else if (tier.indexOf('q1') !== -1) q1List.push(n);
+                else if (tier.indexOf('q2') !== -1) q2List.push(n);
+                else otherList.push(n);
+            }});
 
-                if (isSeed) {{
-                    updates.push({{ id: n.id, x: 0, y: 0, physics: false, level: undefined }});
-                }} else if (isBack) {{
-                    // Xương cội nguồn bên dưới (hướng chéo 45 độ về phía trước)
-                    updates.push({{ id: n.id, x: xPos - (rankDist * 0.7), y: rankDist, physics: false, level: undefined }});
-                }} else {{
-                    // Xương kế thừa bên trên (hướng chéo 45 độ về phía sau)
-                    updates.push({{ id: n.id, x: xPos + (rankDist * 0.7), y: -rankDist, physics: false, level: undefined }});
-                }}
+            var updates = [];
+            coreList.forEach(function(n, i) {{
+                updates.push({{ id: n.id, x: -480, y: (i - (coreList.length - 1) / 2) * 95, physics: false, level: undefined }});
+            }});
+            q1List.forEach(function(n, i) {{
+                updates.push({{ id: n.id, x: -160, y: (i - (q1List.length - 1) / 2) * 80, physics: false, level: undefined }});
+            }});
+            q2List.forEach(function(n, i) {{
+                updates.push({{ id: n.id, x: 160, y: (i - (q2List.length - 1) / 2) * 80, physics: false, level: undefined }});
+            }});
+            otherList.forEach(function(n, i) {{
+                updates.push({{ id: n.id, x: 480, y: (i - (otherList.length - 1) / 2) * 80, physics: false, level: undefined }});
             }});
             nodes.update(updates);
 
         }} else if (mode === 'dendrogram') {{
-            // 4. CÂY THƯ MỤC / PHÂN BẬC BỨC XẠ (DENDROGRAM TREE)
+            // 5. 🌿 CÂY THƯ MỤC PHÂN NHÁNH (DENDROGRAM TREE)
             network.setOptions({{ physics: {{ enabled: false }}, layout: {{ hierarchical: false }} }});
-            edgeSmoothType = 'cubicBezier';
-            edgeRoundness = 0.35;
+            edgeSmoothType = 'curvedCW';
+            edgeRoundness = 0.22;
+
+            var r2List = rawNodes.filter(function(n) {{ return n.level <= -2 || (n.level < 0 && n.level !== -1); }});
+            var r1List = rawNodes.filter(function(n) {{ return n.level === -1; }});
+            var f0List = rawNodes.filter(function(n) {{ return n.level === 0 || n.layer === 'seed'; }});
+            var f1List = rawNodes.filter(function(n) {{ return n.level === 1; }});
+            var f2List = rawNodes.filter(function(n) {{ return n.level >= 2 || (n.level > 0 && n.level !== 1); }});
 
             var updates = [];
-            var seeds = rawNodes.filter(function(n) {{ return (n.level === 0 || n.layer === 'seed'); }});
-            var backwardPapers = rawNodes.filter(function(n) {{ return (n.level < 0 || n.layer === 'backward'); }});
-            var forwardPapers = rawNodes.filter(function(n) {{ return (n.level > 0 || n.layer === 'forward'); }});
-
-            seeds.forEach(function(n, i) {{
-                updates.push({{ id: n.id, x: 0, y: (i * 90) - ((seeds.length - 1) * 45), physics: false, level: undefined }});
-            }});
-
-            backwardPapers.forEach(function(n, i) {{
-                var lvl = Math.abs(n.level || 1);
-                var xPos = - (lvl * 260);
-                var yOffset = (i - (backwardPapers.length - 1) / 2) * 85 + ((i % 2 === 0) ? 12 : -12);
-                updates.push({{ id: n.id, x: xPos, y: yOffset, physics: false, level: undefined }});
-            }});
-
-            forwardPapers.forEach(function(n, j) {{
-                var lvl = Math.abs(n.level || 1);
-                var xPos = (lvl * 260);
-                var yOffset = (j - (forwardPapers.length - 1) / 2) * 85 + ((j % 2 === 0) ? 12 : -12);
-                updates.push({{ id: n.id, x: xPos, y: yOffset, physics: false, level: undefined }});
-            }});
+            r2List.forEach(function(n, i) {{ updates.push({{ id: n.id, x: -520, y: (i - (r2List.length - 1) / 2) * 85, physics: false, level: undefined }}); }});
+            r1List.forEach(function(n, i) {{ updates.push({{ id: n.id, x: -260, y: (i - (r1List.length - 1) / 2) * 85, physics: false, level: undefined }}); }});
+            f0List.forEach(function(n, i) {{ updates.push({{ id: n.id, x: 0, y: (i - (f0List.length - 1) / 2) * 95, physics: false, level: undefined }}); }});
+            f1List.forEach(function(n, i) {{ updates.push({{ id: n.id, x: 260, y: (i - (f1List.length - 1) / 2) * 85, physics: false, level: undefined }}); }});
+            f2List.forEach(function(n, i) {{ updates.push({{ id: n.id, x: 520, y: (i - (f2List.length - 1) / 2) * 85, physics: false, level: undefined }}); }});
             nodes.update(updates);
 
         }} else if (mode === 'hierarchical') {{
-            // 5. CÂY PHẢ HỆ HƯỚNG NGỌN CẤU TRÚC (CITESPACE DAG TREE)
+            // 6. 🌳 CÂY PHÂN CẤP CITESPACE (DAG HIERARCHICAL TREE)
             var updates = [];
             rawNodes.forEach(function(n) {{
                 var lvl = 3;
@@ -2540,51 +3394,34 @@ class CiteNetAgent:
             }});
 
         }} else if (mode === 'matrix') {{
-            // 6. MA TRẬN CỤM CHỦ ĐỀ & TẠP CHÍ (CLUSTERED TOPIC MATRIX)
-            network.setOptions({{ physics: {{ enabled: false }}, layout: {{ hierarchical: false }} }});
-            edgeSmoothType = 'curvedCW';
-            edgeRoundness = 0.20;
-
-            var updates = [];
-            var cols = Math.ceil(Math.sqrt(rawNodes.length));
-            rawNodes.forEach(function(n, idx) {{
-                var row = Math.floor(idx / cols);
-                var col = idx % cols;
-                var xPos = (col - (cols - 1) / 2) * 220;
-                var yPos = (row - (Math.ceil(rawNodes.length / cols) - 1) / 2) * 160;
-                updates.push({{ id: n.id, x: xPos, y: yPos, physics: false, level: undefined }});
-            }});
-            nodes.update(updates);
-
-        }} else if (mode === 'quartile') {{
-            // 8. PHÂN LÀN THỨ HẠNG SCOPUS Q1-Q4 (SCOPUS QUARTILE LANES)
+            // 7. ▦ MA TRẬN CỤM CHỦ ĐỀ & TẠP CHÍ (CLUSTERED MATRIX)
             network.setOptions({{ physics: {{ enabled: false }}, layout: {{ hierarchical: false }} }});
             edgeSmoothType = 'curvedCW';
             edgeRoundness = 0.22;
 
-            var lanes = {{ core: [], q1: [], q2: [], other: [] }};
+            var venueGroups = {{}};
             rawNodes.forEach(function(n) {{
                 var p = metaDict[n.id] || {{}};
-                var tier = (p.scopus_tier || '').toLowerCase();
-                if (p.level === 0 || p.layer === 'seed') lanes.core.push(n.id);
-                else if (tier.indexOf('q1') !== -1) lanes.q1.push(n.id);
-                else if (tier.indexOf('q2') !== -1) lanes.q2.push(n.id);
-                else lanes.other.push(n.id);
+                var v = p.venue || 'Khác';
+                if (!venueGroups[v]) venueGroups[v] = [];
+                venueGroups[v].push(n);
             }});
+            var sortedVenues = Object.keys(venueGroups).sort(function(a,b){{ return venueGroups[b].length - venueGroups[a].length; }});
 
-            var laneX = {{ core: -480, q1: -160, q2: 160, other: 480 }};
             var updates = [];
-            ['core', 'q1', 'q2', 'other'].forEach(function(k) {{
-                var list = lanes[k];
-                list.forEach(function(id, idx) {{
-                    var yOffset = (idx - (list.length - 1) / 2) * 95 + ((idx % 2 === 0) ? 14 : -14);
-                    updates.push({{ id: id, x: laneX[k], y: yOffset, physics: false, level: undefined }});
+            var colCount = sortedVenues.length || 1;
+            sortedVenues.forEach(function(vName, cIdx) {{
+                var list = venueGroups[vName] || [];
+                var xPos = -480 + (cIdx / Math.max(1, colCount - 1)) * 960;
+                list.forEach(function(n, rIdx) {{
+                    var yPos = (rIdx - (list.length - 1) / 2) * 85;
+                    updates.push({{ id: n.id, x: xPos, y: yPos, physics: false, level: undefined }});
                 }});
             }});
             nodes.update(updates);
 
         }} else if (mode === 'diamond') {{
-            // 9. MẶT PHẲNG KIM CƯƠNG ĐỐI XỨNG (DUAL-DIAMOND HORIZON)
+            // 9. 💎 KIM CƯƠNG ĐỒNG TÂM (CONCENTRIC DIAMOND)
             network.setOptions({{ physics: {{ enabled: false }}, layout: {{ hierarchical: false }} }});
             edgeSmoothType = 'curvedCW';
             edgeRoundness = 0.25;
@@ -2616,7 +3453,7 @@ class CiteNetAgent:
             nodes.update(updates);
 
         }} else if (mode === 'fanchart') {{
-            // 10. QUẠT NAN PHẢ HỆ TỎA TRÒN 180 ĐỘ (ANCESTRY FAN CHART)
+            // 10. 🪭 BIỂU ĐỒ CÁNH QUẠT (FAN CHART)
             network.setOptions({{ physics: {{ enabled: false }}, layout: {{ hierarchical: false }} }});
             edgeSmoothType = 'curvedCW';
             edgeRoundness = 0.25;
@@ -2638,7 +3475,7 @@ class CiteNetAgent:
             nodes.update(updates);
 
         }} else {{
-            // 7. MẠNG LƯỚI ĐỘNG HỌC LƯỢNG TỬ (FORCE-DIRECTED QUANTUM)
+            // 1. 🕸️ MẠNG LỰC LƯỢNG TỬ (FORCE-DIRECTED QUANTUM - MẶC ĐỊNH)
             network.setOptions({{ layout: {{ hierarchical: false }} }});
             var updates = [];
             rawNodes.forEach(function(n) {{ updates.push({{ id: n.id, physics: true, level: undefined }}); }});
@@ -2646,7 +3483,6 @@ class CiteNetAgent:
             network.setOptions(forceOptions);
         }}
 
-        // Đồng bộ độ uốn cong mũi tên theo từng chế độ bố cục
         if (mode !== 'hierarchical') {{
             var edgeCurveUpdates = rawEdges.map(function(e) {{
                 return {{
@@ -2656,9 +3492,8 @@ class CiteNetAgent:
             }});
             edges.update(edgeCurveUpdates);
         }}
-
-        applyGraphFilters();
         setTimeout(fitView, 250);
+        applyGraphFilters();
     }}
 
     // Canvas Background Guides Độc Lập Cho Từng Bố Cục Học Thuật (beforeDrawing)
@@ -2668,15 +3503,15 @@ class CiteNetAgent:
             ctx.save();
             ctx.setLineDash([6, 6]);
             ctx.lineWidth = 1.2;
-            [180, 280, 380, 480, 560].forEach(function(r, idx) {{
-                ctx.strokeStyle = 'rgba(56, 189, 248, ' + (0.25 - idx * 0.03) + ')';
+            [200, 380, 540].forEach(function(r, idx) {{
+                ctx.strokeStyle = 'rgba(56, 189, 248, ' + (0.28 - idx * 0.05) + ')';
                 ctx.beginPath();
                 ctx.arc(0, 0, r, 0, 2 * Math.PI, false);
                 ctx.stroke();
             }});
             ctx.font = 'bold 11px JetBrains Mono, monospace';
             ctx.fillStyle = '#38BDF8';
-            ctx.fillText('📡 RADAR RANGE • 180px ➔ 560px', 10, -570);
+            ctx.fillText('📡 QUỸ ĐẠO RADAR • VÀNH 1 (F1/R1) ➔ VÀNH 2 (F2/R2) ➔ VÀNH 3 (MỞ RỘNG)', 0, -560);
             ctx.restore();
 
         }} else if (currentLayoutMode === 'timeline') {{
@@ -2718,28 +3553,29 @@ class CiteNetAgent:
         }} else if (currentLayoutMode === 'fishbone') {{
             // 🐟 NỀN SƠ ĐỒ XƯƠNG CÁ
             ctx.save();
-            ctx.strokeStyle = 'rgba(56, 189, 248, 0.45)';
-            ctx.lineWidth = 3.0;
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.55)';
+            ctx.lineWidth = 3.5;
             ctx.beginPath();
             ctx.moveTo(-680, 0);
-            ctx.lineTo(680, 0);
+            ctx.lineTo(400, 0);
             ctx.stroke();
 
             // Mũi tên trục sống lưng
-            ctx.fillStyle = 'rgba(56, 189, 248, 0.85)';
+            ctx.fillStyle = 'rgba(56, 189, 248, 0.90)';
             ctx.beginPath();
-            ctx.moveTo(680, 0);
-            ctx.lineTo(660, -10);
-            ctx.lineTo(660, 10);
+            ctx.moveTo(400, 0);
+            ctx.lineTo(375, -12);
+            ctx.lineTo(375, 12);
             ctx.fill();
 
-            ctx.font = 'bold 11.5px Plus Jakarta Sans, sans-serif';
-            ctx.fillStyle = 'rgba(56, 189, 248, 0.90)';
+            ctx.font = 'bold 12px Plus Jakarta Sans, sans-serif';
+            ctx.fillStyle = 'rgba(56, 189, 248, 0.95)';
+            ctx.textAlign = 'left';
             ctx.fillText('🐟 TRỤC SỐNG LƯNG THỜI GIAN (CHRONO-BACKBONE)', -660, -14);
             ctx.fillStyle = '#C084FC';
-            ctx.fillText('🏛️ CỘI NGUỒN LÝ THUYẾT (R1-R3) ↓', -480, 45);
+            ctx.fillText('🏛️ CỘI NGUỒN LÝ THUYẾT (R1-R3) ↓', -480, 50);
             ctx.fillStyle = '#38BDF8';
-            ctx.fillText('🚀 BƯỚC TIẾN KẾ THỪA (F1-F3) ↑', 220, -45);
+            ctx.fillText('🚀 BƯỚC TIẾN KẾ THỪA (F1-F3) ↑', 80, -50);
             ctx.restore();
 
         }} else if (currentLayoutMode === 'quartile') {{
@@ -2753,7 +3589,6 @@ class CiteNetAgent:
             ];
 
             laneConfigs.forEach(function(lane) {{
-                // Cột phủ mờ
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.02)';
                 ctx.fillRect(lane.x - 130, -420, 260, 840);
 
@@ -2762,7 +3597,6 @@ class CiteNetAgent:
                 ctx.strokeRect(lane.x - 130, -420, 260, 840);
                 ctx.setLineDash([]);
 
-                // Tiêu đề làn
                 ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
                 ctx.strokeStyle = lane.color;
                 ctx.lineWidth = 1.4;
@@ -2802,6 +3636,15 @@ class CiteNetAgent:
             ctx.fillStyle = '#38BDF8';
             ctx.fillText('🚀 F1 KẾ THỪA', 260, -410);
             ctx.fillText('🚀 F2 MỞ RỘNG', 520, -410);
+            ctx.restore();
+
+        }} else if (currentLayoutMode === 'matrix') {{
+            // ▦ NỀN MA TRẬN CỤM CHỦ ĐỀ & TẠP CHÍ
+            ctx.save();
+            ctx.font = 'bold 11px JetBrains Mono, monospace';
+            ctx.fillStyle = 'var(--theme-accent)';
+            ctx.textAlign = 'center';
+            ctx.fillText('▦ CLUSTERED TOPIC & JOURNAL MATRIX', 0, -430);
             ctx.restore();
         }}
     }});
@@ -2889,7 +3732,6 @@ class CiteNetAgent:
         var inC = (p.incoming_ids || []).length;
         
         var chkPinF0 = document.getElementById('chk_pin_f0') ? document.getElementById('chk_pin_f0').checked : true;
-        var edgeFilterVal = document.getElementById('edgeFilter') ? document.getElementById('edgeFilter').value : 'all';
 
         var linkNote = '⚡ <b>Liên kết tổng thể:</b> ' + outC + ' tham chiếu (R) ➔ ' + inC + ' kế thừa (F).';
         if (outC === 0 && inC === 0) {{
@@ -2967,10 +3809,14 @@ class CiteNetAgent:
         nodes.update(updates);
 
         if (primaryMatchId) {{
-            network.focus(primaryMatchId, {{
-                scale: 1.35,
-                animation: {{ duration: 400, easingFunction: 'easeInOutQuad' }}
-            }});
+            if (typeof network !== 'undefined' && network.focus) {{
+                try {{
+                    network.focus(primaryMatchId, {{
+                        scale: 1.35,
+                        animation: {{ duration: 400, easingFunction: 'easeInOutQuad' }}
+                    }});
+                }} catch(e) {{}}
+            }}
             updateHoverInspectorNode(primaryMatchId);
             selectPaperFromTable(primaryMatchId);
         }}
@@ -2997,12 +3843,12 @@ class CiteNetAgent:
         var bodyEl = document.getElementById('edgeEpistemicBody');
 
         var eType = e.edge_type || 'direct';
-        var typeName = '🔷 Kế thừa 1 chiều trực tiếp';
-        var dynamicDesc = 'Công trình tiếp thu khung lý thuyết và mở rộng phương pháp nghiên cứu.';
+        var typeName = '🔷 Kế thừa 1 chiều trực tiếp (Direct Citation)';
+        var dynamicDesc = 'Công trình đích tiếp thu khung lý thuyết và kế thừa phương pháp nghiên cứu từ công trình nguồn.';
         
         if (eType === 'mutual') {{
-            typeName = '🔶 Đối thoại học thuật 2 chiều (Reciprocal)';
-            dynamicDesc = 'Hai nhóm nghiên cứu trích dẫn chéo tương hỗ, hình thành trường phái tranh luận chuyên sâu.';
+            typeName = '🔶 Đối thoại học thuật 2 chiều (Reciprocal Debate)';
+            dynamicDesc = 'Hai nhóm tác giả trích dẫn chéo tương hỗ, hình thành trường phái tranh luận chuyên sâu.';
         }} else if (eType === 'cross_bridge') {{
             typeName = '🔮 Bắc cầu xuyên tầng cội nguồn (Cross-Bridge)';
             dynamicDesc = 'Bước tiến mới neo trực tiếp vào nền tảng lý thuyết ban đầu mà không qua tầng trung gian.';
@@ -3011,16 +3857,31 @@ class CiteNetAgent:
             dynamicDesc = 'Các công trình trong cùng thế hệ nghiên cứu bổ trợ dữ liệu thực chứng cho nhau.';
         }}
 
-        if (typeBadge) typeBadge.innerText = typeName;
+        if (typeBadge) typeBadge.innerHTML = '⚡ ' + typeName;
         if (bodyEl) {{
             bodyEl.innerHTML = 
-                '<div style="font-weight:400; color:#FDE047; margin-bottom:3px;">' +
-                    '[' + (sP.first_author || 'Paper A') + ' (' + (sP.year || 'n.d.') + ')] ➔ [' + (dP.first_author || 'Paper B') + ' (' + (dP.year || 'n.d.') + ')]' +
-                '</div>' +
-                '<div style="color:#E2E8F0; margin-bottom:4px; font-size:10px;">' + dynamicDesc + '</div>' +
-                '<div style="display:flex; justify-content:space-between; border-top:1px solid rgba(245,158,11,0.25); padding-top:4px; color:#A1A1AA; font-size:9.5px;">' +
-                    '<span>⏳ Độ trễ tiếp thu: <b>' + (gap === 0 ? 'Cùng năm' : gap + ' năm') + '</b></span>' +
-                    '<span>⚡ Trạng thái: <b>Laser Stream Active</b></span>' +
+                '<div style="display:flex; flex-direction:column; gap:5px; margin-top:2px;">' +
+                    '<!-- 1. ĐIỂM ĐẦU -->' +
+                    '<div style="background:rgba(2,132,199,0.18); border:1px solid #0284C7; border-radius:7px; padding:4px 7px;">' +
+                        '<div style="font-size:9px; font-weight:800; color:#38BDF8; letter-spacing:0.04em;">🔵 ĐIỂM ĐẦU (GỐC / THAM CHIẾU):</div>' +
+                        '<div style="font-size:10.5px; font-weight:700; color:#FFFFFF; margin:1px 0;">[' + (sP.first_author || 'Author A') + ' (' + (sP.year || 'n.d.') + ')] ' + (sP.title || 'Untitled') + '</div>' +
+                        '<div style="font-size:9px; color:#BAE6FD;">🏛️ ' + (sP.venue || 'Journal') + ' • ' + (sP.scopus_tier || 'Scopus') + ' • ★ ' + (sP.citation_count || 0) + ' tc</div>' +
+                    '</div>' +
+                    '<!-- 2. ĐIỂM KẾT NỐI (DÒNG TRUYỀN TRI THỨC) -->' +
+                    '<div style="background:rgba(245,158,11,0.18); border:1px solid #F59E0B; border-radius:7px; padding:4px 7px;">' +
+                        '<div style="font-size:9px; font-weight:800; color:#FDE047; letter-spacing:0.04em;">⚡ ĐIỂM KẾT NỐI (DÒNG TRUYỀN TRI THỨC):</div>' +
+                        '<div style="font-size:10px; color:#FEF3C7; line-height:1.35; margin:1px 0;">' + dynamicDesc + '</div>' +
+                        '<div style="display:flex; justify-content:space-between; margin-top:3px; font-size:8.5px; color:#FDE68A; border-top:1px dashed rgba(245,158,11,0.3); padding-top:2px;">' +
+                            '<span>⏳ Độ trễ tiếp thu: <b>' + (gap === 0 ? 'Cùng năm' : gap + ' năm') + '</b></span>' +
+                            '<span>⚡ Laser Stream: <b>Active (' + photonSpeedFactor.toFixed(1) + 'x)</b></span>' +
+                        '</div>' +
+                    '</div>' +
+                    '<!-- 3. ĐIỂM CUỐI -->' +
+                    '<div style="background:rgba(16,185,129,0.18); border:1px solid #10B981; border-radius:7px; padding:4px 7px;">' +
+                        '<div style="font-size:9px; font-weight:800; color:#34D399; letter-spacing:0.04em;">🟢 ĐIỂM CUỐI (KẾ THỪA / MỞ RỘNG):</div>' +
+                        '<div style="font-size:10.5px; font-weight:700; color:#FFFFFF; margin:1px 0;">[' + (dP.first_author || 'Author B') + ' (' + (dP.year || 'n.d.') + ')] ' + (dP.title || 'Untitled') + '</div>' +
+                        '<div style="font-size:9px; color:#A7F3D0;">🏛️ ' + (dP.venue || 'Journal') + ' • ' + (dP.scopus_tier || 'Scopus') + ' • ★ ' + (dP.citation_count || 0) + ' tc</div>' +
+                    '</div>' +
                 '</div>';
         }}
         edgeInsp.classList.add('visible');
@@ -3108,144 +3969,324 @@ class CiteNetAgent:
 
     // Particles & Pulsing Halos & Instant Active Laser Beam Stream (afterDrawing)
     network.on('afterDrawing', function(ctx) {{
-        var now = Date.now();
-        var positions = network.getPositions();
+        try {{
+            var now = Date.now();
+            var positions = network.getPositions();
 
-        // 1. Halo Nhịp thở
-        if (isPulsingOn) {{
-            var pulse = (Math.sin(now / 550) + 1) / 2;
-            rawNodes.forEach(function(n) {{
-                var isSeed = (n.level === 0 || n.layer === 'seed');
-                var isHighImpact = ((n.citations || 0) >= 200);
+            // 1. Halo Nhịp thở (Pulsing Halos on F0, High-impact nodes, Hovered & Selected)
+            if (isPulsingOn) {{
+                var pulse = (Math.sin(now / 450) + 1) / 2;
+                rawNodes.forEach(function(n) {{
+                    var isSeed = (n.level === 0 || n.layer === 'seed');
+                    var isHighImpact = ((n.citations || 0) >= 120);
+                    var isHovered = (n.id === hoveredNodeId);
 
-                if (isSeed || isHighImpact) {{
-                    var pos = positions[n.id];
-                    if (!pos) return;
-                    var baseR = (n.size || 22);
-                    var haloR = baseR + 8 + (pulse * (isSeed ? 16 : 10));
+                    if (isSeed || isHighImpact || isHovered) {{
+                        var pos = positions[n.id];
+                        if (!pos) return;
+                        var baseR = (n.size || 22);
+                        var haloR = baseR + 8 + (pulse * (isSeed ? 20 : 14));
 
-                    ctx.save();
-                    var grad = ctx.createRadialGradient(pos.x, pos.y, baseR * 0.4, pos.x, pos.y, haloR);
-                    if (isSeed) {{
-                        grad.addColorStop(0, 'rgba(234, 67, 53, ' + (0.45 + pulse * 0.25) + ')');
-                        grad.addColorStop(1, 'rgba(234, 67, 53, 0)');
-                    }} else {{
-                        grad.addColorStop(0, 'rgba(var(--theme-glow-rgb), ' + (0.45 + pulse * 0.25) + ')');
-                        grad.addColorStop(1, 'rgba(var(--theme-glow-rgb), 0)');
+                        ctx.save();
+                        var grad = ctx.createRadialGradient(pos.x, pos.y, baseR * 0.3, pos.x, pos.y, haloR);
+                        if (isSeed) {{
+                            grad.addColorStop(0, 'rgba(234, 67, 53, ' + (0.65 + pulse * 0.3) + ')');
+                            grad.addColorStop(1, 'rgba(234, 67, 53, 0)');
+                        }} else if (isHovered) {{
+                            grad.addColorStop(0, 'rgba(0, 242, 254, ' + (0.75 + pulse * 0.25) + ')');
+                            grad.addColorStop(1, 'rgba(0, 242, 254, 0)');
+                        }} else {{
+                            grad.addColorStop(0, 'rgba(56, 189, 248, ' + (0.50 + pulse * 0.3) + ')');
+                            grad.addColorStop(1, 'rgba(56, 189, 248, 0)');
+                        }}
+                        ctx.beginPath();
+                        ctx.arc(pos.x, pos.y, haloR, 0, 2 * Math.PI, false);
+                        ctx.fillStyle = grad;
+                        ctx.fill();
+                        ctx.restore();
                     }}
-                    ctx.beginPath();
-                    ctx.arc(pos.x, pos.y, haloR, 0, 2 * Math.PI, false);
-                    ctx.fillStyle = grad;
-                    ctx.fill();
-                    ctx.restore();
-                }}
-            }});
-        }}
-
-        // 2. Dòng Hạt Photon Bình Thường (Có điều tốc)
-        if (isParticlesOn) {{
-            var tNow = (photonSpeedFactor > 0) ? (now / 1100 * photonSpeedFactor) : 0;
-            rawEdges.forEach(function(e, idx) {{
-                var p1 = positions[e.from];
-                var p2 = positions[e.to];
-                if (!p1 || !p2) return;
-
-                var currentEdge = edges.get(e.id);
-                if (currentEdge && currentEdge.hidden) return;
-
-                var t = (photonSpeedFactor > 0) ? ((tNow + (idx * 0.19)) % 1.0) : ((idx * 0.19) % 1.0);
-                var x = p1.x + (p2.x - p1.x) * t;
-                var y = p1.y + (p2.y - p1.y) * t;
-
-                ctx.save();
-                ctx.beginPath();
-                ctx.arc(x, y, 3.2, 0, 2 * Math.PI, false);
-                ctx.fillStyle = 'var(--theme-accent)';
-                ctx.shadowColor = 'var(--theme-glow)';
-                ctx.shadowBlur = 8;
-                ctx.fill();
-                ctx.restore();
-            }});
-        }}
-
-        // 3. HIỆU ỨNG TIA SÁNG LASER CHẠY LIÊN TỤC KHI HOVER / CHỌN (Instant Active Beam Highlight Stream)
-        if (isLaserBeamOn && (hoveredNodeId || hoveredEdgeId)) {{
-            var connectedEdges = [];
-            if (hoveredNodeId) {{
-                connectedEdges = rawEdges.filter(function(e) {{
-                    return (e.from === hoveredNodeId || e.to === hoveredNodeId);
-                }});
-            }} else if (hoveredEdgeId) {{
-                connectedEdges = rawEdges.filter(function(e) {{
-                    return (e.id === hoveredEdgeId);
                 }});
             }}
 
-            var beamProgress = (photonSpeedFactor > 0) ? ((now / 650 * photonSpeedFactor) % 1.0) : 0.5;
-            var beamProgress2 = (beamProgress + 0.5) % 1.0;
+            // 2. HIỆU ỨNG MŨI TÊN NHÂN QUẢ CHUYỂN ĐỘNG (Causal Arrow Directional Motion & Traveling Chevrons)
+            if (isArrowsMotionOn) {{
+                var tWave = (photonSpeedFactor > 0) ? ((now / 750 * photonSpeedFactor) % 1.0) : 0;
+                rawEdges.forEach(function(e, idx) {{
+                    var p1 = positions[e.from]; // Nguồn nhân quả (Source)
+                    var p2 = positions[e.to];   // Đích tiếp nhận (Target)
+                    if (!p1 || !p2) return;
 
-            connectedEdges.forEach(function(e) {{
-                var p1 = positions[e.from];
-                var p2 = positions[e.to];
-                if (!p1 || !p2) return;
+                    var currentEdge = edges.get(e.id);
+                    if (currentEdge && currentEdge.hidden) return;
 
-                ctx.save();
-                ctx.strokeStyle = 'var(--theme-accent)';
-                ctx.lineWidth = 3.8;
-                ctx.shadowColor = 'var(--theme-glow)';
-                ctx.shadowBlur = 14;
-                ctx.beginPath();
-                ctx.moveTo(p1.x, p1.y);
-                ctx.lineTo(p2.x, p2.y);
-                ctx.stroke();
+                    var dx = p2.x - p1.x;
+                    var dy = p2.y - p1.y;
+                    var len = Math.sqrt(dx * dx + dy * dy);
+                    if (len < 25) return;
 
-                [beamProgress, beamProgress2].forEach(function(bt) {{
-                    var bx = p1.x + (p2.x - p1.x) * bt;
-                    var by = p1.y + (p2.y - p1.y) * bt;
+                    var ux = dx / len;
+                    var uy = dy / len;
+                    var nx = -uy;
+                    var ny = ux;
 
-                    ctx.beginPath();
-                    ctx.arc(bx, by, 5.5, 0, 2 * Math.PI, false);
-                    ctx.fillStyle = '#FFFFFF';
-                    ctx.shadowColor = '#FDE047';
-                    ctx.shadowBlur = 16;
-                    ctx.fill();
-                }});
+                    var isFocused = (hoveredEdgeId === e.id || hoveredNodeId === e.from || hoveredNodeId === e.to);
+                    var isAnyHovered = (hoveredNodeId || hoveredEdgeId);
+                    
+                    // Màu sóng nhân quả theo loại liên kết
+                    var waveColor = '#38BDF8';
+                    if (e.edge_type === 'mutual') waveColor = '#F59E0B';
+                    else if (e.edge_type === 'cross_bridge') waveColor = '#C084FC';
+                    else if (e.edge_type === 'intra_layer') waveColor = '#34D399';
 
-                ctx.restore();
-            }});
-        }} else if (hoveredEdgeId) {{
-            var targetEdge = rawEdges.find(function(e) {{ return e.id === hoveredEdgeId; }});
-            if (targetEdge) {{
-                var p1 = positions[targetEdge.from];
-                var p2 = positions[targetEdge.to];
-                if (p1 && p2) {{
-                    var bProg = (photonSpeedFactor > 0) ? ((now / 600 * photonSpeedFactor) % 1.0) : 0.5;
                     ctx.save();
+                    ctx.strokeStyle = waveColor;
+                    ctx.fillStyle = waveColor;
+                    ctx.shadowColor = waveColor;
+                    ctx.shadowBlur = isFocused ? 14 : 8;
+                    ctx.lineWidth = isFocused ? 2.8 : 2.0;
+                    ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
+                    if (isAnyHovered && !isFocused) {{
+                        ctx.globalAlpha = 0.22;
+                    }}
+
+                    // Vẽ 2 - 3 đầu mũi tên sóng nhân quả (Chevrons >>) trượt dọc thân mũi tên theo chiều nhân quả
+                    var waveOffsets = [(idx * 0.23) % 1.0, (idx * 0.23 + 0.50) % 1.0];
+                    if (len > 180) waveOffsets.push((idx * 0.23 + 0.25) % 1.0);
+
+                    waveOffsets.forEach(function(wOff) {{
+                        var progress = (photonSpeedFactor > 0) ? ((tWave + wOff) % 1.0) : wOff;
+                        var posT = 0.18 + progress * 0.68; // Tránh vẽ đè tâm node
+                        var cx = p1.x + dx * posT;
+                        var cy = p1.y + dy * posT;
+
+                        var cLen = isFocused ? 7.5 : 5.8;
+                        var cWidth = isFocused ? 5.2 : 4.0;
+
+                        ctx.beginPath();
+                        ctx.moveTo(cx - ux * cLen + nx * cWidth, cy - uy * cLen + ny * cWidth);
+                        ctx.lineTo(cx, cy);
+                        ctx.lineTo(cx - ux * cLen - nx * cWidth, cy - uy * cLen - ny * cWidth);
+                        ctx.stroke();
+
+                        // Nếu là liên kết song phương (Mutual), vẽ thêm sóng nhân quả phản hồi ngược chiều
+                        if (e.edge_type === 'mutual') {{
+                            var rProgress = 1.0 - progress;
+                            var rPosT = 0.18 + rProgress * 0.68;
+                            var rcx = p1.x + dx * rPosT;
+                            var rcy = p1.y + dy * rPosT;
+
+                            ctx.beginPath();
+                            ctx.moveTo(rcx + ux * cLen + nx * cWidth, rcy + uy * cLen + ny * cWidth);
+                            ctx.lineTo(rcx, rcy);
+                            ctx.lineTo(rcx + ux * cLen - nx * cWidth, rcy + uy * cLen - ny * cWidth);
+                            ctx.stroke();
+                        }}
+                    }});
+
+                    // Xung năng lượng tại điểm tiếp nhận (Causal Arrival Pulse ở đầu mũi tên)
+                    var tipPulse = (Math.sin(now / 280 + idx) + 1) / 2;
+                    var tipX = p1.x + dx * 0.88;
+                    var tipY = p1.y + dy * 0.88;
+                    ctx.beginPath();
+                    ctx.arc(tipX, tipY, 2.2 + tipPulse * 1.5, 0, 2 * Math.PI, false);
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.shadowColor = waveColor;
+                    ctx.shadowBlur = 10;
+                    ctx.fill();
+
+                    ctx.restore();
+                }});
+            }}
+
+            // 3. Dòng Hạt Photon Di Chuyển Dọc Mũi Tên (Đa hạt ngẫu nhiên, phát quang rực rỡ)
+            if (isParticlesOn) {{
+                var tNow = (photonSpeedFactor > 0) ? (now / 1000 * photonSpeedFactor) : 0;
+                rawEdges.forEach(function(e, idx) {{
+                    var p1 = positions[e.from];
+                    var p2 = positions[e.to];
+                    if (!p1 || !p2) return;
+
+                    var currentEdge = edges.get(e.id);
+                    if (currentEdge && currentEdge.hidden) return;
+
+                    var particleOffsets = [
+                        (idx * 0.37) % 1.0,
+                        (idx * 0.37 + 0.50) % 1.0
+                    ];
+                    if (e.edge_type === 'mutual' || e.edge_type === 'cross_bridge') {{
+                        particleOffsets.push((idx * 0.37 + 0.25) % 1.0);
+                    }}
+
+                    particleOffsets.forEach(function(pOffset, pIdx) {{
+                        var t = (photonSpeedFactor > 0) ? ((tNow + pOffset) % 1.0) : pOffset;
+                        var x = p1.x + (p2.x - p1.x) * t;
+                        var y = p1.y + (p2.y - p1.y) * t;
+
+                        var isWhiteCore = (pIdx === 0);
+                        var pSize = isWhiteCore ? 4.2 : 3.2;
+
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.arc(x, y, pSize, 0, 2 * Math.PI, false);
+                        ctx.fillStyle = isWhiteCore ? '#FFFFFF' : '#00F2FE';
+                        ctx.shadowColor = isWhiteCore ? '#FFFFFF' : '#38BDF8';
+                        ctx.shadowBlur = 14;
+                        ctx.fill();
+                        ctx.restore();
+                    }});
+                }});
+            }}
+
+            // 4. HIỆU ỨNG TIA LASER CHỈ RÕ ĐIỂM ĐẦU, ĐIỂM KẾT NỐI, ĐIỂM CUỐI (Active Laser Beam Linkage)
+            if (isLaserBeamOn && (hoveredEdgeId || hoveredNodeId)) {{
+                var activeEdges = [];
+                if (hoveredEdgeId) {{
+                    activeEdges = rawEdges.filter(function(e) {{ return e.id === hoveredEdgeId; }});
+                }} else if (hoveredNodeId) {{
+                    activeEdges = rawEdges.filter(function(e) {{ return (e.from === hoveredNodeId || e.to === hoveredNodeId); }});
+                }}
+
+                var beamT1 = (photonSpeedFactor > 0) ? ((now / 500 * photonSpeedFactor) % 1.0) : 0.5;
+                var beamT2 = (beamT1 + 0.5) % 1.0;
+                var pulseRing = (Math.sin(now / 250) + 1) / 2;
+
+                activeEdges.forEach(function(e) {{
+                    var p1 = positions[e.from]; // ĐIỂM ĐẦU
+                    var p2 = positions[e.to];   // ĐIỂM CUỐI
+                    if (!p1 || !p2) return;
+
+                    ctx.save();
+
+                    // 4.1. HÀO QUANG TẠI ĐIỂM ĐẦU (START NODE)
+                    ctx.beginPath();
+                    ctx.arc(p1.x, p1.y, 32 + pulseRing * 12, 0, 2 * Math.PI, false);
+                    ctx.strokeStyle = '#38BDF8';
+                    ctx.lineWidth = 3.0;
+                    ctx.shadowColor = '#38BDF8';
+                    ctx.shadowBlur = 18;
+                    ctx.stroke();
+
+                    ctx.font = 'bold 9.5px monospace';
+                    ctx.fillStyle = '#38BDF8';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('▶ ĐIỂM ĐẦU', p1.x, p1.y - 36);
+
+                    // 4.2. HÀO QUANG TẠI ĐIỂM CUỐI (END NODE)
+                    ctx.beginPath();
+                    ctx.arc(p2.x, p2.y, 32 + pulseRing * 12, 0, 2 * Math.PI, false);
+                    ctx.strokeStyle = '#34D399';
+                    ctx.lineWidth = 3.0;
+                    ctx.shadowColor = '#34D399';
+                    ctx.shadowBlur = 18;
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#34D399';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('◀ ĐIỂM CUỐI', p2.x, p2.y - 36);
+
+                    // 4.3. TIA LASER NEON NỐI ĐIỂM ĐẦU & ĐIỂM CUỐI (CONNECTING BEAM)
                     ctx.strokeStyle = '#F59E0B';
-                    ctx.lineWidth = 4.2;
-                    ctx.shadowColor = '#F59E0B';
-                    ctx.shadowBlur = 16;
+                    ctx.lineWidth = 5.0;
+                    ctx.shadowColor = '#FDE047';
+                    ctx.shadowBlur = 22;
                     ctx.beginPath();
                     ctx.moveTo(p1.x, p1.y);
                     ctx.lineTo(p2.x, p2.y);
                     ctx.stroke();
 
-                    var bx = p1.x + (p2.x - p1.x) * bProg;
-                    var by = p1.y + (p2.y - p1.y) * bProg;
-                    ctx.beginPath();
-                    ctx.arc(bx, by, 6.0, 0, 2 * Math.PI, false);
-                    ctx.fillStyle = '#FFFFFF';
-                    ctx.shadowColor = '#FFFFFF';
-                    ctx.shadowBlur = 16;
-                    ctx.fill();
+                    // 4.4. CÁC XUNG NĂNG LƯỢNG LASER CHẠY TỪ ĐIỂM ĐẦU ➔ ĐIỂM CUỐI
+                    [beamT1, beamT2].forEach(function(bt) {{
+                        var bx = p1.x + (p2.x - p1.x) * bt;
+                        var by = p1.y + (p2.y - p1.y) * bt;
+
+                        ctx.beginPath();
+                        ctx.arc(bx, by, 6.0, 0, 2 * Math.PI, false);
+                        ctx.fillStyle = '#FFFFFF';
+                        ctx.shadowColor = '#FDE047';
+                        ctx.shadowBlur = 18;
+                        ctx.fill();
+                    }});
+
                     ctx.restore();
+                }});
+            }} else if (hoveredEdgeId) {{
+                var targetEdge = rawEdges.find(function(e) {{ return e.id === hoveredEdgeId; }});
+                if (targetEdge) {{
+                    var p1 = positions[targetEdge.from];
+                    var p2 = positions[targetEdge.to];
+                    if (p1 && p2) {{
+                        var bProg = (photonSpeedFactor > 0) ? ((now / 500 * photonSpeedFactor) % 1.0) : 0.5;
+                        ctx.save();
+                        ctx.strokeStyle = '#F59E0B';
+                        ctx.lineWidth = 4.5;
+                        ctx.shadowColor = '#F59E0B';
+                        ctx.shadowBlur = 18;
+                        ctx.beginPath();
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.stroke();
+
+                        var bx = p1.x + (p2.x - p1.x) * bProg;
+                        var by = p1.y + (p2.y - p1.y) * bProg;
+                        ctx.beginPath();
+                        ctx.arc(bx, by, 6.5, 0, 2 * Math.PI, false);
+                        ctx.fillStyle = '#FFFFFF';
+                        ctx.shadowColor = '#FFFFFF';
+                        ctx.shadowBlur = 18;
+                        ctx.fill();
+                        ctx.restore();
+                    }}
                 }}
             }}
+
+            // 5. TRUY VẾT DÒNG DÕI HỌC THUẬT (Lineage Tracing Glow Streams)
+            if (isLineageTracingOn && selectedLineageNodeId) {{
+                var pulseTrace = (Math.sin(now / 350) + 1) / 2;
+                var tProg = (photonSpeedFactor > 0) ? ((now / 700 * photonSpeedFactor) % 1.0) : 0.5;
+
+                rawEdges.forEach(function(e) {{
+                    var sP = positions[e.from];
+                    var dP = positions[e.to];
+                    if (!sP || !dP) return;
+
+                    var curE = edges.get(e.id);
+                    if (!curE || curE.hidden) return;
+
+                    if (curE.color && curE.color.color === '#F59E0B') {{
+                        ctx.save();
+                        ctx.strokeStyle = 'rgba(245, 158, 11, ' + (0.75 + pulseTrace * 0.25) + ')';
+                        ctx.lineWidth = 3.8;
+                        ctx.shadowColor = '#FDE047';
+                        ctx.shadowBlur = 16;
+                        ctx.beginPath();
+                        ctx.moveTo(sP.x, sP.y);
+                        ctx.lineTo(dP.x, dP.y);
+                        ctx.stroke();
+
+                        // Hạt photon năng lượng truy vết
+                        var px = sP.x + (dP.x - sP.x) * tProg;
+                        var py = sP.y + (dP.y - sP.y) * tProg;
+                        ctx.beginPath();
+                        ctx.arc(px, py, 5.2, 0, 2 * Math.PI, false);
+                        ctx.fillStyle = '#FFFFFF';
+                        ctx.shadowColor = '#F59E0B';
+                        ctx.shadowBlur = 14;
+                        ctx.fill();
+
+                        ctx.restore();
+                    }}
+                }});
+            }}
+        }} catch(e) {{
+            console.error('afterDrawing error:', e);
         }}
     }});
 
     function dynamicAnimationLoop() {{
-        if (isParticlesOn || isPulsingOn) network.redraw();
+        if (isParticlesOn || isArrowsMotionOn || isPulsingOn || isLaserBeamOn || hoveredNodeId || hoveredEdgeId || isLineageTracingOn) {{
+            network.redraw();
+        }}
         requestAnimationFrame(dynamicAnimationLoop);
     }}
     requestAnimationFrame(dynamicAnimationLoop);
@@ -3265,9 +4306,9 @@ class CiteNetAgent:
         }}, 250);
     }});
 
-    // Auto-select primary seed on initial load & switch to timeline layout & Enable Draggable
+    // Auto-select primary seed on initial load & switch to force layout & Enable Draggable
     setTimeout(function() {{
-        switchLayoutMode('timeline');
+        switchLayoutMode('force');
         if (rawNodes.length > 0) {{
             selectPaperFromTable(rawNodes[0].id);
         }}
