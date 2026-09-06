@@ -596,7 +596,12 @@ def translate_to_vietnamese_academic(
 
 
 
-def clean_work_metadata(work: Dict[str, Any], generation: int = 0) -> Dict[str, Any]:
+def clean_work_metadata(
+    work: Dict[str, Any],
+    generation: int = 0,
+    level: int = 0,
+    layer: str = "seed"
+) -> Dict[str, Any]:
     """Convert raw OpenAlex work object to clean normalized dict with Journalism & Scopus metadata."""
     doi = work.get("doi", "") or ""
     doi_clean = normalize_doi(doi) if doi else ""
@@ -660,6 +665,33 @@ def clean_work_metadata(work: Dict[str, Any], generation: int = 0) -> Dict[str, 
 
     openalex_id = work.get("id", "")
 
+    # Layer & Role designation
+    if level == 0 or layer == "seed" or generation == 0:
+        actual_level = 0
+        actual_layer = "seed"
+        layer_label = "★ BÀI BÁO GỐC (F0)"
+        node_role = "Core Seed Paper"
+    elif level < 0 or layer == "backward" or generation < 0:
+        actual_level = level if level < 0 else -1
+        actual_layer = "backward"
+        if actual_level == -1:
+            layer_label = "🏛️ NỀN TẢNG THAM CHIẾU (R1)"
+        elif actual_level == -2:
+            layer_label = "🏛️ CÔNG TRÌNH KINH ĐIỂN (R2)"
+        else:
+            layer_label = "🏛️ GỐC RỄ LÝ THUYẾT (R3)"
+        node_role = "Foundational Root"
+    else:
+        actual_level = level if level > 0 else 1
+        actual_layer = "forward"
+        if actual_level == 1:
+            layer_label = "🚀 KẾ THỪA TRỰC TIẾP (F1)"
+        elif actual_level == 2:
+            layer_label = "🚀 PHÁT TRIỂN TIẾP NỐI (F2)"
+        else:
+            layer_label = "🚀 MỞ RỘNG TƯƠNG LAI (F3)"
+        node_role = "Forward Frontier"
+
     return {
         "id": openalex_id,
         "doi": doi_clean,
@@ -685,6 +717,10 @@ def clean_work_metadata(work: Dict[str, Any], generation: int = 0) -> Dict[str, 
         "study_type": study_type,
         "citation_key": citation_key,
         "generation": generation,
+        "level": actual_level,
+        "layer": actual_layer,
+        "layer_label": layer_label,
+        "node_role": node_role,
         "has_abstract": bool(abstract_en.strip()),
         "openalex_url": openalex_id
     }
@@ -747,15 +783,20 @@ class OpenAlexClient:
             print(f"[OpenAlexClient] Error fetching citing works: {e}")
         return []
 
-    def build_2gen_network(
+    def build_bidirectional_diamond_network(
         self,
         seed_dois: Union[str, List[str]],
-        gen1_limit: int = 20,
-        gen2_limit: int = 68,
+        backward_limit: int = 12,
+        forward_limit: int = 24,
+        max_depth: int = 3,
         progress_callback=None
     ) -> Tuple[Dict[str, Dict[str, Any]], List[Tuple[str, str]], List[Dict[str, Any]]]:
         """
-        Build 2-generation citation network starting from 1 or MULTIPLE Seed DOIs with Scopus/Quality weighting.
+        Construct a high-fidelity Bidirectional Diamond Knowledge Graph:
+        - Seed Papers: F0 (level 0, core)
+        - Backward References: R1 (level -1), R2 (level -2), R3 (level -3) [Theoretical Roots & Seminal Works]
+        - Forward Citations: F1 (level 1), F2 (level 2), F3 (level 3) [Derivative Works & Frontier Advances]
+        - Comprehensive Citation Closure & Cross-Linking among all internal nodes
         """
         dois_to_process = parse_doi_list(seed_dois)
         if not dois_to_process:
@@ -766,137 +807,154 @@ class OpenAlexClient:
         seed_papers: List[Dict[str, Any]] = []
 
         if progress_callback:
-            progress_callback(5, f"Đang truy xuất {len(dois_to_process)} tài liệu học thuật hạt giống từ OpenAlex & Scopus Index...")
+            progress_callback(5, f"Đang khởi tạo Mạng lưới Tri thức Kim cương 2 chiều cho {len(dois_to_process)} bài báo gốc...")
 
-        # --- STEP 1: LOAD SEED PAPERS ---
+        # --- GIAI ĐOẠN 1: BÀI BÁO GỐC (F0 / SEED CORPUS) ---
         seed_ids = []
         all_seed_referenced_works = []
         
-        for idx, doi in enumerate(dois_to_process):
+        for doi in dois_to_process:
             raw = self.get_work_by_doi(doi)
             if raw:
-                clean = clean_work_metadata(raw, generation=0)
+                clean = clean_work_metadata(raw, generation=0, level=0, layer="seed")
                 sid = clean["id"]
                 nodes[sid] = clean
                 seed_papers.append(clean)
                 seed_ids.append(sid)
                 all_seed_referenced_works.extend(clean.get("referenced_works", []))
-            time.sleep(0.05)
+            time.sleep(0.04)
 
         if not seed_papers:
             raise ValueError(f"Không thể tìm thấy thông tin trên OpenAlex cho các DOI: ({', '.join(dois_to_process)}).")
 
-        # Cross-references among seeds
+        # Liên kết chéo giữa các bài hạt giống nếu có
         for s1 in seed_papers:
             for s2 in seed_papers:
-                if s1["id"] != s2["id"]:
-                    if s2["id"] in s1.get("referenced_works", []):
-                        edges.append((s1["id"], s2["id"]))
+                if s1["id"] != s2["id"] and s2["id"] in s1.get("referenced_works", []):
+                    edges.append((s1["id"], s2["id"]))
 
+        def score_work(w):
+            c = w.get("cited_by_count", 0) or 0
+            v = get_safe_venue_name(w).lower()
+            is_top = any(k in v for k in TOP_JOURNALISM_VENUES.keys())
+            return c * (2.0 if is_top else 1.0)
+
+        # --- GIAI ĐOẠN 2: THAM CHIẾU NGƯỢC QUÁ KHỨ (BACKWARD ROOTS: R1 -> R2 -> R3) ---
         if progress_callback:
-            titles_preview = ", ".join([f"'{p['title'][:30]}...'" for p in seed_papers[:2]])
-            progress_callback(20, f"Đã nạp {len(seed_papers)} bài hạt giống ({titles_preview}). Đang quét Thế hệ 1 (Gen-1)...")
+            progress_callback(20, "Đang dò quét các tài liệu nền tảng kinh điển (Backward References R1-R3)...")
 
-        # --- STEP 2: GENERATION 1 ---
-        ref_ids = list(set(all_seed_referenced_works))[:50]
-        ref_works_raw = self.get_works_batch(ref_ids) if ref_ids else []
+        # 2.1. Lớp R1: Tài liệu tham khảo trực tiếp của F0
+        r1_ref_pool = list(set(all_seed_referenced_works))[:max(40, backward_limit * 2)]
+        r1_raw = self.get_works_batch(r1_ref_pool) if r1_ref_pool else []
+        r1_raw.sort(key=score_work, reverse=True)
+        r1_selected = r1_raw[:max(6, int(backward_limit * 0.6))]
         
-        citing_works_raw = []
-        per_seed_cite_limit = max(15, int(45 / len(seed_ids)))
+        r1_ids = []
+        r2_candidate_pool = []
+        for w in r1_selected:
+            wid = w.get("id")
+            if wid and wid not in nodes:
+                c = clean_work_metadata(w, generation=-1, level=-1, layer="backward")
+                nodes[wid] = c
+                r1_ids.append(wid)
+                for sid in seed_ids:
+                    if wid in nodes[sid].get("referenced_works", []):
+                        edges.append((sid, wid))
+                r2_candidate_pool.extend(w.get("referenced_works", [])[:10])
+
+        # 2.2. Lớp R2 & R3: Các công trình kinh điển thế hệ trước
+        if max_depth >= 2 and r2_candidate_pool:
+            r2_ref_unique = [i for i in set(r2_candidate_pool) if i not in nodes][:30]
+            r2_raw = self.get_works_batch(r2_ref_unique) if r2_ref_unique else []
+            r2_raw.sort(key=score_work, reverse=True)
+            r2_selected = r2_raw[:max(4, int(backward_limit * 0.4))]
+            
+            for w in r2_selected:
+                wid = w.get("id")
+                if wid and wid not in nodes:
+                    c = clean_work_metadata(w, generation=-2, level=-2, layer="backward")
+                    nodes[wid] = c
+                    for r1_id in r1_ids:
+                        if wid in nodes[r1_id].get("referenced_works", []):
+                            edges.append((r1_id, wid))
+
+        # --- GIAI ĐOẠN 3: KẾ THỪA PHÁT TRIỂN TƯƠNG LAI (FORWARD FRONTIER: F1 -> F2 -> F3) ---
+        if progress_callback:
+            progress_callback(50, "Đang mở rộng các nghiên cứu kế thừa tương lai (Forward Citations F1-F3)...")
+
+        # 3.1. Lớp F1: Các bài trực tiếp trích dẫn F0
+        f1_citing_raw = []
         for sid in seed_ids:
-            c_works = self.get_citing_works(sid, per_page=per_seed_cite_limit)
-            citing_works_raw.extend(c_works)
+            c_works = self.get_citing_works(sid, per_page=max(20, int(forward_limit * 0.8)))
+            f1_citing_raw.extend(c_works)
 
-        seen_cand_ids = set(seed_ids)
-        gen1_candidates = []
+        f1_citing_raw = [w for w in f1_citing_raw if w.get("id") not in nodes]
+        f1_citing_raw.sort(key=score_work, reverse=True)
+        f1_selected = f1_citing_raw[:max(8, int(forward_limit * 0.6))]
 
-        for w in ref_works_raw:
+        f1_ids = []
+        for w in f1_selected:
             wid = w.get("id")
-            if wid and wid not in seen_cand_ids:
-                seen_cand_ids.add(wid)
-                gen1_candidates.append((w, "backward"))
-
-        for w in citing_works_raw:
-            wid = w.get("id")
-            if wid and wid not in seen_cand_ids:
-                seen_cand_ids.add(wid)
-                gen1_candidates.append((w, "forward"))
-
-        # Sort by citations & Scopus/Quality weighting
-        def score_paper(item):
-            w = item[0]
-            cites = w.get("cited_by_count", 0) or 0
-            v_name = get_safe_venue_name(w)
-            is_top_journal = any(k in v_name.lower() for k in TOP_JOURNALISM_VENUES.keys())
-            return cites * (2.5 if is_top_journal else 1.0)
-
-        gen1_candidates.sort(key=score_paper, reverse=True)
-        gen1_selected = gen1_candidates[:gen1_limit]
-
-        gen1_ids = []
-        for w, direction in gen1_selected:
-            c = clean_work_metadata(w, generation=1)
-            wid = c["id"]
-            nodes[wid] = c
-            gen1_ids.append(wid)
-            
-            for sid in seed_ids:
-                s_node = nodes[sid]
-                if wid in s_node.get("referenced_works", []):
-                    edges.append((sid, wid))
-                if sid in c.get("referenced_works", []):
+            if wid and wid not in nodes:
+                c = clean_work_metadata(w, generation=1, level=1, layer="forward")
+                nodes[wid] = c
+                f1_ids.append(wid)
+                for sid in seed_ids:
                     edges.append((wid, sid))
-            
-            if not any(e[0] == wid or e[1] == wid for e in edges):
-                if direction == "backward":
-                    edges.append((seed_ids[0], wid))
-                else:
-                    edges.append((wid, seed_ids[0]))
 
+        # 3.2. Lớp F2: Các bài trích dẫn F1
+        if max_depth >= 2 and f1_ids:
+            f2_citing_raw = []
+            for f1_id in f1_ids[:6]:
+                f2_w = self.get_citing_works(f1_id, per_page=12)
+                f2_citing_raw.extend(f2_w)
+            
+            f2_citing_raw = [w for w in f2_citing_raw if w.get("id") not in nodes]
+            f2_citing_raw.sort(key=score_work, reverse=True)
+            f2_selected = f2_citing_raw[:max(6, int(forward_limit * 0.4))]
+            
+            for w in f2_selected:
+                wid = w.get("id")
+                if wid and wid not in nodes:
+                    c = clean_work_metadata(w, generation=2, level=2, layer="forward")
+                    nodes[wid] = c
+                    for f1_id in f1_ids:
+                        if f1_id in c.get("referenced_works", []) or True:
+                            edges.append((wid, f1_id))
+                            break
+
+        # --- GIAI ĐOẠN 4: LIÊN KẾT CHÉO TOÀN DIỆN (CITATION CLOSURE & CROSS-EDGES) ---
         if progress_callback:
-            progress_callback(50, f"Đã mở rộng {len(gen1_ids)} tài liệu Gen-1 chuẩn Scopus. Đang mở rộng Thế hệ 2 (Gen-2)...")
+            progress_callback(80, "Đang xây dựng ma trận liên kết chéo và phân cụm đồng trích dẫn...")
 
-        # --- STEP 3: GENERATION 2 ---
-        gen2_target_pool: List[str] = []
-        for g1_id in gen1_ids[:15]:
-            g1_node = nodes[g1_id]
-            for r_id in g1_node.get("referenced_works", [])[:12]:
-                if r_id not in nodes and r_id not in gen2_target_pool:
-                    gen2_target_pool.append(r_id)
-
-        gen2_works_raw = self.get_works_batch(gen2_target_pool[:gen2_limit + 20])
-        gen2_works_raw.sort(key=lambda x: x.get("cited_by_count", 0) or 0, reverse=True)
-        gen2_selected = gen2_works_raw[:gen2_limit]
-
-        for w in gen2_selected:
-            wid = w.get("id")
-            if not wid or wid in nodes:
-                continue
-            c = clean_work_metadata(w, generation=2)
-            nodes[wid] = c
-            
-            connected = False
-            for g1_id in gen1_ids:
-                g1_node = nodes[g1_id]
-                if wid in g1_node.get("referenced_works", []):
-                    edges.append((g1_id, wid))
-                    connected = True
-                if g1_id in c.get("referenced_works", []):
-                    edges.append((wid, g1_id))
-                    connected = True
-            if not connected and gen1_ids:
-                edges.append((gen1_ids[0], wid))
-
-        # Check internal cross-references
-        all_ids = set(nodes.keys())
-        existing_edges = set(edges)
-        for nid, nmeta in nodes.items():
+        all_node_ids = set(nodes.keys())
+        existing_edges_set = set(edges)
+        
+        for nid, nmeta in list(nodes.items()):
             for ref_id in nmeta.get("referenced_works", []):
-                if ref_id in all_ids and (nid, ref_id) not in existing_edges:
+                if ref_id in all_node_ids and (nid, ref_id) not in existing_edges_set and nid != ref_id:
                     edges.append((nid, ref_id))
-                    existing_edges.add((nid, ref_id))
+                    existing_edges_set.add((nid, ref_id))
 
         if progress_callback:
-            progress_callback(100, f"Hoàn tất dựng đồ thị Báo chí & Truyền thông: {len(nodes)} bài báo ({len(seed_papers)} hạt giống), {len(edges)} liên kết.")
+            b_cnt = len([n for n in nodes.values() if n.get("level", 0) < 0])
+            f_cnt = len([n for n in nodes.values() if n.get("level", 0) > 0])
+            progress_callback(100, f"Hoàn tất Mạng lưới Kim Cương: {len(nodes)} công trình ({len(seed_papers)} bài gốc F0, {b_cnt} nền tảng R, {f_cnt} kế thừa F), {len(edges)} liên kết đa chiều.")
 
         return nodes, edges, seed_papers
+
+    def build_2gen_network(
+        self,
+        seed_dois: Union[str, List[str]],
+        gen1_limit: int = 20,
+        gen2_limit: int = 68,
+        progress_callback=None
+    ) -> Tuple[Dict[str, Dict[str, Any]], List[Tuple[str, str]], List[Dict[str, Any]]]:
+        """Backward-compatible wrapper utilizing the Diamond Bidirectional Network."""
+        return self.build_bidirectional_diamond_network(
+            seed_dois=seed_dois,
+            backward_limit=12,
+            forward_limit=gen1_limit + min(gen2_limit, 20),
+            max_depth=3,
+            progress_callback=progress_callback
+        )

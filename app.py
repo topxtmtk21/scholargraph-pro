@@ -576,9 +576,20 @@ if st.session_state.get("display_mode") == "mobile_cloud":
     st.markdown("<div style='height: 4px;'></div>", unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# QUY TRÌNH ĐIỀU PHỐI HỌC THUẬT TỰ ĐỘNG (SAFE PIPELINE)
+# QUY TRÌNH ĐIỀU PHỐI HỌC THUẬT TỰ ĐỘNG (SAFE PIPELINE - BIDIRECTIONAL DIAMOND GRAPH)
 # -----------------------------------------------------------------------------
-def run_academic_pipeline(dois: List[str], g1_lim: int, g2_lim: int, target_synth: int, llm_mode: str, api_key: str, email: str):
+def run_academic_pipeline(
+    dois: List[str],
+    backward_lim: int = 15,
+    forward_lim: int = 25,
+    max_depth: int = 2,
+    target_synth: int = 25,
+    llm_mode: str = "Google Gemini 2.0 Flash (Khuyên dùng - Nhanh & Chuẩn xác nhất)",
+    api_key: str = "",
+    email: str = "",
+    g1_lim: int = 20,
+    g2_lim: int = 68
+):
     if not dois:
         st.error("⚠️ Vui lòng cung cấp ít nhất 1 mã DOI hợp lệ.")
         return
@@ -605,21 +616,23 @@ def run_academic_pipeline(dois: List[str], g1_lim: int, g2_lim: int, target_synt
         synthdesk_agent = SynthDeskAgent(llm_helper=llm_helper)
         introwri_agent = IntroWriAgent(llm_helper=llm_helper)
 
-        with st.status("⚡ Đang thực thi quy trình phân tích và soạn thảo học thuật chuẩn APA 7...", expanded=True) as status:
+        with st.status("⚡ Đang thực thi quy trình phân tích và soạn thảo học thuật Kim Cương 2 Chiều chuẩn APA 7...", expanded=True) as status:
             # GIAI ĐOẠN 1
-            st.write(f"📡 **[Giai đoạn 1: Quét mạng lưới]** Đang kết nối cơ sở dữ liệu học thuật quốc tế cho {len(dois)} bài báo gốc...")
-            p1_bar = st.progress(0, text="Đang xây dựng mạng lưới trích dẫn...")
+            st.write(f"📡 **[Giai đoạn 1: Quét Mạng Lưới Kim Cương 2 Chiều]** Đang khai thác cội nguồn lý thuyết (R) & bước tiến tương lai (F) cho {len(dois)} bài báo gốc...")
+            p1_bar = st.progress(0, text="Đang xây dựng Mạng lưới Kim Cương 2 chiều (R ↔ F0 ↔ F)...")
             
             def citenet_cb(pct, msg):
-                p1_bar.progress(pct, text=f"Mạng lưới: {msg}")
+                p1_bar.progress(pct, text=f"Mạng lưới Kim Cương: {msg}")
 
             citenet_res = citenet_agent.run(
                 seed_dois=dois,
-                gen1_limit=g1_lim,
-                gen2_limit=g2_lim,
+                backward_limit=backward_lim,
+                forward_limit=forward_lim,
+                max_depth=max_depth,
                 progress_callback=citenet_cb
             )
-            st.write(f"✓ **Quét mạng lưới hoàn tất:** Đã thu thập {citenet_res['stats']['total_papers']} bài báo khoa học và {citenet_res['stats']['total_links']} mối liên kết trích dẫn.")
+            stats = citenet_res['stats']
+            st.write(f"✓ **Quét mạng lưới hoàn tất:** Đã định vị {stats['total_papers']} công trình học thuật (🏛️ {stats.get('backward_count', 0)} Nền tảng R • ★ {stats.get('seed_count', 0)} Bài gốc F0 • 🚀 {stats.get('forward_count', 0)} Kế thừa F) với {stats['total_links']} liên kết trích dẫn.")
 
             # GIAI ĐOẠN 2
             st.write("📊 **[Giai đoạn 2: Bóc tách bằng chứng & Chuẩn hóa APA 7]** Đang trích xuất dữ liệu thực nghiệm và kiểm định neo ngữ cảnh...")
@@ -769,8 +782,9 @@ if st.session_state.get("show_completion_popup") and st.session_state.pipeline_r
         st.success("🎉 ĐÃ HOÀN TẤT KIỂM TRA DOI & PHÂN TÍCH HỌC THUẬT! Bạn có thể chuyển sang Menu 2 để khám phá sơ đồ mạng lưới.")
 
 # Tham số mặc định
-gen1_limit = 20
-gen2_limit = 68
+backward_limit_default = 15
+forward_limit_default = 25
+max_depth_default = 2
 synth_target = 25
 llm_choice = "Google Gemini 2.0 Flash (Khuyên dùng - Nhanh & Chuẩn xác nhất)"
 api_key_val = get_secret("GEMINI_API_KEY", "") or os.environ.get("GEMINI_API_KEY", "")
@@ -787,12 +801,12 @@ if "01." in workspace_nav:
             ScholarGraph Pro — AI Academic Research & Synthesis Engine
         </div>
         <div class="hero-banner-desc">
-            Nền tảng trực quan hóa mạng lưới tri thức học thuật, bóc tách ma trận bằng chứng thực nghiệm Scopus Q1/Q2 và tự động soạn thảo bản thảo phần Mở đầu song ngữ chuẩn hóa quốc tế theo mô hình John Swales CARS.
+            Nền tảng trực quan hóa Mạng lưới Tri thức Kim Cương 2 chiều (R ↔ F0 ↔ F), bóc tách ma trận bằng chứng thực nghiệm Scopus Q1/Q2 và tự động soạn thảo bản thảo phần Mở đầu song ngữ chuẩn hóa quốc tế theo mô hình John Swales CARS.
         </div>
         <div class="hero-banner-meta">
             <span class="developer-pill" style="font-size:12px; padding:4px 10px;">Người phát triển: TRẦN DUY (Lead AI Research Engineer)</span>
             <span class="status-chip green">{icon_spark_svg} Chuẩn APA 7 & Swales CARS</span>
-            <span class="status-chip blue">{icon_net_svg} Mạng lưới dữ liệu mở OpenAlex</span>
+            <span class="status-chip blue">{icon_net_svg} Mạng Kim Cương 2 Chiều (R ↔ F)</span>
             <span class="status-chip rose">{icon_shield_svg} Zero-Hallucination Framework</span>
         </div>
     </div>
@@ -840,7 +854,7 @@ if "01." in workspace_nav:
             </div>
             <div style="display:flex; flex-direction:column; gap:8px; color:#94A3B8; font-size:13px; line-height:1.6;">
                 <div><b>1. Nhập mã DOI bài báo gốc:</b> Dán mã định danh DOI của bài báo bạn quan tâm hoặc chọn nhanh cụm chủ đề mẫu bên dưới.</div>
-                <div><b>2. Khám phá sơ đồ mạng lưới trích dẫn:</b> Tương tác với sơ đồ tri thức 2 thế hệ (Gen-1 trực tiếp, Gen-2 mở rộng) và tách màn hình phụ để làm việc.</div>
+                <div><b>2. Khám phá sơ đồ mạng lưới Kim Cương 2 chiều:</b> Tương tác với sơ đồ tri thức 2 chiều (Nền tảng cội nguồn R1-R3 ↔ Bài báo gốc F0 ↔ Kế thừa tương lai F1-F3) và tách màn hình phụ để làm việc.</div>
                 <div><b>3. Bóc tách ma trận bằng chứng:</b> Xem xét phương pháp thu thập mẫu, phát hiện cốt lõi và các ranh giới đạo đức chưa có lời giải.</div>
                 <div><b>4. Nhận bản thảo mở đầu song ngữ & Tải file:</b> Đọc bản thảo chuẩn Swales CARS (English & Tiếng Việt) và tải trọn gói tài liệu nghiên cứu.</div>
             </div>
@@ -903,37 +917,32 @@ if "01." in workspace_nav:
                 st.warning("⚠️ Không tìm thấy trường DOI trong tệp. Đang trích xuất theo tiêu đề...")
 
     with ingest_tab3:
-        st.markdown("<div style='font-size:13px; color:#94A3B8; margin-bottom:8px;'>Kéo thả một hoặc nhiều tệp PDF bài báo từ máy tính (Hệ thống sẽ tự động quét mã DOI ở trang đầu):</div>", unsafe_allow_html=True)
-        uploaded_pdfs = st.file_uploader("Chọn các tệp PDF", type=["pdf"], accept_multiple_files=True, label_visibility="collapsed")
-        if uploaded_pdfs:
-            pdf_dois = []
-            for u_pdf in uploaded_pdfs:
-                pdf_bytes = u_pdf.read()
-                d = extract_doi_from_pdf(pdf_bytes)
-                if d:
-                    pdf_dois.append(d)
-            if pdf_dois:
-                st.success(f"✓ Đã nhận diện được {len(pdf_dois)} mã DOI hợp lệ từ các tệp PDF tải lên!")
-                if st.button("📥 Nạp các mã DOI từ PDF vào dự án", use_container_width=True):
-                    st.session_state.doi_input_val = ", ".join(pdf_dois)
+        st.markdown("<div style='font-size:13px; color:#94A3B8; margin-bottom:8px;'>Tải lên tệp PDF bài báo nghiên cứu để trích xuất tự động mã DOI từ trang đầu:</div>", unsafe_allow_html=True)
+        uploaded_pdf = st.file_uploader("Chọn tệp PDF bài báo", type=["pdf"], label_visibility="collapsed")
+        if uploaded_pdf:
+            pdf_doi = extract_doi_from_pdf(uploaded_pdf.read())
+            if pdf_doi:
+                st.success(f"✓ Đã tìm thấy mã DOI trong tệp PDF: `{pdf_doi}`")
+                if st.button(f"📥 Nạp DOI {pdf_doi} vào dự án", use_container_width=True):
+                    st.session_state.doi_input_val = pdf_doi
                     st.rerun()
             else:
-                st.info("ℹ️ Tệp PDF tải lên không chứa chuỗi định danh DOI chuẩn ở 2 trang đầu.")
+                st.warning("⚠️ Không tìm thấy chuỗi DOI tự động trong 2 trang đầu của tệp PDF này. Vui lòng nhập thủ công.")
 
     with ingest_tab4:
-        st.markdown("<div style='font-size:13px; color:#94A3B8; margin-bottom:8px;'>Tìm kiếm bài báo khoa học quốc tế theo tên bài hoặc từ khóa trên OpenAlex:</div>", unsafe_allow_html=True)
-        c_search1, c_search2 = st.columns([3.5, 1])
-        with c_search1:
-            kw_query = st.text_input("Nhập từ khóa tìm kiếm (Ví dụ: automated journalism, AI newsroom ethics):", label_visibility="collapsed", placeholder="Nhập từ khóa...")
-        with c_search2:
-            search_trigger = st.button("🔍 Tìm kiếm", use_container_width=True)
-
-        if search_trigger and kw_query:
-            with st.spinner("Đang tìm kiếm bài báo trên mạng lưới OpenAlex..."):
-                found_works = search_works_by_keyword(kw_query, limit=8, email=email_val)
-                st.session_state["search_results_cache"] = found_works
-
-        if st.session_state.get("search_results_cache"):
+        st.markdown("<div style='font-size:13px; color:#94A3B8; margin-bottom:8px;'>Tìm kiếm bài báo uy tín trực tiếp trên OpenAlex theo từ khóa hoặc tên đề tài:</div>", unsafe_allow_html=True)
+        kw_col1, kw_col2 = st.columns([3, 1])
+        with kw_col1:
+            search_query = st.text_input("Nhập từ khóa nghiên cứu:", value="Automated Journalism Newsroom AI", label_visibility="collapsed")
+        with kw_col2:
+            search_btn = st.button("🔍 Tìm bài báo", use_container_width=True)
+            
+        if search_btn and search_query:
+            with st.spinner("Đang tìm kiếm trên cơ sở dữ liệu OpenAlex..."):
+                search_results = search_works_by_keyword(search_query, limit=10, email=email_val)
+                st.session_state["search_results_cache"] = search_results
+                
+        if "search_results_cache" in st.session_state and st.session_state["search_results_cache"]:
             s_results = st.session_state["search_results_cache"]
             st.markdown(f"**Kết quả tìm kiếm ({len(s_results)} bài báo):**")
             selected_search_dois = []
@@ -952,6 +961,28 @@ if "01." in workspace_nav:
 
     detected_dois = parse_doi_list(st.session_state.doi_input_val)
     doi_count = len(detected_dois)
+
+    # CẤU HÌNH MẠNG LƯỚI TRI THỨC KIM CƯƠNG 2 CHIỀU (EXPANDER)
+    with st.expander("💎 Cấu hình Mạng lưới Tri thức Kim Cương 2 Chiều (R1-R3 ↔ F0 ↔ F1-F3)", expanded=False):
+        cfg_c1, cfg_c2, cfg_c3 = st.columns(3)
+        with cfg_c1:
+            cfg_backward = st.slider(
+                "🏛️ Số bài Nền tảng cội nguồn (Backward R1-R3):",
+                min_value=5, max_value=40, value=backward_limit_default, step=5,
+                help="Các công trình nền móng lý thuyết mà bài báo gốc tham chiếu đến"
+            )
+        with cfg_c2:
+            cfg_forward = st.slider(
+                "🚀 Số bài Kế thừa & Phát triển (Forward F1-F3):",
+                min_value=10, max_value=60, value=forward_limit_default, step=5,
+                help="Các nghiên cứu xuất bản sau này trích dẫn lại bài báo gốc"
+            )
+        with cfg_c3:
+            cfg_depth = st.selectbox(
+                "🧬 Độ sâu phả hệ trích dẫn (Max Depth):",
+                [2, 1, 3], index=0,
+                format_func=lambda x: f"{x} thế hệ ({'R1-R2 ↔ F0 ↔ F1-F2 (Chuẩn quốc tế)' if x==2 else ('R1 ↔ F0 ↔ F1 (Nhanh)' if x==1 else 'R1-R3 ↔ F0 ↔ F1-F3 (Chuyên sâu)')})"
+            )
 
     # HÀNG ĐIỀU KHIỂN CÂN XỨNG: ĐỒNG BỘ CHIỀU CAO VÀ MÀU SẮC
     col_status, col_btn = st.columns([1, 1], gap="medium")
@@ -989,7 +1020,7 @@ if "01." in workspace_nav:
             """, unsafe_allow_html=True)
 
     with col_btn:
-        start_btn = st.button("🚀 BẮT ĐẦU PHÂN TÍCH & SOẠN THẢO NGAY", type="primary", use_container_width=True)
+        start_btn = st.button("🚀 BẮT ĐẦU PHÂN TÍCH KIM CƯƠNG 2 CHIỀU & SOẠN THẢO", type="primary", use_container_width=True)
 
     st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
 
@@ -1016,8 +1047,9 @@ if "01." in workspace_nav:
     if start_btn:
         run_academic_pipeline(
             dois=detected_dois,
-            g1_lim=gen1_limit,
-            g2_lim=gen2_limit,
+            backward_lim=cfg_backward,
+            forward_lim=cfg_forward,
+            max_depth=cfg_depth,
             target_synth=synth_target,
             llm_mode=llm_choice,
             api_key=api_key_val,
@@ -1046,7 +1078,7 @@ if "01." in workspace_nav:
             st.markdown("""
             <div class="quick-nav-card qnav-net">
                 <div class="qnav-title">🌐 MẠNG LƯỚI TRÍCH DẪN KHOA HỌC</div>
-                <div class="qnav-desc">Khám phá sơ đồ phả hệ học thuật, node trích dẫn & phân loại Open Access</div>
+                <div class="qnav-desc">Khám phá Mạng lưới Kim Cương 2 chiều (R ↔ F0 ↔ F) & phân loại Open Access</div>
             </div>
             """, unsafe_allow_html=True)
             if st.button("➔ XEM MẠNG LƯỚI TRÍCH DẪN", type="primary", use_container_width=True, key="btn_qnav_m2"):
@@ -1090,42 +1122,47 @@ elif "02." in workspace_nav:
         c_res = st.session_state.pipeline_results["citenet"]
         nodes_dict = c_res.get("nodes", {})
         papers_list = c_res.get("papers_list", list(nodes_dict.values()))
+        stats_data = c_res.get("stats", {})
         
         oa_papers = [p for p in papers_list if p.get("is_oa") or bool(p.get("pdf_url"))]
         paywall_papers = [p for p in papers_list if not (p.get("is_oa") or bool(p.get("pdf_url")))]
         oa_pct = round((len(oa_papers) / len(papers_list) * 100), 1) if papers_list else 0.0
+
+        backward_count_val = stats_data.get("backward_count", sum(1 for p in papers_list if p.get("level", 0) < 0))
+        forward_count_val = stats_data.get("forward_count", sum(1 for p in papers_list if p.get("level", 0) > 0))
+        seed_count_val = stats_data.get("seed_count", sum(1 for p in papers_list if p.get("level", 0) == 0))
         
         m1, m2, m3, m4 = st.columns(4)
         with m1:
             st.markdown(f"""
-            <div class="metric-card-full" style="border-top: 3px solid #FB7185;">
-                <div class="metric-title">Bài báo gốc khởi đầu (Seed)</div>
-                <div class="metric-value" style="color: #FB7185;">{c_res['stats']['gen0_count']} bài</div>
-                <div class="metric-sub">Công trình định hướng nghiên cứu</div>
+            <div class="metric-card-full" style="border-top: 3px solid #EA4335;">
+                <div class="metric-title">★ Bài báo gốc (F0 Tâm điểm)</div>
+                <div class="metric-value" style="color: #F28B82;">{seed_count_val} bài</div>
+                <div class="metric-sub">Tâm điểm nghiên cứu ban đầu</div>
             </div>
             """, unsafe_allow_html=True)
         with m2:
             st.markdown(f"""
-            <div class="metric-card-full" style="border-top: 3px solid #38BDF8;">
-                <div class="metric-title">Tổng số bài báo Scopus</div>
-                <div class="metric-value" style="color: #38BDF8;">{c_res['stats']['total_papers']} bài</div>
-                <div class="metric-sub">{c_res['stats']['gen1_count']} bài trực tiếp • {c_res['stats']['gen2_count']} bài mở rộng</div>
+            <div class="metric-card-full" style="border-top: 3px solid #7C3AED;">
+                <div class="metric-title">🏛️ Nền tảng tham chiếu (R1-R3)</div>
+                <div class="metric-value" style="color: #C4B5FD;">{backward_count_val} bài</div>
+                <div class="metric-sub">Cội nguồn lý thuyết & Seminal Works</div>
             </div>
             """, unsafe_allow_html=True)
         with m3:
             st.markdown(f"""
-            <div class="metric-card-full" style="border-top: 3px solid #34D399;">
-                <div class="metric-title">Bản full PDF miễn phí (OA)</div>
-                <div class="metric-value" style="color: #34D399;">{len(oa_papers)} bài ({oa_pct}%)</div>
-                <div class="metric-sub">Tải trực tiếp không cần tài khoản</div>
+            <div class="metric-card-full" style="border-top: 3px solid #0284C7;">
+                <div class="metric-title">🚀 Kế thừa & Phát triển (F1-F3)</div>
+                <div class="metric-value" style="color: #38BDF8;">{forward_count_val} bài</div>
+                <div class="metric-sub">Trích dẫn & Frontier Advances</div>
             </div>
             """, unsafe_allow_html=True)
         with m4:
             st.markdown(f"""
-            <div class="metric-card-full" style="border-top: 3px solid #FBBF24;">
-                <div class="metric-title">Bản cần quyền truy cập</div>
-                <div class="metric-value" style="color: #FBBF24;">{len(paywall_papers)} bài</div>
-                <div class="metric-sub">Truy cập qua cổng thư viện trường</div>
+            <div class="metric-card-full" style="border-top: 3px solid #059669;">
+                <div class="metric-title">🔓 Bản PDF miễn phí (OA)</div>
+                <div class="metric-value" style="color: #34D399;">{len(oa_papers)} bài ({oa_pct}%)</div>
+                <div class="metric-sub">Tổng: {len(papers_list)} bài • {stats_data.get('total_links', len(c_res.get('edges', [])))} liên kết</div>
             </div>
             """, unsafe_allow_html=True)
 
@@ -1156,17 +1193,19 @@ elif "02." in workspace_nav:
 
         col_g1, col_g2, col_g3 = st.columns([1.8, 1.1, 1.1], gap="small")
         with col_g1:
-            with st.expander("💡 Hướng dẫn & Quy ước thao tác sơ đồ", expanded=False):
+            with st.expander("💡 Hướng dẫn & Quy ước Mạng lưới Kim Cương 2 Chiều", expanded=False):
                 st.markdown("""
-                - **Kích cỡ Node:** Tỷ lệ thuận với số lượt trích dẫn Scopus (Academic Impact).
-                - **Màu sắc:** 🔴 Đỏ: Bài báo gốc (Seed) | 🔵 Xanh dương: Tham khảo trực tiếp (Gen-1) | 🟢 Xanh lục: Mở rộng (Gen-2).
-                - **Thao tác:** Bấm nút **🎛️ Bảng công cụ** ở góc trên sơ đồ để phóng to, thu nhỏ, căn giữa, chuyển kiểu nền 3D hoặc bố cục phả hệ.
+                - **🔴 Đỏ (F0):** Bài báo gốc đặt tại tâm điểm nghiên cứu.
+                - **🟣 Tím / Indigo (R1-R3):** Nền tảng tham chiếu quá khứ (Backward Roots) - cội nguồn lý thuyết.
+                - **🟢 Xanh dương / Ngọc lục bảo (F1-F3):** Kế thừa và phát triển tương lai (Forward Frontier) - bước tiến mở rộng.
+                - **Kích cỡ Node:** Tỷ lệ logarithm theo số trích dẫn Scopus (Price's Law).
+                - **Thao tác:** Bấm nút **🎛️ Bảng công cụ** ở góc trên sơ đồ để chuyển đổi 5 kiểu bố cục (Kim cương 2 chiều, Dòng thời gian, Cây phả hệ, Phân làn Scopus, Mạng cụm).
                 """)
         with col_g2:
             st.download_button(
                 "📥 Tải tệp HTML",
                 data=active_network_html,
-                file_name="so_do_mang_luoi_trich_dan.html",
+                file_name="so_do_mang_luoi_kim_cuong.html",
                 mime="text/html",
                 use_container_width=True,
                 key="btn_dl_active_net_html"
@@ -1186,13 +1225,65 @@ elif "02." in workspace_nav:
         # Gom nhóm liệt kê phân loại quyền truy cập, Phân tích khoảng trống & Tra cứu chi tiết
         st.markdown("### 📊 Gom nhóm danh mục, Bản đồ khoảng trống & Quyền truy cập tài liệu:")
         
-        tab_oa_group, tab_paywall_group, tab_timeline, tab_heatmap, tab_single_lookup = st.tabs([
+        tab_diamond_layers, tab_oa_group, tab_paywall_group, tab_timeline, tab_heatmap, tab_single_lookup = st.tabs([
+            f"💎 Phân tầng Kim Cương (R: {backward_count_val} • F: {forward_count_val})",
             f"🔓 Nhóm bản full PDF miễn phí (OA: {len(oa_papers)} bài)",
             f"🔒 Nhóm bản trả phí / Cần quyền (Paywall: {len(paywall_papers)} bài)",
             "📈 Dòng thời gian phát triển (Timeline)",
             "🎯 Bản đồ khoảng trống nghiên cứu (Gap Heatmap)",
             "🔍 Tra cứu chi tiết & Tóm tắt song ngữ"
         ])
+
+        with tab_diamond_layers:
+            st.markdown(f"""
+            <div style="background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 14px 18px; margin-bottom: 14px;">
+                <div style="color: var(--primary-accent); font-weight: 800; font-size: 14.5px; margin-bottom: 4px;">
+                    💎 CẤU TRÚC PHÂN TẦNG MẠNG LƯỚI TRI THỨC KIM CƯƠNG 2 CHIỀU
+                </div>
+                <div style="color: var(--text-secondary); font-size: 13px; line-height: 1.5;">
+                    Mô hình kim cương 2 chiều kết nối hoàn chỉnh giữa <b>Cội nguồn lý thuyết quá khứ (R1-R3)</b> $\longleftrightarrow$ <b>Bài báo gốc (F0)</b> $\longleftrightarrow$ <b>Bước tiến kế thừa tương lai (F1-F3)</b>.
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            c_dia1, c_dia2 = st.columns(2, gap="medium")
+            with c_dia1:
+                st.markdown("#### 🏛️ Nền tảng tham chiếu quá khứ (Backward Roots - R1, R2, R3)")
+                backward_items = [p for p in papers_list if p.get("level", 0) < 0 or p.get("layer") == "backward"]
+                if backward_items:
+                    for b_i, b_p in enumerate(backward_items[:12]):
+                        lvl_tag = f"R{abs(b_p.get('level', 1))}"
+                        st.markdown(f"""
+                        <div class="apa-ref-card" style="border-left: 3px solid #7C3AED; margin-bottom: 8px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                                <span class="custom-badge badge-diamond-root">{lvl_tag} • Nền tảng</span>
+                                <span style="font-size:11.5px; color:#94A3B8;">{b_p.get('citation_count', 0)} trích dẫn</span>
+                            </div>
+                            <div style="font-size:12.5px; font-weight:700; color:#F8FAFC; margin-bottom:4px;">{b_p.get('title', '')}</div>
+                            <div style="font-size:11.5px; color:#94A3B8;">{b_p.get('authors', '')} ({b_p.get('year', '')}) • {b_p.get('venue', '')}</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                else:
+                    st.info("Chưa có danh mục tham chiếu nền tảng trong tập lọc hiện tại.")
+
+            with c_dia2:
+                st.markdown("#### 🚀 Kế thừa & Phát triển tương lai (Forward Frontier - F1, F2, F3)")
+                forward_items = [p for p in papers_list if p.get("level", 0) > 0 or p.get("layer") == "forward"]
+                if forward_items:
+                    for f_i, f_p in enumerate(forward_items[:12]):
+                        lvl_tag = f"F{f_p.get('level', 1)}"
+                        st.markdown(f"""
+                        <div class="apa-ref-card" style="border-left: 3px solid #0284C7; margin-bottom: 8px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                                <span class="custom-badge badge-diamond-frontier">{lvl_tag} • Kế thừa</span>
+                                <span style="font-size:11.5px; color:#94A3B8;">{f_p.get('citation_count', 0)} trích dẫn</span>
+                            </div>
+                            <div style="font-size:12.5px; font-weight:700; color:#F8FAFC; margin-bottom:4px;">{f_p.get('title', '')}</div>
+                            <div style="font-size:11.5px; color:#94A3B8;">{f_p.get('authors', '')} ({f_p.get('year', '')}) • {f_p.get('venue', '')}</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                else:
+                    st.info("Chưa có danh mục kế thừa tương lai trong tập lọc hiện tại.")
         
         with tab_oa_group:
             st.markdown(f"""

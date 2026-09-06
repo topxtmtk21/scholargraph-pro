@@ -7,8 +7,11 @@ from utils.bib_formatter import generate_bibtex, generate_ris, papers_to_datafra
 
 class CiteNetAgent:
     """
-    Trợ lý 1: CiteNet (Graph Expansion & Network Builder)
-    Nhận 1 hoặc NHIỀU seed DOIs, tự động dò tìm và dựng đồ thị trích dẫn đa tầng (2 thế hệ).
+    Trợ lý 1: CiteNet (Graph Expansion & Diamond Network Builder)
+    Nhận 1 hoặc NHIỀU seed DOIs, tự động dò tìm và dựng Mạng lưới Tri thức Kim cương 2 chiều (Bidirectional Diamond Knowledge Graph):
+    - Khám phá cội nguồn lý thuyết (Backward References R1-R3: Theoretical Roots & Seminal Works)
+    - Khám phá bước tiến tương lai (Forward Citations F1-F3: Frontier Advances & Derivative Works)
+    - Tự động bóc tách Citation Closure & Cross-links.
     Chuẩn hóa theo các quy chuẩn thư mục học quốc tế (Bibliometric & Scientometric standards).
     """
     def __init__(self, email: Optional[str] = None):
@@ -17,17 +20,25 @@ class CiteNetAgent:
     def run(
         self,
         seed_dois: Union[str, List[str]],
-        gen1_limit: int = 20,
-        gen2_limit: int = 68,
+        backward_limit: int = 15,
+        forward_limit: int = 25,
+        max_depth: int = 2,
+        gen1_limit: Optional[int] = None,
+        gen2_limit: Optional[int] = None,
         progress_callback=None
     ) -> Dict[str, Any]:
         """
-        Execute CiteNet pipeline for single or multiple DOIs.
+        Execute CiteNet pipeline with Bidirectional Diamond Knowledge Graph.
         """
-        nodes_dict, edges_list, seed_papers = self.client.build_2gen_network(
+        # Hỗ trợ backward-compatibility nếu người dùng truyền gen1_limit / gen2_limit cũ
+        if forward_limit is None and gen1_limit is not None:
+            forward_limit = gen1_limit
+            
+        nodes_dict, edges_list, seed_papers = self.client.build_bidirectional_diamond_network(
             seed_dois=seed_dois,
-            gen1_limit=gen1_limit,
-            gen2_limit=gen2_limit,
+            backward_limit=backward_limit,
+            forward_limit=forward_limit,
+            max_depth=max_depth,
             progress_callback=progress_callback
         )
 
@@ -35,7 +46,7 @@ class CiteNetAgent:
         primary_seed = seed_papers[0] if seed_papers else (papers_list[0] if papers_list else {})
 
         if progress_callback:
-            progress_callback(85, "Đang khởi tạo đồ thị tương tác chuẩn quốc tế và tính toán layout thời gian...")
+            progress_callback(85, "Đang khởi tạo đồ thị tương tác Kim cương 2 chiều và tính toán layout thời gian...")
 
         network_html = self.generate_network_html(nodes_dict, edges_list)
 
@@ -47,9 +58,20 @@ class CiteNetAgent:
         refs_bib = generate_bibtex(papers_list)
         refs_ris = generate_ris(papers_list)
 
-        gen0_count = len(seed_papers)
-        gen1_count = sum(1 for p in papers_list if p.get("generation") == 1)
-        gen2_count = sum(1 for p in papers_list if p.get("generation") == 2)
+        seed_count = len(seed_papers)
+        backward_papers = [p for p in papers_list if p.get("layer") == "backward" or (isinstance(p.get("level"), (int, float)) and p.get("level") < 0)]
+        forward_papers = [p for p in papers_list if p.get("layer") == "forward" or (isinstance(p.get("level"), (int, float)) and p.get("level") > 0)]
+        
+        backward_count = len(backward_papers)
+        forward_count = len(forward_papers)
+        
+        # Đếm thế hệ chi tiết
+        r1_count = sum(1 for p in papers_list if p.get("level") == -1)
+        r2_count = sum(1 for p in papers_list if p.get("level") == -2)
+        r3_count = sum(1 for p in papers_list if p.get("level") <= -3)
+        f1_count = sum(1 for p in papers_list if p.get("level") == 1)
+        f2_count = sum(1 for p in papers_list if p.get("level") == 2)
+        f3_count = sum(1 for p in papers_list if p.get("level") >= 3)
         
         oa_papers = [p for p in papers_list if p.get("is_oa") or bool(p.get("pdf_url"))]
         paywall_papers = [p for p in papers_list if not (p.get("is_oa") or bool(p.get("pdf_url")))]
@@ -60,14 +82,23 @@ class CiteNetAgent:
         stats = {
             "total_papers": len(papers_list),
             "total_links": len(edges_list),
-            "seed_count": gen0_count,
+            "seed_count": seed_count,
             "seed_titles": [p.get("title", "") for p in seed_papers],
             "seed_dois": [p.get("doi", "") for p in seed_papers],
             "seed_title": primary_seed.get("title", "Seed Paper"),
             "seed_doi": primary_seed.get("doi", ""),
-            "gen0_count": gen0_count,
-            "gen1_count": gen1_count,
-            "gen2_count": gen2_count,
+            "backward_count": backward_count,
+            "forward_count": forward_count,
+            "r1_count": r1_count,
+            "r2_count": r2_count,
+            "r3_count": r3_count,
+            "f1_count": f1_count,
+            "f2_count": f2_count,
+            "f3_count": f3_count,
+            # Giữ tương thích ngược với các trường cũ
+            "gen0_count": seed_count,
+            "gen1_count": f1_count if f1_count > 0 else forward_count,
+            "gen2_count": f2_count if f2_count > 0 else backward_count,
             "oa_count": oa_count,
             "paywall_count": paywall_count,
             "oa_percent": oa_percent
@@ -97,11 +128,20 @@ class CiteNetAgent:
         """
         Construct interactive HTML graph with commercial Obsidian styling, international bibliometric node sizing,
         dynamic zoom controls, and a Dual-Mode (Force-directed vs Chronological Timeline evolution) layout.
+        Color coding follows the Bidirectional Diamond Knowledge Graph standard:
+        - 🔴 F0 (Seed): Ruby Red (#EA4335)
+        - 🟣 R1-R3 (Backward Theoretical Roots): Royal Purple (#7C3AED), Indigo (#6366F1), Deep Indigo (#4338CA)
+        - 🟢 F1-F3 (Forward Frontier Advances): Sky Cyan (#0284C7), Emerald (#059669), Amber (#D97706)
         """
+        # Bảng màu Kim Cương Tri Thức Đa Tầng (Diamond Knowledge Graph Palette)
         color_map = {
-            0: {"background": "#EA4335", "border": "#FF8A80", "highlight": "#FFEBEE"}, # Red for Seed Core
-            1: {"background": "#0284C7", "border": "#38BDF8", "highlight": "#E0F2FE"}, # Cyan/Blue for Gen-1
-            2: {"background": "#059669", "border": "#34D399", "highlight": "#ECFDF5"}  # Emerald for Gen-2
+            0: {"background": "#EA4335", "border": "#FF8A80", "highlight": "#FFEBEE"},   # F0: Seed Core (Ruby Red)
+            -1: {"background": "#7C3AED", "border": "#A78BFA", "highlight": "#EDE9FE"},  # R1: Tham chiếu Nền tảng trực tiếp (Royal Purple)
+            -2: {"background": "#6366F1", "border": "#818CF8", "highlight": "#EEF2FF"},  # R2: Cội nguồn lý thuyết mở rộng (Indigo)
+            -3: {"background": "#4338CA", "border": "#6366F1", "highlight": "#E0E7FF"},  # R3: Nền tảng sâu xa (Deep Indigo)
+            1: {"background": "#0284C7", "border": "#38BDF8", "highlight": "#E0F2FE"},   # F1: Kế thừa & Phát triển trực tiếp (Sky Cyan)
+            2: {"background": "#059669", "border": "#34D399", "highlight": "#ECFDF5"},   # F2: Bước tiến phái sinh mở rộng (Emerald Green)
+            3: {"background": "#D97706", "border": "#FBBF24", "highlight": "#FFFBEB"}    # F3: Chân trời nghiên cứu mới (Amber Gold)
         }
 
         years_list = []
@@ -123,32 +163,50 @@ class CiteNetAgent:
 
         vis_nodes = []
         for node_id, meta in nodes.items():
-            gen = meta.get("generation", 2)
+            level = meta.get("level", 0)
+            layer = meta.get("layer", "seed")
             cites = meta.get("citation_count", 0) or 0
             tot_conn = outgoing_map.get(node_id, 0) + incoming_map.get(node_id, 0)
             is_isolated = (tot_conn == 0)
             
-            # Chuẩn quốc tế: Tính kích cỡ node theo quy luật lũy thừa / logarit số trích dẫn (Price's Law)
+            # Chuẩn quốc tế: Tính kích cỡ node theo quy luật logarit số trích dẫn (Price's Law)
             base_size = 16
             if cites > 0:
                 log_scale = math.log(cites + 1, 1.5) * 4.2
                 node_size = max(16, min(56, int(base_size + log_scale)))
             else:
                 node_size = 16
-            if gen == 0:
+            if level == 0 or layer == "seed":
                 node_size = max(node_size + 10, 36)
 
-            colors = color_map.get(gen, color_map[2])
+            # Chọn màu theo cấp bậc level
+            if level in color_map:
+                colors = color_map[level]
+            elif level < -3:
+                colors = color_map[-3]
+            elif level > 3:
+                colors = color_map[3]
+            else:
+                colors = color_map[2]
+
             first_auth = meta.get("first_author", "Tác giả").split()[-1] if meta.get("first_author") else "Paper"
             year = meta.get("year", "n.d.")
             
-            # Nhãn học thuật kèm trực tiếp số lượt trích dẫn & trạng thái độc lập
-            if gen == 0:
-                short_label = f"★ {first_auth} ({year})\n[{cites} trích dẫn]"
-            elif is_isolated:
-                short_label = f"⚡ {first_auth} ({year})\n[{cites} trích dẫn • Độc lập]"
+            # Nhãn học thuật kèm trực tiếp số lượt trích dẫn & phân loại tầng
+            if level == 0 or layer == "seed":
+                short_label = f"★ {first_auth} ({year})\n[F0 • {cites} trích dẫn]"
+            elif level < 0 or layer == "backward":
+                r_tag = f"R{abs(level)}" if level != 0 else "R"
+                if is_isolated:
+                    short_label = f"⚡ {first_auth} ({year})\n[{r_tag} • {cites} tc • Độc lập]"
+                else:
+                    short_label = f"🏛️ {first_auth} ({year})\n[{r_tag} • {cites} trích dẫn]"
             else:
-                short_label = f"{first_auth} ({year})\n[{cites} trích dẫn]"
+                f_tag = f"F{level}" if level != 0 else "F"
+                if is_isolated:
+                    short_label = f"⚡ {first_auth} ({year})\n[{f_tag} • {cites} tc • Độc lập]"
+                else:
+                    short_label = f"🚀 {first_auth} ({year})\n[{f_tag} • {cites} trích dẫn]"
 
             # Tính tọa độ timeline ban đầu
             try:
@@ -157,24 +215,27 @@ class CiteNetAgent:
                 yr_int = min_yr
             x_timeline = (yr_int - min_yr) * 240 - ((max_yr - min_yr) * 120)
             
+            is_seed = (level == 0 or layer == "seed")
             node_item = {
                 "id": node_id,
                 "label": short_label,
                 "value": cites + 1,
                 "size": node_size,
                 "color": colors,
-                "borderWidth": 3.5 if gen == 0 else (2.6 if is_isolated else 1.8),
+                "borderWidth": 3.5 if is_seed else (2.6 if is_isolated else 1.8),
                 "shapeProperties": {"borderDashes": [4, 4]} if is_isolated else {"borderDashes": False},
                 "font": {
-                    "size": 12 if gen == 0 else 11,
+                    "size": 12 if is_seed else 11,
                     "color": "#F8FAFC",
                     "face": "Plus Jakarta Sans, sans-serif",
                     "strokeWidth": 3,
                     "strokeColor": "#0B0C0E"
                 },
-                "shape": "star" if gen == 0 else "dot",
+                "shape": "star" if is_seed else "dot",
                 "x_timeline": x_timeline,
                 "year": yr_int,
+                "level": level,
+                "layer": layer,
                 "citations": cites,
                 "is_isolated": is_isolated,
                 "title": "⚠️ BÀI BÁO ĐỘC LẬP: Không có liên kết trích dẫn trực tiếp trong tập mẫu này" if is_isolated else ""
@@ -222,6 +283,9 @@ class CiteNetAgent:
                 "openalex_url": meta.get("openalex_url", ""),
                 "citation_count": meta.get("citation_count", 0) or 0,
                 "generation": meta.get("generation", 2),
+                "level": meta.get("level", 0),
+                "layer": meta.get("layer", "seed"),
+                "layer_label": meta.get("layer_label", "★ BÀI BÁO GỐC"),
                 "is_oa": meta.get("is_oa", False) or bool(pdf_url),
                 "abstract": abs_vi,
                 "abstract_vi": abs_vi,
@@ -428,7 +492,7 @@ class CiteNetAgent:
             color: #F8FAFC;
             transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
             overflow: hidden;
-            max-width: 320px;
+            max-width: 340px;
         }}
         .legend-toggle-btn {{
             display: flex;
@@ -466,6 +530,7 @@ class CiteNetAgent:
             display: flex;
             align-items: center;
             gap: 6px;
+            line-height: 1.4;
         }}
         .legend-dot {{
             width: 10px;
@@ -552,8 +617,11 @@ class CiteNetAgent:
             text-transform: uppercase;
         }}
         .badge-seed {{ background: rgba(234, 67, 53, 0.2); color: #F28B82; border: 1px solid rgba(234, 67, 53, 0.4); }}
-        .badge-gen1 {{ background: rgba(2, 132, 199, 0.2); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.4); }}
-        .badge-gen2 {{ background: rgba(5, 150, 105, 0.2); color: #34D399; border: 1px solid rgba(52, 211, 153, 0.4); }}
+        .badge-r1 {{ background: rgba(124, 58, 237, 0.2); color: #C4B5FD; border: 1px solid rgba(124, 58, 237, 0.4); }}
+        .badge-r2 {{ background: rgba(99, 102, 241, 0.2); color: #A5B4FC; border: 1px solid rgba(99, 102, 241, 0.4); }}
+        .badge-f1 {{ background: rgba(2, 132, 199, 0.2); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.4); }}
+        .badge-f2 {{ background: rgba(5, 150, 105, 0.2); color: #34D399; border: 1px solid rgba(52, 211, 153, 0.4); }}
+        .badge-f3 {{ background: rgba(217, 119, 6, 0.2); color: #FCD34D; border: 1px solid rgba(245, 158, 11, 0.4); }}
         
         .modal-section-title {{
             font-size: 12px;
@@ -717,6 +785,7 @@ class CiteNetAgent:
                 font-size: 10.5px;
                 flex: 1 1 auto;
                 justify-content: center;
+                min-height: 34px;
             }}
             #floating-hover-card {{
                 display: none !important; /* Ẩn hover card trên thiết bị cảm ứng để tránh vướng màn hình */
@@ -728,7 +797,7 @@ class CiteNetAgent:
                 right: 0 !important;
                 width: 100% !important;
                 max-width: 100% !important;
-                max-height: 82vh !important;
+                max-height: 85vh !important;
                 border-radius: 20px 20px 0 0 !important;
                 border-bottom: none !important;
                 box-shadow: 0 -10px 40px rgba(0,0,0,0.8) !important;
@@ -747,6 +816,10 @@ class CiteNetAgent:
             }}
             .modal-title {{
                 font-size: 14px !important;
+            }}
+            .action-link-btn {{
+                min-height: 38px;
+                padding: 8px 14px;
             }}
         }}
     </style>
@@ -781,7 +854,7 @@ class CiteNetAgent:
             <div class="hud-btn-row">
                 <button class="hud-btn active" id="btnModeForce" onclick="switchLayoutMode('force')" title="1. Chuẩn VOSviewer: Cụm lực hút đồng trích dẫn">🕸️ Mạng Cụm</button>
                 <button class="hud-btn" id="btnModeTimeline" onclick="switchLayoutMode('timeline')" title="2. Chuẩn HistCite: Dòng thời gian tiến hóa học thuật">⏳ Dòng Thời gian</button>
-                <button class="hud-btn" id="btnModeConcentric" onclick="switchLayoutMode('concentric')" title="3. Chuẩn Ego-Network: Quỹ đạo đồng tâm theo thế hệ">🎯 Quỹ đạo Đồng tâm</button>
+                <button class="hud-btn" id="btnModeConcentric" onclick="switchLayoutMode('concentric')" title="3. Chuẩn Kim Cương: Quỹ đạo Nền tảng (R) - Kế thừa (F)">💎 Kim Cương 2 Chiều</button>
                 <button class="hud-btn" id="btnModeHierarchical" onclick="switchLayoutMode('hierarchical')" title="4. Chuẩn CiteSpace: Cây phả hệ phân tầng">🌳 Cây Phả hệ</button>
                 <button class="hud-btn" id="btnModeQuartile" onclick="switchLayoutMode('quartile')" title="5. Chuẩn Clarivate: Phân làn Scopus Q1/Q2">📊 Phân làn Scopus</button>
             </div>
@@ -850,17 +923,17 @@ class CiteNetAgent:
         </div>
     </div>
 
-    <!-- Chú thích chuyển sang bên trái - Mặc định thu gọn tinh gọn (Left Collapsible Legend) -->
+    <!-- Chú thích Kim Cương Tri Thức 2 Chiều (Left Collapsible Legend) -->
     <div id="hud-legend-wrapper" class="hud-legend-drawer">
         <button id="legendToggleBtn" class="legend-toggle-btn" onclick="toggleLegendDrawer()" title="Bấm để mở rộng / thu gọn chú giải">
-            <span>📖 Chú thích & Quy ước</span>
+            <span>📖 Chú thích Kim Cương Tri Thức</span>
             <span id="legendArrowIcon">▸</span>
         </button>
         <div id="legendContentPanel" class="legend-content-panel" style="display: none;">
-            <div class="legend-item"><span class="legend-dot" style="background:#EA4335;"></span> <b>Bài báo gốc (Seed):</b> Tâm điểm nghiên cứu</div>
-            <div class="legend-item"><span class="legend-dot" style="background:#0284C7;"></span> <b>Gen-1:</b> Tham khảo trực tiếp</div>
-            <div class="legend-item"><span class="legend-dot" style="background:#059669;"></span> <b>Gen-2:</b> Mở rộng chân trời</div>
-            <div class="legend-item" style="color:#38BDF8; margin-top:2px;">● <b>Kích cỡ Node:</b> Tỷ lệ thuận với số trích dẫn</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#EA4335;"></span> <b>Bài báo gốc (F0):</b> Tâm điểm nghiên cứu</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#7C3AED;"></span> <b>Nền tảng (R1-R3):</b> Tham chiếu cội nguồn lý thuyết</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#0284C7;"></span> <b>Kế thừa (F1-F3):</b> Trích dẫn & phát triển tương lai</div>
+            <div class="legend-item" style="color:#38BDF8; margin-top:2px;">● <b>Kích cỡ Node:</b> Tỷ lệ logarit số trích dẫn</div>
             <div class="legend-item" style="color:#94A3B8;">➔ <b>Đường mũi tên:</b> Dòng trích dẫn học thuật</div>
         </div>
     </div>
@@ -952,7 +1025,6 @@ class CiteNetAgent:
         var btnConcentric = document.getElementById('btnModeConcentric');
         var btnHierarchical = document.getElementById('btnModeHierarchical');
         var btnQuartile = document.getElementById('btnModeQuartile');
-        var axisBar = document.getElementById('timeline-axis-bar');
 
         [btnForce, btnTimeline, btnConcentric, btnHierarchical, btnQuartile].forEach(function(b) {{
             if (b) b.className = 'hud-btn';
@@ -993,34 +1065,39 @@ class CiteNetAgent:
             network.setOptions({{ physics: {{ enabled: false }}, layout: {{ hierarchical: false }} }});
 
             var updates = [];
-            var gen0 = rawNodes.filter(function(n) {{ return (metaDict[n.id] && metaDict[n.id].generation === 0); }});
-            var gen1 = rawNodes.filter(function(n) {{ return (metaDict[n.id] && metaDict[n.id].generation === 1); }});
-            var gen2 = rawNodes.filter(function(n) {{ return (!metaDict[n.id] || (metaDict[n.id].generation !== 0 && metaDict[n.id].generation !== 1)); }});
+            var seeds = rawNodes.filter(function(n) {{ return (n.level === 0 || n.layer === 'seed'); }});
+            var backwardPapers = rawNodes.filter(function(n) {{ return (n.level < 0 || n.layer === 'backward'); }});
+            var forwardPapers = rawNodes.filter(function(n) {{ return (n.level > 0 || n.layer === 'forward'); }});
 
-            gen0.forEach(function(n) {{
-                updates.push({{ id: n.id, x: 0, y: 0, physics: false }});
+            // Seed đặt ở tâm
+            seeds.forEach(function(n, i) {{
+                updates.push({{ id: n.id, x: (i * 80) - ((seeds.length - 1) * 40), y: 0, physics: false }});
             }});
 
-            var r1 = 250;
-            var count1 = gen1.length || 1;
-            gen1.forEach(function(n, i) {{
-                var angle = (2 * Math.PI * i) / count1 - Math.PI / 2;
+            // Nền tảng (Backward - R) đặt bên cánh TRÁI (cung tròn 90 độ đến 270 độ)
+            var bCount = backwardPapers.length || 1;
+            backwardPapers.forEach(function(n, i) {{
+                var lvl = Math.abs(n.level || 1);
+                var radius = 240 + (lvl - 1) * 140;
+                var angle = Math.PI / 2 + ((Math.PI * (i + 0.5)) / bCount);
                 updates.push({{
                     id: n.id,
-                    x: Math.round(r1 * Math.cos(angle)),
-                    y: Math.round(r1 * Math.sin(angle)),
+                    x: Math.round(radius * Math.cos(angle)),
+                    y: Math.round(radius * Math.sin(angle)),
                     physics: false
                 }});
             }});
 
-            var r2 = 490;
-            var count2 = gen2.length || 1;
-            gen2.forEach(function(n, j) {{
-                var angle = (2 * Math.PI * j) / count2 - Math.PI / 2;
+            // Kế thừa (Forward - F) đặt bên cánh PHẢI (cung tròn -90 độ đến 90 độ)
+            var fCount = forwardPapers.length || 1;
+            forwardPapers.forEach(function(n, j) {{
+                var lvl = Math.abs(n.level || 1);
+                var radius = 260 + (lvl - 1) * 150;
+                var angle = -Math.PI / 2 + ((Math.PI * (j + 0.5)) / fCount);
                 updates.push({{
                     id: n.id,
-                    x: Math.round(r2 * Math.cos(angle)),
-                    y: Math.round(r2 * Math.sin(angle)),
+                    x: Math.round(radius * Math.cos(angle)),
+                    y: Math.round(radius * Math.sin(angle)),
                     physics: false
                 }});
             }});
@@ -1078,7 +1155,7 @@ class CiteNetAgent:
             rawNodes.forEach(function(n) {{
                 var p = metaDict[n.id] || {{}};
                 var tier = (p.scopus_tier || '').toLowerCase();
-                if (p.generation === 0) {{
+                if (p.level === 0 || p.layer === 'seed') {{
                     lanes.core.push(n.id);
                 }} else if (tier.indexOf('q1') !== -1 || tier.indexOf('top tier') !== -1) {{
                     lanes.q1.push(n.id);
@@ -1132,7 +1209,6 @@ class CiteNetAgent:
         }}
     }}
 
-
     // Hover Event
     network.on('hoverNode', function(params) {{
         var nodeId = params.node;
@@ -1140,8 +1216,15 @@ class CiteNetAgent:
         if (!p) return;
         var card = document.getElementById('floating-hover-card');
         
-        var badgeColor = p.generation === 0 ? '#EA4335' : (p.generation === 1 ? '#0284C7' : '#059669');
-        var badgeLabel = p.generation === 0 ? '⭐ Bài báo gốc (Tâm điểm)' : (p.generation === 1 ? '🔗 Tham khảo trực tiếp (Gen-1)' : '🌐 Mở rộng cùng chủ đề (Gen-2)');
+        var lvl = p.level !== undefined ? p.level : 0;
+        var badgeColor = '#EA4335';
+        var badgeLabel = '⭐ Bài báo gốc (F0 Tâm điểm)';
+        if (lvl === -1) {{ badgeColor = '#7C3AED'; badgeLabel = '🏛️ Nền tảng tham chiếu (R1)'; }}
+        else if (lvl === -2) {{ badgeColor = '#6366F1'; badgeLabel = '🏛️ Cội nguồn lý thuyết (R2)'; }}
+        else if (lvl <= -3) {{ badgeColor = '#4338CA'; badgeLabel = '🏛️ Nền tảng sâu xa (R3)'; }}
+        else if (lvl === 1) {{ badgeColor = '#0284C7'; badgeLabel = '🚀 Kế thừa trực tiếp (F1)'; }}
+        else if (lvl === 2) {{ badgeColor = '#059669'; badgeLabel = '🚀 Bước tiến mở rộng (F2)'; }}
+        else if (lvl >= 3) {{ badgeColor = '#D97706'; badgeLabel = '🚀 Chân trời mới (F3)'; }}
         
         document.getElementById('hover-badge').style.color = badgeColor;
         document.getElementById('hover-badge').innerText = badgeLabel;
@@ -1154,7 +1237,7 @@ class CiteNetAgent:
             connBadge.innerHTML = '<span style="color:#F59E0B; background:rgba(245,158,11,0.18); padding:2px 8px; border-radius:6px; border:1px solid rgba(245,158,11,0.4); font-weight:700;">⚠️ 0 LIÊN KẾT (ĐỨNG LẺ LOI)</span>';
             if (orphanNotice) {{
                 orphanNotice.style.display = 'block';
-                orphanNotice.innerHTML = '⚠️ <b>Bài báo đứng lẻ loi (Không có mũi tên kết nối):</b><br/><span style="color:#E2E8F0;">Công trình này thuộc cùng chủ đề nghiên cứu nhưng không trích dẫn trực tiếp bài báo gốc (Seed) trong tập dữ liệu giới hạn hiện hành, và chưa có bài nào trong mạng lưới trích dẫn lại nó.</span>';
+                orphanNotice.innerHTML = '⚠️ <b>Bài báo đứng lẻ loi:</b><br/><span style="color:#E2E8F0;">Công trình thuộc cùng chủ đề nhưng không có trích dẫn chéo trong tập dữ liệu giới hạn này.</span>';
             }}
         }} else {{
             connBadge.innerHTML = '<span style="color:#38BDF8; background:rgba(56,189,248,0.12); padding:2px 8px; border-radius:6px; border:1px solid rgba(56,189,248,0.3);">🔗 ' + totalConn + ' liên kết • ' + p.citation_count + ' trích dẫn</span>';
@@ -1216,13 +1299,22 @@ class CiteNetAgent:
 
         var modal = document.getElementById('paper-modal');
         
+        var lvl = p.level !== undefined ? p.level : 0;
         var badgeHtml = '';
-        if (p.generation === 0) {{
-            badgeHtml = '<span class="modal-badge badge-seed">Bài báo gốc (Tâm điểm)</span>';
-        }} else if (p.generation === 1) {{
-            badgeHtml = '<span class="modal-badge badge-gen1">Tham khảo trực tiếp (Gen-1)</span>';
+        if (lvl === 0 || p.layer === 'seed') {{
+            badgeHtml = '<span class="modal-badge badge-seed">Bài báo gốc (F0 Tâm điểm)</span>';
+        }} else if (lvl === -1) {{
+            badgeHtml = '<span class="modal-badge badge-r1">Nền tảng tham chiếu (R1)</span>';
+        }} else if (lvl === -2) {{
+            badgeHtml = '<span class="modal-badge badge-r2">Cội nguồn lý thuyết (R2)</span>';
+        }} else if (lvl <= -3) {{
+            badgeHtml = '<span class="modal-badge badge-r2">Nền tảng sâu xa (R3)</span>';
+        }} else if (lvl === 1) {{
+            badgeHtml = '<span class="modal-badge badge-f1">Kế thừa trực tiếp (F1)</span>';
+        }} else if (lvl === 2) {{
+            badgeHtml = '<span class="modal-badge badge-f2">Bước tiến mở rộng (F2)</span>';
         }} else {{
-            badgeHtml = '<span class="modal-badge badge-gen2">Mở rộng cùng chủ đề (Gen-2)</span>';
+            badgeHtml = '<span class="modal-badge badge-f3">Chân trời mới (F3)</span>';
         }}
         badgeHtml += ' <span style="font-size:12px; color:#38BDF8; font-weight:600; margin-left:8px;">' + (p.scopus_tier || 'Scopus Indexed') + '</span>';
 
@@ -1276,14 +1368,13 @@ class CiteNetAgent:
                 '<div style="color:#FCD34D; font-weight:800; font-size:12px; margin-bottom:6px; display:flex; align-items:center; gap:6px;">' +
                 '<span>⚠️</span> <span>LÝ DO BÀI BÁO ĐỨNG LẺ LOI (KHÔNG CÓ MŨI TÊN KẾT NỐI):</span></div>' +
                 '<div style="color:#E2E8F0; font-size:12px; line-height:1.6;">' +
-                '• <b>Giới hạn chuỗi trích dẫn (Citation Boundary):</b> Công trình này được lập chỉ mục Scopus trong cùng chủ đề nhưng tác giả không trực tiếp trích dẫn bài báo gốc (Seed DOI) trong danh mục tham khảo.<br/>' +
-                '• <b>Mối quan hệ nội bộ:</b> Các bài báo khác trong tập mẫu hiện hành cũng chưa ghi nhận trích dẫn đến bài này.<br/>' +
-                '• <b>Giá trị học thuật:</b> Vẫn cung cấp bằng chứng thực nghiệm độc lập và góc nhìn có giá trị cho tổng quan nghiên cứu.' +
+                '• <b>Giới hạn chuỗi trích dẫn:</b> Công trình này thuộc cùng chủ đề nhưng không trực tiếp trích dẫn bài báo gốc trong tập mẫu giới hạn này.<br/>' +
+                '• <b>Giá trị học thuật:</b> Cung cấp bằng chứng thực nghiệm độc lập và góc nhìn khách quan cho tổng quan nghiên cứu.' +
                 '</div></div>';
         }}
 
         if (outList.length > 0) {{
-            lineageHtml += '<div style="font-size:11.5px; color:#38BDF8; font-weight:700; margin-bottom:4px;">⬇️ TÀI LIỆU CÔNG TRÌNH NÀY TRÍCH DẪN (' + outList.length + ' bài):</div>';
+            lineageHtml += '<div style="font-size:11.5px; color:#C4B5FD; font-weight:700; margin-bottom:4px;">⬇️ TÀI LIỆU CÔNG TRÌNH NÀY TRÍCH DẪN / THAM CHIẾU NỀN TẢNG (' + outList.length + ' bài):</div>';
             outList.forEach(function(targetId) {{
                 var targetP = metaDict[targetId];
                 if (targetP) {{
@@ -1293,7 +1384,7 @@ class CiteNetAgent:
         }}
 
         if (inList.length > 0) {{
-            lineageHtml += '<div style="font-size:11.5px; color:#34D399; font-weight:700; margin:8px 0 4px 0;">⬆️ ĐƯỢC TRÍCH DẪN BỞI CÁC BÀI (' + inList.length + ' bài):</div>';
+            lineageHtml += '<div style="font-size:11.5px; color:#38BDF8; font-weight:700; margin:8px 0 4px 0;">⬆️ ĐƯỢC TRÍCH DẪN & KẾ THỪA BỞI CÁC BÀI (' + inList.length + ' bài):</div>';
             inList.forEach(function(srcId) {{
                 var srcP = metaDict[srcId];
                 if (srcP) {{
