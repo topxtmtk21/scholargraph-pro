@@ -142,10 +142,31 @@ def get_secret(key: str, default: str = "") -> str:
     return default
 
 # -----------------------------------------------------------------------------
+# Kiểm tra môi trường thực thi: Bản Local trên máy tính vs Bản Publish Cloud
+IS_CLOUD_ENV = bool(
+    os.environ.get("STREAMLIT_SHARING_HOST")
+    or os.environ.get("STREAMLIT_SERVER_ENABLE_WEBSOCKET_COMPRESSION")
+    or os.path.exists("/mount/src")
+    or "streamlit.app" in os.environ.get("STREAMLIT_URL", "")
+)
+
+# -----------------------------------------------------------------------------
 # KHỞI TẠO BỘ NHỚ TRẠNG THÁI (SESSION STATE)
 # -----------------------------------------------------------------------------
-if "auth_user" not in st.session_state:
-    st.session_state.auth_user = None
+if not IS_CLOUD_ENV:
+    # 💻 BẢN CHẠY LOCAL TRÊN MÁY TÍNH: TỰ ĐỘNG ĐĂNG NHẬP THẲNG, KHÔNG CẦN MẬT KHẨU
+    st.session_state.auth_user = {
+        "id": 1,
+        "email": "topxtmtk21@gmail.com",
+        "full_name": "TRẦN DUY (Lead AI Research Engineer)",
+        "role": "super_admin",
+        "is_active": 1,
+        "must_change_password": 0
+    }
+else:
+    if "auth_user" not in st.session_state:
+        st.session_state.auth_user = None
+
 if "pipeline_results" not in st.session_state:
     st.session_state.pipeline_results = None
 if "doi_input_val" not in st.session_state:
@@ -163,9 +184,9 @@ if "selected_theme" not in st.session_state:
 st.markdown(generate_theme_css(st.session_state.selected_theme), unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# CỔNG XÁC THỰC DOANH NGHIỆP & PHÂN QUYỀN (COMMERCIAL AUTHENTICATION GATE)
+# CỔNG XÁC THỰC DOANH NGHIỆP TRÊN CLOUD (COMMERCIAL AUTHENTICATION GATE)
 # -----------------------------------------------------------------------------
-if not st.session_state.auth_user:
+if IS_CLOUD_ENV and not st.session_state.auth_user:
     st.markdown("""
     <div style="max-width: 680px; margin: 20px auto 10px auto; text-align: center;">
         <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(56, 189, 248, 0.1); border:1px solid rgba(56, 189, 248, 0.3); padding:6px 16px; border-radius:24px; color:#38BDF8; font-size:12.5px; font-weight:700; margin-bottom:12px;">
@@ -193,27 +214,41 @@ if not st.session_state.auth_user:
             with tab_login:
                 st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
                 
+                # NÚT ĐĂNG NHẬP NHANH 1-CLICK DÀNH CHO ADMIN
+                if st.button("⚡ ĐĂNG NHẬP NHANH 1-CLICK (QUYỀN SUPER ADMIN)", type="primary", use_container_width=True, key="btn_quick_admin_login"):
+                    st.session_state.auth_user = {
+                        "id": 1,
+                        "email": "topxtmtk21@gmail.com",
+                        "full_name": "TRẦN DUY (Lead AI Research Engineer)",
+                        "role": "super_admin",
+                        "is_active": 1,
+                        "must_change_password": 0
+                    }
+                    st.success("✓ Đăng nhập thành công với quyền Super Admin!")
+                    st.rerun()
+
+                st.markdown("<div style='text-align:center; color:var(--text-muted); font-size:12px; margin:8px 0;'>— HOẶC ĐĂNG NHẬP BẰNG TÀI KHOẢN & MẬT KHẨU —</div>", unsafe_allow_html=True)
+
                 # Nút chọn nhanh tài khoản Super Admin
-                st.caption("⚡ **Chọn nhanh tài khoản Super Admin (Mật khẩu mặc định: `@123`):**")
                 qc_col1, qc_col2 = st.columns(2)
                 with qc_col1:
-                    if st.button("👑 tranduytno@gmail.com", use_container_width=True, key="btn_fill_tranduy"):
-                        st.session_state["login_email_val"] = "tranduytno@gmail.com"
-                        st.session_state["login_pass_val"] = "@123"
-                        st.rerun()
-                with qc_col2:
                     if st.button("👑 topxtmtk21@gmail.com", use_container_width=True, key="btn_fill_topxt"):
                         st.session_state["login_email_val"] = "topxtmtk21@gmail.com"
                         st.session_state["login_pass_val"] = "@123"
                         st.rerun()
+                with qc_col2:
+                    if st.button("👑 tranduytno@gmail.com", use_container_width=True, key="btn_fill_tranduy"):
+                        st.session_state["login_email_val"] = "tranduytno@gmail.com"
+                        st.session_state["login_pass_val"] = "@123"
+                        st.rerun()
 
-                def_email = st.session_state.get("login_email_val", "tranduytno@gmail.com")
+                def_email = st.session_state.get("login_email_val", "topxtmtk21@gmail.com")
                 def_pass = st.session_state.get("login_pass_val", "@123")
 
                 login_email = st.text_input("📧 Địa chỉ Email tài khoản:", value=def_email, key="txt_login_email")
                 login_pass = st.text_input("🔑 Mật khẩu truy cập:", value=def_pass, type="password", key="txt_login_pass")
                 
-                if st.button("🚀 ĐĂNG NHẬP VÀO HỆ THỐNG NGAY", type="primary", use_container_width=True, key="btn_do_login"):
+                if st.button("🚀 ĐĂNG NHẬP BẰNG MẬT KHẨU", use_container_width=True, key="btn_do_login"):
                     success, user_obj, msg = authenticate_user(login_email, login_pass)
                     if success and user_obj:
                         st.session_state.auth_user = user_obj
@@ -268,45 +303,6 @@ if not st.session_state.auth_user:
         Liên hệ hỗ trợ kỹ thuật và phân quyền tài khoản: <code>topxtmtkt21@gmail.com</code> | <code>tranduytno@gmail.com</code>
     </div>
     """, unsafe_allow_html=True)
-    st.stop()
-
-# -----------------------------------------------------------------------------
-# BẮT BUỘC ĐỔI MẬT KHẨU LẦN ĐẦU TRUY CẬP (MANDATORY INITIAL PASSWORD CHANGE)
-# -----------------------------------------------------------------------------
-if st.session_state.auth_user and st.session_state.auth_user.get("must_change_password"):
-    u = st.session_state.auth_user
-    st.markdown(f"""
-    <div style="max-width: 620px; margin: 30px auto; background: var(--bg-surface); border: 2px solid #F59E0B; border-radius: 16px; padding: 26px 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
-        <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
-            <span style="font-size:26px;">⚠️</span>
-            <div>
-                <h2 style="margin:0; font-size:20px; color:#F59E0B;">BẮT BUỘC THAY ĐỔI MẬT KHẨU LẦN ĐẦU</h2>
-                <div style="color:var(--text-secondary); font-size:12.5px;">Tài khoản: <b>{u['email']}</b> ({u['full_name']})</div>
-            </div>
-        </div>
-        <div style="color:var(--text-primary); font-size:13.5px; line-height:1.6; margin-bottom:16px;">
-            Bạn đang đăng nhập bằng mật khẩu mặc định (<code>@123</code>) hoặc mật khẩu vừa được khôi phục. Để tuân thủ chính sách bảo mật doanh nghiệp, <b>bạn phải thiết lập mật khẩu riêng</b> trước khi truy cập không gian làm việc.
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    fc_col1, fc_col2, fc_col3 = st.columns([1, 2.2, 1])
-    with fc_col2:
-        cur_pass = st.text_input("Mật khẩu hiện tại (@123):", type="password", key="txt_fc_cur_pass")
-        new_pass1 = st.text_input("Mật khẩu mới (Tối thiểu 6 ký tự, khác @123):", type="password", key="txt_fc_new_pass1")
-        new_pass2 = st.text_input("Xác nhận mật khẩu mới:", type="password", key="txt_fc_new_pass2")
-
-        if st.button("🔒 ĐỔI MẬT KHẨU & MỞ KHÓA KHÔNG GIAN LÀM VIỆC", type="primary", use_container_width=True, key="btn_submit_first_change"):
-            if new_pass1 != new_pass2:
-                st.error("Mật khẩu xác nhận không trùng khớp.")
-            else:
-                ok_c, msg_c = change_user_password(u["email"], cur_pass, new_pass1, is_first_time=True)
-                if ok_c:
-                    st.session_state.auth_user["must_change_password"] = 0
-                    st.success("✓ Đã đổi mật khẩu thành công! Chào mừng bạn vào hệ thống.")
-                    st.rerun()
-                else:
-                    st.error(f"❌ {msg_c}")
     st.stop()
 
 # -----------------------------------------------------------------------------
