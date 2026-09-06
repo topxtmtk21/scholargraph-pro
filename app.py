@@ -1517,12 +1517,13 @@ elif "02." in workspace_nav:
                 st.session_state.doi_input_val = ", ".join(demo_dois)
                 run_academic_pipeline(
                     dois=demo_dois,
-                    g1_lim=gen1_limit,
-                    g2_lim=gen2_limit,
-                    target_synth=synth_target,
-                    llm_mode=llm_choice,
-                    api_key=api_key_val,
-                    email=email_val
+                    backward_lim=15,
+                    forward_lim=25,
+                    max_depth=2,
+                    target_synth=20,
+                    llm_mode="Mô phỏng (Mock Engine - Không cần API Key)",
+                    api_key="",
+                    email=""
                 )
         with c_m2_2:
             if st.button("📥 Hoặc nhập mã DOI riêng tại Menu 01 ➔", use_container_width=True, key="btn_m2_goto_m1"):

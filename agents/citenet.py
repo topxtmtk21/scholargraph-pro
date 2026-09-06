@@ -20,20 +20,43 @@ class CiteNetAgent:
     def run(
         self,
         seed_dois: Union[str, List[str]],
-        backward_limit: int = 15,
-        forward_limit: int = 25,
+        *args,
+        backward_limit: Optional[int] = None,
+        forward_limit: Optional[int] = None,
         max_depth: int = 2,
         gen1_limit: Optional[int] = None,
         gen2_limit: Optional[int] = None,
-        progress_callback=None
+        progress_callback=None,
+        **kwargs
     ) -> Dict[str, Any]:
         """
         Execute CiteNet pipeline with Bidirectional Diamond Knowledge Graph.
+        Hỗ trợ phân giải linh hoạt 100% các biến số tương thích ngược.
         """
-        # Hỗ trợ backward-compatibility nếu người dùng truyền gen1_limit / gen2_limit cũ
-        if forward_limit is None and gen1_limit is not None:
-            forward_limit = gen1_limit
+        # Phân giải backward_limit
+        if backward_limit is None:
+            backward_limit = kwargs.get("backward_lim", 15)
             
+        # Phân giải forward_limit
+        if forward_limit is None:
+            if "forward_lim" in kwargs:
+                forward_limit = kwargs["forward_lim"]
+            elif gen1_limit is not None:
+                forward_limit = gen1_limit
+            elif "g1_lim" in kwargs:
+                forward_limit = kwargs["g1_lim"]
+            else:
+                forward_limit = 25
+                
+        # Phân giải max_depth
+        if "depth" in kwargs:
+            max_depth = kwargs["depth"]
+        elif "cfg_depth" in kwargs:
+            max_depth = kwargs["cfg_depth"]
+
+        if progress_callback is None and "cb" in kwargs:
+            progress_callback = kwargs["cb"]
+
         nodes_dict, edges_list, seed_papers = self.client.build_bidirectional_diamond_network(
             seed_dois=seed_dois,
             backward_limit=backward_limit,
@@ -221,34 +244,45 @@ class CiteNetAgent:
 
             first_auth = meta.get("first_author", "Tác giả").split()[-1] if meta.get("first_author") else "Paper"
             year = meta.get("year", "n.d.")
+            raw_title = meta.get("title", "Untitled Paper")
+            clean_title = raw_title.replace('"', '').replace("'", "")
+            truncated_title = clean_title[:45] + "..." if len(clean_title) > 45 else clean_title
             
-            # Nhãn học thuật kèm trực tiếp số lượt trích dẫn & phân loại tầng
+            # Nhãn rút gọn chuẩn học thuật [Tác giả, Năm, Tầng & Số trích dẫn]
             if level == 0 or layer == "seed":
-                short_label = f"★ {first_auth} ({year})\n[F0 • {cites} trích dẫn]"
+                short_label = f"★ {first_auth} ({year})\n[F0 • {cites} tc]"
+                full_label = f"★ {first_auth} ({year})\n{truncated_title}\n[F0 • {cites} trích dẫn]"
             elif level < 0 or layer == "backward":
                 r_tag = f"R{abs(level)}" if level != 0 else "R"
                 if is_isolated:
                     short_label = f"⚡ {first_auth} ({year})\n[{r_tag} • {cites} tc • Độc lập]"
+                    full_label = f"⚡ {first_auth} ({year})\n{truncated_title}\n[{r_tag} • {cites} tc • Độc lập]"
                 else:
-                    short_label = f"🏛️ {first_auth} ({year})\n[{r_tag} • {cites} trích dẫn]"
+                    short_label = f"🏛️ {first_auth} ({year})\n[{r_tag} • {cites} tc]"
+                    full_label = f"🏛️ {first_auth} ({year})\n{truncated_title}\n[{r_tag} • {cites} trích dẫn]"
             else:
                 f_tag = f"F{level}" if level != 0 else "F"
                 if is_isolated:
                     short_label = f"⚡ {first_auth} ({year})\n[{f_tag} • {cites} tc • Độc lập]"
+                    full_label = f"⚡ {first_auth} ({year})\n{truncated_title}\n[{f_tag} • {cites} tc • Độc lập]"
                 else:
-                    short_label = f"🚀 {first_auth} ({year})\n[{f_tag} • {cites} trích dẫn]"
+                    short_label = f"🚀 {first_auth} ({year})\n[{f_tag} • {cites} tc]"
+                    full_label = f"🚀 {first_auth} ({year})\n{truncated_title}\n[{f_tag} • {cites} trích dẫn]"
 
             # Tính tọa độ timeline ban đầu
             try:
                 yr_int = int(year)
             except Exception:
                 yr_int = min_yr
-            x_timeline = (yr_int - min_yr) * 240 - ((max_yr - min_yr) * 120)
+            x_timeline = (yr_int - min_yr) * 260 - ((max_yr - min_yr) * 130)
             
             is_seed = (level == 0 or layer == "seed")
             node_item = {
                 "id": node_id,
                 "label": short_label,
+                "label_short": short_label,
+                "label_full": full_label,
+                "label_minimal": "",
                 "value": cites + 1,
                 "size": node_size,
                 "color": colors,
@@ -258,7 +292,7 @@ class CiteNetAgent:
                     "size": 12 if is_seed else 11,
                     "color": "#F8FAFC",
                     "face": "Plus Jakarta Sans, sans-serif",
-                    "strokeWidth": 3,
+                    "strokeWidth": 3.2,
                     "strokeColor": "#0B0C0E"
                 },
                 "shape": "star" if is_seed else "dot",
@@ -381,7 +415,7 @@ class CiteNetAgent:
 <html>
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Academic Citation Knowledge Graph — ScholarGraph Pro</title>
     <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -390,6 +424,7 @@ class CiteNetAgent:
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            -webkit-tap-highlight-color: transparent;
         }}
         html, body {{
             width: 100%;
@@ -403,6 +438,7 @@ class CiteNetAgent:
             position: relative;
             width: 100%;
             height: 100%;
+            min-height: 520px;
             border-radius: 16px;
             border: 1px solid #262B38;
             overflow: hidden;
@@ -452,7 +488,7 @@ class CiteNetAgent:
             height: 100%;
         }}
         
-        /* Floating Collapsible Control HUD Toolbar (Mặc định thu gọn) */
+        /* Floating Collapsible Control HUD Toolbar */
         .hud-controls-drawer {{
             position: absolute;
             top: 14px;
@@ -495,6 +531,8 @@ class CiteNetAgent:
             border-top: 1px solid rgba(255,255,255,0.08);
             flex-direction: column;
             gap: 8px;
+            max-height: 72vh;
+            overflow-y: auto;
         }}
         .hud-controls-drawer.is-open .hud-content-panel {{
             display: flex !important;
@@ -502,7 +540,7 @@ class CiteNetAgent:
         .hud-btn-row {{
             display: flex;
             flex-wrap: wrap;
-            gap: 5px;
+            gap: 6px;
             align-items: center;
         }}
         .hud-btn {{
@@ -519,6 +557,7 @@ class CiteNetAgent:
             gap: 5px;
             transition: all 0.18s ease;
             white-space: nowrap;
+            user-select: none;
         }}
         .hud-btn:hover {{
             background: #232836;
@@ -552,7 +591,7 @@ class CiteNetAgent:
             box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
         }}
         
-        /* Chú thích bên trái - Mặc định ẩn triệt để 100% (Strictly Collapsed Left Legend) */
+        /* Chú thích bên trái - Mặc định ẩn triệt để (Strictly Collapsed Left Legend) */
         .hud-legend-drawer {{
             position: absolute;
             bottom: 14px;
@@ -821,7 +860,7 @@ class CiteNetAgent:
             color: #FFFFFF;
         }}
 
-        /* Tối ưu hóa hiển thị trên Máy tính bảng (Tablet) & Điện thoại (Mobile) */
+        /* Tối ưu hóa hiển thị trên Máy tính bảng & Mobile */
         @media (max-width: 992px) {{
             .hud-controls-drawer {{
                 top: 8px;
@@ -847,25 +886,28 @@ class CiteNetAgent:
                 border-radius: 12px;
             }}
             .hud-toggle-btn {{
-                padding: 7px 12px;
-                font-size: 11px;
+                padding: 8px 12px;
+                font-size: 11.5px;
                 width: 100%;
             }}
             .hud-content-panel {{
                 padding: 8px 10px 10px 10px;
-                max-height: 52vh;
+                max-height: 56vh;
                 overflow-y: auto;
                 -webkit-overflow-scrolling: touch;
             }}
+            .hud-btn-row {{
+                gap: 5px;
+            }}
             .hud-btn {{
-                padding: 5px 8px;
-                font-size: 10.5px;
+                padding: 6px 9px;
+                font-size: 11px;
                 flex: 1 1 auto;
                 justify-content: center;
-                min-height: 34px;
+                min-height: 36px;
             }}
             #floating-hover-card {{
-                display: none !important; /* Ẩn hover card trên thiết bị cảm ứng để tránh vướng màn hình */
+                display: none !important;
             }}
             #paper-modal {{
                 top: auto !important;
@@ -905,7 +947,7 @@ class CiteNetAgent:
 <div id="network-wrapper" class="bg-obsidian">
     <!-- Floating Collapsible Control HUD Toolbar (Mặc định thu gọn) -->
     <div id="hud-controls-drawer" class="hud-controls-drawer">
-        <button id="hudToggleBtn" class="hud-toggle-btn" onclick="toggleHudDrawer()" title="Bấm để mở/thu gọn thanh công cụ (Phóng to, thu nhỏ, căn giữa, bố cục, nền 3D)">
+        <button id="hudToggleBtn" class="hud-toggle-btn" onclick="toggleHudDrawer()" title="Bấm để mở/thu gọn thanh công cụ (Phóng to, thu nhỏ, căn giữa, bố cục, nền 3D, tốc độ)">
             <span style="display:inline-flex; align-items:center; gap:6px;">
                 <span>🎛️</span>
                 <span>BẢNG CÔNG CỤ & BỐ CỤC</span>
@@ -917,37 +959,44 @@ class CiteNetAgent:
             <!-- Search Box -->
             <input type="text" id="nodeSearch" class="hud-search-box" style="width: 100%; box-sizing: border-box;" placeholder="🔍 Tìm tác giả / bài báo..." oninput="searchAndFocusNode(this.value)">
             
-            <!-- Hàng 1: Phóng to, Thu nhỏ, Căn giữa, Physics, Hạt sáng, Nhịp thở, Tua lịch sử, Truy vết, Toàn màn hình -->
+            <!-- Hàng 1: Zoom, Fit, Physics, Hạt sáng, Nhịp thở, Nhãn, Tua lịch sử, Toàn màn hình -->
             <div class="hud-btn-row">
                 <button class="hud-btn" onclick="zoomIn()" title="Phóng to mạng lưới">🔍+ Phóng to</button>
                 <button class="hud-btn" onclick="zoomOut()" title="Thu nhỏ mạng lưới">🔍- Thu nhỏ</button>
                 <button class="hud-btn" onclick="fitView()" title="Căn giữa toàn cảnh">🎯 Căn giữa</button>
                 <button class="hud-btn" id="physicsBtn" onclick="togglePhysics()" title="Bật/Tắt mô phỏng vật lý">⚡ Tự sắp xếp</button>
+                <button class="hud-btn active" id="labelModeBtn" onclick="cycleLabelMode()" title="Chuyển đổi kiểu nhãn: Rút gọn -> Đầy đủ -> Ẩn nhãn">🏷️ Nhãn: Rút Gọn</button>
                 <button class="hud-btn active" id="particlesBtn" onclick="toggleParticles()" title="Bật/Tắt luồng hạt photon chuyển động dọc theo mũi tên trích dẫn">✨ Hạt Sáng</button>
                 <button class="hud-btn active" id="pulseBtn" onclick="togglePulseGlow()" title="Bật/Tắt vầng hào quang nhịp thở tỏa sáng quanh bài báo gốc & điểm bùng nổ">💓 Nhịp Thở</button>
                 <button class="hud-btn" id="timeplayBtn" onclick="toggleTimelinePlayback()" title="Tua lại lịch sử hình thành & tiến hóa tri thức qua các năm">⏯️ Tua Lịch Sử</button>
                 <button class="hud-btn" id="lineageBtn" onclick="toggleLineageMode()" title="Bật/Tắt chế độ phát sáng chuỗi phả hệ cội nguồn khi chọn bài báo">🧬 Truy Vết</button>
                 <button class="hud-btn" onclick="toggleFullScreen()" title="Phóng to toàn màn hình">⛶ Toàn màn hình</button>
-                <button class="hud-btn primary" onclick="popoutWindow()" title="Mở trong cửa sổ riêng để kéo sang màn hình phụ">🪟 Màn hình phụ</button>
+                <button class="hud-btn primary" onclick="popoutWindow()" title="Mở trong cửa sổ riêng để kéo sang màn hình phụ">🪟 Cửa sổ riêng</button>
             </div>
             
             <!-- Hàng 2: 5 Chế độ bố cục Scientometric -->
             <div class="hud-btn-row">
                 <button class="hud-btn active" id="btnModeForce" onclick="switchLayoutMode('force')" title="1. Chuẩn VOSviewer: Cụm lực hút đồng trích dẫn">🕸️ Mạng Cụm</button>
-                <button class="hud-btn" id="btnModeTimeline" onclick="switchLayoutMode('timeline')" title="2. Chuẩn HistCite: Dòng thời gian tiến hóa học thuật">⏳ Dòng Thời gian</button>
+                <button class="hud-btn" id="btnModeTimeline" onclick="switchLayoutMode('timeline')" title="2. Chuẩn HistCite: Dòng thời gian tiến hóa học thuật kèm cột mốc năm">⏳ Dòng Thời gian (Năm)</button>
                 <button class="hud-btn" id="btnModeConcentric" onclick="switchLayoutMode('concentric')" title="3. Chuẩn Kim Cương: Quỹ đạo Nền tảng (R) - Kế thừa (F)">💎 Kim Cương 2 Chiều</button>
                 <button class="hud-btn" id="btnModeHierarchical" onclick="switchLayoutMode('hierarchical')" title="4. Chuẩn CiteSpace: Cây phả hệ phân tầng">🌳 Cây Phả hệ</button>
                 <button class="hud-btn" id="btnModeQuartile" onclick="switchLayoutMode('quartile')" title="5. Chuẩn Clarivate: Phân làn Scopus Q1/Q2">📊 Phân làn Scopus</button>
             </div>
             
-            <!-- Hàng 3: Chọn kiểu nền & Không gian 3D -->
-            <div class="hud-btn-row" style="margin-top:2px;">
+            <!-- Hàng 3: Chọn kiểu nền & Menu Điều chỉnh Tốc độ Động học -->
+            <div class="hud-btn-row" style="margin-top:2px; display:grid; grid-template-columns: 1.2fr 1fr; gap:6px;">
                 <select id="bgSelector" class="hud-search-box" onchange="switchCanvasBg(this.value)" style="width:100%; cursor:pointer; font-weight:700; background:#181B24; border-color:#38BDF8; color:#38BDF8;" title="Chọn kiểu nền hiển thị & không gian 3D tương phản cao">
                     <option value="obsidian">🌌 Nền: Vũ trụ Obsidian (Mặc định)</option>
                     <option value="3d-grid">🧊 Nền: Không gian Lưới 3D (Cyber 3D)</option>
                     <option value="blueprint">📐 Nền: Bản vẽ Blueprint</option>
                     <option value="parchment">📜 Nền: Giấy da Ivory (Sáng)</option>
                     <option value="nordic-light">🏛️ Nền: Bắc Âu Slate (Sáng)</option>
+                </select>
+                
+                <select id="animSpeedSelector" class="hud-search-box" onchange="updateInteractionSpeeds(this.value)" style="width:100%; cursor:pointer; font-weight:700; background:#181B24; border-color:#F59E0B; color:#F59E0B;" title="Điều chỉnh tốc độ chạy của các hiệu ứng tương tác (Hạt sáng, nhịp thở, chuyển động)">
+                    <option value="normal">⚡ Tốc độ hiệu ứng: Chuẩn (1.0x)</option>
+                    <option value="slow">🐢 Tốc độ hiệu ứng: Chậm dịu (0.5x)</option>
+                    <option value="fast">🚀 Tốc độ hiệu ứng: Nhanh (2.0x)</option>
                 </select>
             </div>
 
@@ -974,11 +1023,20 @@ class CiteNetAgent:
             </div>
 
             <!-- Hàng 5: Thanh điều khiển Tua lại Lịch sử Tiến hóa (Timeline Evolution Playback Bar) -->
-            <div id="timelinePlaybackBar" class="hud-btn-row" style="display:none; margin-top:4px; background:rgba(20,23,32,0.96); border:1px solid #38BDF8; border-radius:10px; padding:6px 12px; align-items:center; gap:8px;">
-                <button id="playbackPlayBtn" class="hud-btn active" onclick="togglePlaybackPlay()" style="min-width:68px; font-weight:800;">▶️ Phát</button>
-                <span style="font-size:11px; color:#38BDF8; font-weight:700; white-space:nowrap;">NĂM: <b id="playbackYearLabel" style="color:#FDE047; font-size:12.5px;">{max_yr}</b></span>
-                <input type="range" id="playbackYearSlider" min="{min_yr}" max="{max_yr}" value="{max_yr}" step="1" oninput="onPlaybackSliderChange(this.value)" style="flex:1; cursor:pointer;">
-                <button class="hud-btn" onclick="resetPlayback()" style="font-size:10.5px;">↺ Đặt lại</button>
+            <div id="timelinePlaybackBar" class="hud-btn-row" style="display:none; margin-top:6px; background:rgba(20,23,32,0.98); border:1.5px solid #38BDF8; border-radius:12px; padding:8px 14px; align-items:center; gap:10px; box-shadow: 0 4px 16px rgba(56,189,248,0.2);">
+                <button id="playbackPlayBtn" class="hud-btn primary" onclick="togglePlaybackPlay()" style="min-width:85px; font-weight:800; font-size:12.5px;">▶️ Phát</button>
+                <div style="display:flex; flex-direction:column; gap:2px;">
+                    <span style="font-size:11px; color:#94A3B8; font-weight:700;">TIẾN ĐỘ TIẾN HÓA:</span>
+                    <span style="font-size:13px; color:#FDE047; font-weight:800;">NĂM <b id="playbackYearLabel" style="font-size:15px; color:#38BDF8;">{max_yr}</b> <span id="playbackCountBadge" style="font-size:11px; color:#94A3B8; font-weight:600;">(Đầy đủ)</span></span>
+                </div>
+                <input type="range" id="playbackYearSlider" min="{min_yr}" max="{max_yr}" value="{max_yr}" step="1" oninput="onPlaybackSliderChange(this.value)" style="flex:1; cursor:pointer; accent-color:#38BDF8; min-width:120px;">
+                <select id="playbackSpeedSelect" class="hud-search-box" onchange="changePlaybackSpeed(this.value)" style="cursor:pointer; font-weight:700; padding:4px 8px; font-size:11px; background:#181B24; border-color:#38BDF8; color:#38BDF8;" title="Tốc độ tua dòng thời gian">
+                    <option value="1200">⏱️ Tua: 1.0x (Chuẩn)</option>
+                    <option value="2500">🐢 Tua: 0.5x (Chậm)</option>
+                    <option value="600">🚀 Tua: 2.0x (Nhanh)</option>
+                    <option value="300">⚡ Tua: 3.0x (Siêu tốc)</option>
+                </select>
+                <button class="hud-btn" onclick="resetPlayback()" style="font-size:11px; padding:6px 10px;">↺ Đặt lại</button>
             </div>
         </div>
     </div>
@@ -989,7 +1047,7 @@ class CiteNetAgent:
             <div id="hover-badge" style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em;"></div>
             <div id="hover-conn-badge" style="font-size:11px; font-weight:600;"></div>
         </div>
-        <!-- Thông báo lý do bài báo đứng lẻ loi (chỉ hiện khi 0 liên kết) -->
+        <!-- Thông báo lý do bài báo đứng lẻ loi -->
         <div id="hover-orphan-notice" style="display:none; background:rgba(245, 158, 11, 0.16); border:1px solid rgba(245, 158, 11, 0.55); border-radius:8px; padding:7px 10px; margin-bottom:8px; font-size:11.5px; color:#FCD34D; line-height:1.45;">
         </div>
         <div id="hover-title" style="font-size:13px; font-weight:700; color:#FFFFFF; line-height:1.4; margin-bottom:6px;"></div>
@@ -1069,6 +1127,7 @@ class CiteNetAgent:
     var edges = new vis.DataSet(rawEdges);
     var container = document.getElementById('network-container');
     var data = {{ nodes: nodes, edges: edges }};
+    
     var isPhysicsOn = true;
     var isParticlesOn = true;
     var isPulsingOn = true;
@@ -1076,9 +1135,12 @@ class CiteNetAgent:
     var isTimelinePlaybackActive = false;
     var isPlaybackPlaying = false;
     var playbackTimer = null;
+    var playbackIntervalMs = 1200; // Mặc định 1.2s mỗi năm
     var currentPlaybackYear = maxYrVal;
     var selectedLineageNodeId = null;
     var currentLayoutMode = 'force'; // 'force', 'timeline', 'concentric', 'hierarchical', 'quartile'
+    var currentLabelMode = 'short'; // 'short', 'full', 'minimal'
+    var speedMultiplier = 1.0; // 0.5 (slow), 1.0 (normal), 2.0 (fast)
 
     var forceOptions = {{
         nodes: {{
@@ -1142,6 +1204,34 @@ class CiteNetAgent:
         network.fit({{ animation: {{ duration: 500, easingFunction: 'easeInOutQuad' }} }});
     }}
 
+    // Switch Label Mode: Short -> Full -> Minimal
+    function cycleLabelMode() {{
+        var btn = document.getElementById('labelModeBtn');
+        if (currentLabelMode === 'short') {{
+            currentLabelMode = 'full';
+            if (btn) btn.innerHTML = '🏷️ Nhãn: Đầy Đủ';
+        }} else if (currentLabelMode === 'full') {{
+            currentLabelMode = 'minimal';
+            if (btn) btn.innerHTML = '🏷️ Nhãn: Ẩn (Hover)';
+        }} else {{
+            currentLabelMode = 'short';
+            if (btn) btn.innerHTML = '🏷️ Nhãn: Rút Gọn';
+        }}
+
+        var updates = [];
+        rawNodes.forEach(function(n) {{
+            var lbl = n.label_short;
+            if (currentLabelMode === 'full') lbl = n.label_full;
+            else if (currentLabelMode === 'minimal') lbl = '';
+            
+            updates.push({{
+                id: n.id,
+                label: lbl
+            }});
+        }});
+        nodes.update(updates);
+    }}
+
     // Toggle Particle Photon Animation
     function toggleParticles() {{
         isParticlesOn = !isParticlesOn;
@@ -1153,7 +1243,7 @@ class CiteNetAgent:
         network.redraw();
     }}
 
-    // Toggle Pulsing Halo Glow (Nhịp thở quanh hạt nhân)
+    // Toggle Pulsing Halo Glow
     function togglePulseGlow() {{
         isPulsingOn = !isPulsingOn;
         var btn = document.getElementById('pulseBtn');
@@ -1162,6 +1252,22 @@ class CiteNetAgent:
             btn.innerHTML = isPulsingOn ? '💓 Nhịp Thở: Bật' : '💓 Nhịp Thở: Tắt';
         }}
         network.redraw();
+    }}
+
+    // Update Interactive Speeds (Particles, Pulsing)
+    function updateInteractionSpeeds(val) {{
+        if (val === 'slow') speedMultiplier = 0.5;
+        else if (val === 'fast') speedMultiplier = 2.0;
+        else speedMultiplier = 1.0;
+    }}
+
+    // Change Timeline Playback Speed
+    function changePlaybackSpeed(val) {{
+        playbackIntervalMs = parseInt(val, 10) || 1200;
+        if (isPlaybackPlaying) {{
+            stopPlaybackTimer();
+            startPlaybackTimer();
+        }}
     }}
 
     // Toggle Timeline Playback Mode
@@ -1195,7 +1301,7 @@ class CiteNetAgent:
             }}
             currentPlaybackYear += 1;
             applyTimelinePlaybackYear(currentPlaybackYear);
-        }}, 1400);
+        }}, playbackIntervalMs);
     }}
 
     function stopPlaybackTimer() {{
@@ -1225,22 +1331,31 @@ class CiteNetAgent:
     function applyTimelinePlaybackYear(yr) {{
         var label = document.getElementById('playbackYearLabel');
         var slider = document.getElementById('playbackYearSlider');
+        var countBadge = document.getElementById('playbackCountBadge');
         if (label) label.innerText = yr;
         if (slider) slider.value = yr;
 
         var visibleNodeIds = new Set();
         var nodeUpdates = [];
+        var totalCount = rawNodes.length;
+
         rawNodes.forEach(function(n) {{
             var nYr = n.year || 2020;
             var isVisible = (nYr <= yr);
+            var isCurrentNew = (nYr === yr);
             if (isVisible) visibleNodeIds.add(n.id);
             nodeUpdates.push({{
                 id: n.id,
                 hidden: !isVisible,
-                opacity: isVisible ? 1.0 : 0.0
+                opacity: isVisible ? 1.0 : 0.0,
+                borderWidth: isCurrentNew ? (n.size ? n.size * 0.25 : 4.0) : (n.borderWidth || 2.0)
             }});
         }});
         nodes.update(nodeUpdates);
+
+        if (countBadge) {{
+            countBadge.innerText = '(' + visibleNodeIds.size + '/' + totalCount + ' bài)';
+        }}
 
         var edgeUpdates = [];
         rawEdges.forEach(function(e) {{
@@ -1257,6 +1372,8 @@ class CiteNetAgent:
         currentPlaybackYear = maxYrVal;
         applyTimelinePlaybackYear(maxYrVal);
         stopPlaybackTimer();
+        var playBtn = document.getElementById('playbackPlayBtn');
+        if (playBtn) playBtn.innerHTML = '▶️ Phát Lại';
     }}
 
     // Toggle Interactive Lineage Tracing Mode
@@ -1305,7 +1422,7 @@ class CiteNetAgent:
                 var listInYear = yearGroups[yr] || [n.id];
                 var indexInYear = listInYear.indexOf(n.id);
                 var totalInYear = listInYear.length;
-                var yOffset = (indexInYear - (totalInYear - 1) / 2) * 90;
+                var yOffset = (indexInYear - (totalInYear - 1) / 2) * 95;
                 updates.push({{
                     id: n.id,
                     x: n.x_timeline,
@@ -1331,7 +1448,7 @@ class CiteNetAgent:
                 updates.push({{ id: n.id, x: (i * 80) - ((seeds.length - 1) * 40), y: 0, physics: false }});
             }});
 
-            // Nền tảng (Backward - R) đặt bên cánh TRÁI (cung tròn 90 độ đến 270 độ)
+            // Nền tảng (Backward - R) đặt bên cánh TRÁI
             var bCount = backwardPapers.length || 1;
             backwardPapers.forEach(function(n, i) {{
                 var lvl = Math.abs(n.level || 1);
@@ -1345,7 +1462,7 @@ class CiteNetAgent:
                 }});
             }});
 
-            // Kế thừa (Forward - F) đặt bên cánh PHẢI (cung tròn -90 độ đến 90 độ)
+            // Kế thừa (Forward - F) đặt bên cánh PHẢI
             var fCount = forwardPapers.length || 1;
             forwardPapers.forEach(function(n, j) {{
                 var lvl = Math.abs(n.level || 1);
@@ -1466,8 +1583,9 @@ class CiteNetAgent:
         }}
     }}
 
-    // Concentric Orbit Celestial Rings (beforeDrawing)
+    // Concentric & Timeline Guides (beforeDrawing)
     network.on('beforeDrawing', function(ctx) {{
+        // 1. Vẽ Vòng Quỹ Đạo Kim Cương khi ở chế độ 'concentric'
         if (currentLayoutMode === 'concentric') {{
             ctx.save();
             ctx.setLineDash([8, 8]);
@@ -1501,6 +1619,42 @@ class CiteNetAgent:
             ctx.fillStyle = 'rgba(56, 189, 248, 0.7)';
             ctx.fillText('🚀 BƯỚC TIẾN KẾ THỪA (F1-F3)', 150, -300);
 
+            ctx.restore();
+        }}
+        
+        // 2. Vẽ Cột mốc Dải Năm khi ở chế độ 'timeline' (HistCite Layout)
+        if (currentLayoutMode === 'timeline') {{
+            ctx.save();
+            var distinctYears = [];
+            for (var y = minYrVal; y <= maxYrVal; y++) {{
+                distinctYears.push(y);
+            }}
+
+            distinctYears.forEach(function(yr) {{
+                var xPos = (yr - minYrVal) * 260 - ((maxYrVal - minYrVal) * 130);
+                
+                // Dải dọc phân cách năm
+                ctx.setLineDash([6, 6]);
+                ctx.lineWidth = 1.0;
+                ctx.strokeStyle = 'rgba(56, 189, 248, 0.18)';
+                ctx.beginPath();
+                ctx.moveTo(xPos, -420);
+                ctx.lineTo(xPos, 420);
+                ctx.stroke();
+
+                // Thẻ nhãn năm mốc phía trên & dưới
+                ctx.setLineDash([]);
+                ctx.fillStyle = 'rgba(18, 20, 26, 0.85)';
+                ctx.fillRect(xPos - 48, -435, 96, 26);
+                ctx.strokeStyle = '#38BDF8';
+                ctx.lineWidth = 1.2;
+                ctx.strokeRect(xPos - 48, -435, 96, 26);
+
+                ctx.font = 'bold 12px Plus Jakarta Sans, sans-serif';
+                ctx.fillStyle = '#FDE047';
+                ctx.textAlign = 'center';
+                ctx.fillText('📅 ' + yr, xPos, -418);
+            }});
             ctx.restore();
         }}
     }});
@@ -1644,7 +1798,8 @@ class CiteNetAgent:
 
         // 1. Vẽ Vầng Hào Quang Nhịp Thở (Pulsing Halo) cho Bài Gốc & Điểm Bùng Nổ
         if (isPulsingOn) {{
-            var pulse = (Math.sin(now / 550) + 1) / 2; // 0.0 -> 1.0
+            var pulseTime = (now * speedMultiplier) / 550;
+            var pulse = (Math.sin(pulseTime) + 1) / 2; // 0.0 -> 1.0
             rawNodes.forEach(function(n) {{
                 var isSeed = (n.level === 0 || n.layer === 'seed');
                 var isHighImpact = ((n.citations || 0) >= 200);
@@ -1679,7 +1834,7 @@ class CiteNetAgent:
 
         // 2. Vẽ Dòng Hạt Sáng Chuyển Động (Particle Flow)
         if (isParticlesOn) {{
-            var tNow = now / 1100;
+            var tNow = (now * speedMultiplier) / 1100;
             rawEdges.forEach(function(e, idx) {{
                 var p1 = positions[e.from];
                 var p2 = positions[e.to];
@@ -1711,7 +1866,7 @@ class CiteNetAgent:
         }}
     }});
 
-    // Continuous 60 FPS animation loop when particles or pulsing are on
+    // Continuous 60 FPS animation loop
     function dynamicAnimationLoop() {{
         if (isParticlesOn || isPulsingOn) {{
             network.redraw();
@@ -1967,7 +2122,7 @@ class CiteNetAgent:
         var q = query.toLowerCase().trim();
         var foundId = null;
         rawNodes.forEach(function(n) {{
-            var lbl = (n.label || '').toLowerCase();
+            var lbl = (n.label_full || n.label || '').toLowerCase();
             if (lbl.indexOf(q) !== -1) {{
                 if (!foundId) foundId = n.id;
             }}
@@ -2024,7 +2179,7 @@ class CiteNetAgent:
         var isLight = (bgName === 'parchment' || bgName === 'nordic-light');
         var fontColor = isLight ? '#0F172A' : '#F8FAFC';
         var strokeColor = isLight ? '#FFFFFF' : '#0B0C0E';
-        var strokeWidth = isLight ? 4 : 3;
+        var strokeWidth = isLight ? 4 : 3.2;
         var edgeColor = isLight ? 'rgba(71, 85, 105, 0.65)' : 'rgba(100, 116, 139, 0.45)';
 
         var updates = [];
