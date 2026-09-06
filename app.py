@@ -1399,6 +1399,22 @@ elif "02." in workspace_nav:
                 opacity: 1;
                 transform: translateX(-50%) translateY(0);
             }
+            @media (max-width: 768px) {
+                .topo-hover-container {
+                    grid-template-columns: 1fr;
+                    gap: 10px;
+                }
+                .topo-tooltip-box {
+                    position: static;
+                    visibility: visible;
+                    opacity: 1;
+                    transform: none;
+                    width: 100%;
+                    box-sizing: border-box;
+                    margin-top: 8px;
+                    pointer-events: auto;
+                }
+            }
             </style>
             <div style="background:var(--bg-surface-elevated); border:1px solid var(--border-subtle); border-radius:12px; padding:12px 18px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center;">
                 <div>

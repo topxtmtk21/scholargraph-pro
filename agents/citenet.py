@@ -1473,7 +1473,8 @@ class CiteNetAgent:
             .synapse-bottom-deck {{
                 grid-template-columns: 1fr;
                 height: auto;
-                max-height: 48vh;
+                max-height: none;
+                gap: 12px;
             }}
             .synapse-header-bar {{
                 padding: 6px 10px;
@@ -1483,6 +1484,7 @@ class CiteNetAgent:
             }}
             .details-grid {{
                 grid-template-columns: 1fr;
+                gap: 10px;
             }}
             .synapse-vertical-dock {{
                 width: 42px;
