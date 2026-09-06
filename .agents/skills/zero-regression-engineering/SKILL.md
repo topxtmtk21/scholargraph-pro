@@ -1,11 +1,11 @@
 ---
 name: zero-regression-engineering
-description: Bộ quy tắc kỹ thuật công nghệ phần mềm bền vững (Zero-Regression Engineering) cho các dự án phức tạp: bảo tồn tuyệt đối cấu trúc ổn định, tái cấu trúc không phá vỡ (Non-destructive Refactoring), thiết kế đa tầng dự phòng (Multi-tier Fallback), kiểm thử tự động 100% và cơ chế xác thực bảo mật chuẩn doanh nghiệp.
+description: Bộ quy tắc kỹ thuật công nghệ phần mềm bền vững (Zero-Regression Engineering) cho các dự án phức tạp: bảo tồn tuyệt đối cấu trúc ổn định, tái cấu trúc không phá vỡ (Non-destructive Refactoring), thiết kế đa tầng dự phòng (Multi-tier Fallback), kiểm thử tự động 100%, chiến lược khóa phiên bản an toàn và phát triển đa thiết bị vững chắc.
 ---
 
 # 🛡️ Zero-Regression Engineering & Resilient Architecture Skill
 
-Cẩm nang phương pháp luận kỹ thuật phần mềm dành cho các hệ thống quy mô lớn và phức tạp, đảm bảo mọi lần nâng cấp tính năng mới **không bao giờ làm hỏng hay cắt bỏ các tính năng đã ổn định trước đó**.
+Cẩm nang phương pháp luận kỹ thuật phần mềm dành cho các hệ thống quy mô lớn và phức tạp, đảm bảo mọi lần nâng cấp tính năng mới **không bao giờ làm hỏng, thay đổi hay cắt bỏ các tính năng đã hoạt động ổn định trước đó**.
 
 ---
 
@@ -21,7 +21,20 @@ Cẩm nang phương pháp luận kỹ thuật phần mềm dành cho các hệ t
 
 ---
 
-## ⚙️ 2. Mô Hình Thiết Kế Đa Tầng Dự Phòng (Multi-Tier Fallback Resilience)
+## 🔒 2. Chiến Lược Khóa Phiên Bản An Toàn (Safe Version Locking & Cross-Platform Expansion)
+
+Khi chuyển giao giữa các giai đoạn lớn (Ví dụ: từ Bản Local Ổn Định sang Bản Online Mobile / Tablet):
+1. **Khóa Mốc Phát Hành & Tạo Phân Nhánh Dự Phòng (Tagging & Branching)**:
+   - Gắn thẻ Git Tag cố định (Ví dụ: `v3.5.0-local-stable`).
+   - Tạo phân nhánh bảo vệ độc lập (`backup-local-stable`) để có thể rollback tức thì trong 1 giây nếu phát sinh lỗi không mong muốn.
+2. **Lập Bản Báo Cáo Phát Hành (Release Notes Snapshot)**:
+   - Lưu trữ danh sách tính năng đã hoàn thiện, danh sách file kiểm thử, và mã băm commit vào file tài liệu `LOCAL_RELEASE_NOTES_vX.X.X.md`.
+3. **Nguyên Tắc Phát Triển Đa Màn Hình (Cross-Platform Isolation)**:
+   - Sử dụng CSS Media Queries và các điều kiện nhận diện luồng mà không sửa đổi logic xử lý cốt lõi của backend nghiệp vụ.
+
+---
+
+## ⚙️ 3. Mô Hình Thiết Kế Đa Tầng Dự Phòng (Multi-Tier Fallback Resilience)
 
 Trong các ứng dụng dựa trên AI, API bên thứ ba hoặc dữ liệu mạng (như OpenAlex, LLM API, PDF Parser), sự cố mạng hoặc rate-limit là điều không thể tránh khỏi. Hệ thống phải luôn có 3 tầng bảo vệ:
 
@@ -42,7 +55,7 @@ graph TD
 
 ---
 
-## 🧪 3. Quy Chuẩn Xây Dựng Bộ Test Suites Toàn Diện
+## 🧪 4. Quy Chuẩn Xây Dựng Bộ Test Suites Toàn Diện
 
 Mỗi dự án cần duy trì tối thiểu 5 bộ test tự động độc lập:
 
@@ -56,7 +69,7 @@ Mỗi dự án cần duy trì tối thiểu 5 bộ test tự động độc lậ
 
 ---
 
-## 🔐 4. Tiêu Chuẩn Bảo Mật & Phân Quyền Doanh Nghiệp (Enterprise RBAC)
+## 🔐 5. Tiêu Chuẩn Bảo Mật & Phân Quyền Doanh Nghiệp (Enterprise RBAC)
 
 1. **Phân Quyền Vai Trò (Role-Based Access Control - RBAC)**:
    - `super_admin`: Toàn quyền quản trị, thêm bớt tài khoản, xem toàn bộ Audit Logs.
@@ -68,7 +81,7 @@ Mỗi dự án cần duy trì tối thiểu 5 bộ test tự động độc lậ
 
 ---
 
-## 🛠️ 5. Checklist Vàng Cho Kỹ Sư Khi Phát Triển Tính Năng Mới
+## 🛠️ 6. Checklist Vàng Cho Kỹ Sư Khi Phát Triển Tính Năng Mới
 
 - [ ] **Bước 1**: Đọc kỹ yêu cầu và khảo sát toàn bộ các file liên quan trước khi chỉnh sửa.
 - [ ] **Bước 2**: Xác định các hàm/biến sẽ bị ảnh hưởng, đảm bảo không thay đổi chữ ký hàm cũ trừ khi có giá trị mặc định.

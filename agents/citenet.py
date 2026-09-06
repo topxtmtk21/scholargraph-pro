@@ -1054,7 +1054,7 @@ class CiteNetAgent:
             background: rgba(var(--theme-glow-rgb), 0.12);
         }}
 
-        /* RESPONSIVE ON MOBILE */
+        /* RESPONSIVE ON MOBILE & TABLET */
         @media (max-width: 900px) {{
             .synapse-bottom-deck {{
                 grid-template-columns: 1fr;
@@ -1062,7 +1062,7 @@ class CiteNetAgent:
                 max-height: 48vh;
             }}
             .synapse-header-bar {{
-                padding: 6px 12px;
+                padding: 6px 10px;
             }}
             .header-meta-cluster {{
                 display: none;
@@ -1071,7 +1071,39 @@ class CiteNetAgent:
                 grid-template-columns: 1fr;
             }}
             .synapse-vertical-dock {{
-                display: none;
+                width: 38px;
+                padding: 8px 3px;
+                border-radius: 10px;
+            }}
+            .dock-icon-btn {{
+                width: 32px;
+                height: 32px;
+                font-size: 13px;
+            }}
+            .graph-top-tools {{
+                max-width: calc(100% - 20px);
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                padding: 3px 6px;
+                gap: 4px;
+            }}
+            .hud-hover-inspector, .edge-epistemic-inspector {{
+                left: 10px !important;
+                right: 10px !important;
+                width: auto !important;
+                max-width: calc(100% - 20px) !important;
+                top: 52px !important;
+                padding: 8px 10px !important;
+            }}
+        }}
+
+        @media (max-width: 600px) {{
+            #synapse-hud-deck {{
+                padding: 6px;
+                gap: 6px;
+            }}
+            .synapse-middle-deck {{
+                gap: 6px;
             }}
         }}
     </style>
@@ -1502,12 +1534,23 @@ class CiteNetAgent:
         document.body.className = nextTheme;
     }}
 
-    // Network Click Event
+    // Network Click & Touch Tap Event (Hỗ trợ cảm ứng hoàn hảo trên Mobile & Tablet)
     network.on('click', function(params) {{
         if (params.nodes.length > 0) {{
             var nodeId = params.nodes[0];
+            hoveredNodeId = nodeId;
+            hoveredEdgeId = null;
+            updateHoverInspectorNode(nodeId);
             selectPaperFromTable(nodeId);
+        }} else if (params.edges.length > 0) {{
+            var edgeId = params.edges[0];
+            hoveredEdgeId = edgeId;
+            hoveredNodeId = null;
+            updateHoverInspectorEdge(edgeId);
         }} else {{
+            hoveredNodeId = null;
+            hoveredEdgeId = null;
+            hideHoverInspector();
             if (isLineageTracingOn) {{
                 resetLineageHighlight();
             }}

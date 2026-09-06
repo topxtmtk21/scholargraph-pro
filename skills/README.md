@@ -8,11 +8,11 @@ Thư mục này chứa các cẩm nang kỹ thuật (**Skills**) được đúc 
 ## 📂 Danh Mục Các Kỹ Năng Đã Được Chuẩn Hóa
 
 ### 1. 🌌 [Futuristic Sci-Fi Glassmorphism HUD Design System](file:///.agents/skills/futuristic-hud-design-system/SKILL.md)
-- **Mô tả**: Toàn bộ quy chuẩn thiết kế giao diện công nghệ tương lai (Quantum HUD / Synapse Deck), hệ màu neon dạ quang, thẻ kính mờ, độ tương phản **WCAG AAA/AA**, giải quyết triệt để lỗi phân tích cú pháp Streamlit Markdown và cơ chế mở Màn hình phụ đa cửa sổ bằng chuẩn **W3C Blob URL**.
+- **Mô tả**: Toàn bộ quy chuẩn thiết kế giao diện công nghệ tương lai (Quantum HUD / Synapse Deck), hệ màu neon dạ quang, thẻ kính mờ, độ tương phản **WCAG AAA/AA**, giải quyết triệt để lỗi phân tích cú pháp Streamlit Markdown, cơ chế mở Màn hình phụ đa cửa sổ bằng chuẩn **W3C Blob URL**, và **Ma trận thích ứng đa màn hình 4 cấp độ (Mobile, Tablet, Desktop, Ultra-Wide 4K)** kèm **Giao thức cảm ứng chạm Single-Tap Protocol** và **Quy chuẩn vùng chạm Fitts 44px**.
 - **Đường dẫn**: `.agents/skills/futuristic-hud-design-system/SKILL.md`
 
 ### 2. 🛡️ [Zero-Regression Engineering & Resilient Architecture](file:///.agents/skills/zero-regression-engineering/SKILL.md)
-- **Mô tả**: Bộ nguyên tắc kỹ thuật lập trình bền vững: Bảo tồn tuyệt đối cấu trúc ổn định, tái cấu trúc không xâm lấn (Additive Refactoring), kiến trúc 3 tầng dự phòng (Multi-tier Fallback: Live API $\to$ Local Cache $\to$ Heuristic Fallback), bảo mật phân quyền RBAC và quy trình kiểm thử tự động 100% không hồi quy lỗi.
+- **Mô tả**: Bộ nguyên tắc kỹ thuật lập trình bền vững: Bảo tồn tuyệt đối cấu trúc ổn định, tái cấu trúc không xâm lấn (Additive Refactoring), **Chiến lược khóa phiên bản an toàn (Git Tagging & Branching Isolation)**, kiến trúc 3 tầng dự phòng (Multi-tier Fallback: Live API $\to$ Local Cache $\to$ Heuristic Fallback), bảo mật phân quyền RBAC và quy trình kiểm thử tự động 100% không hồi quy lỗi.
 - **Đường dẫn**: `.agents/skills/zero-regression-engineering/SKILL.md`
 
 ---

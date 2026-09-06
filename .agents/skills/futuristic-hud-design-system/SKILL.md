@@ -1,11 +1,11 @@
 ---
 name: futuristic-hud-design-system
-description: Quy chuẩn và cẩm nang toàn diện để thiết kế giao diện Futuristic Sci-Fi Glassmorphism HUD Dashboard (Synapse Academic / Quantum Deck) đạt chuẩn quốc tế, tương phản WCAG AAA/AA, chống lỗi Streamlit Markdown, hỗ trợ đa màn hình Blob URL và tối ưu hóa 100% cho Online & Mobile.
+description: Quy chuẩn và cẩm nang toàn diện để thiết kế giao diện Futuristic Sci-Fi Glassmorphism HUD Dashboard (Synapse Academic / Quantum Deck) đạt chuẩn quốc tế, tương phản WCAG AAA/AA, chống lỗi Streamlit Markdown, hỗ trợ đa màn hình Blob URL và tối ưu hóa 100% cho Online, Mobile, Tablet & Màn Hình Lớn Ultra-Wide.
 ---
 
 # 🌌 Futuristic Sci-Fi Glassmorphism HUD UI/UX Design Skill
 
-Cẩm nang đúc kết các nguyên tắc thiết kế, quy chuẩn CSS Tokens, kiến trúc giao diện tương lai (**Futuristic Sci-Fi Glassmorphism HUD Dashboard**) và các bài học kỹ thuật thực chiến giải quyết triệt để lỗi hiển thị trong các dự án phức tạp.
+Cẩm nang đúc kết các nguyên tắc thiết kế, quy chuẩn CSS Tokens, kiến trúc giao diện tương lai (**Futuristic Sci-Fi Glassmorphism HUD Dashboard**) và các bài học kỹ thuật thực chiến giải quyết triệt để lỗi hiển thị trong các dự án phức tạp trên mọi kích thước màn hình từ Mobile, Tablet, Desktop tới Ultra-Wide 4K.
 
 ---
 
@@ -64,8 +64,8 @@ Bao gồm:
 
 ### B. Slim Vertical Dock Bar (Thanh Công Cụ Nhanh Đứng)
 - Thanh dock hẹp ($48\text{px}$) đặt sát cạnh trái canvas/nội dung.
-- Các nút biểu tượng tròn/vuông bo góc ($10\text{px}$), kính mờ, có tooltip khi rê chuột.
-- Chuyển layout nhanh, bật/tắt hiệu ứng truy vết, căn giữa toàn cảnh.
+- Các nút biểu tượng bo góc ($10\text{px}$), kính mờ, có tooltip khi rê chuột.
+- Chuyển layout nhanh, bật/tắt hiệu ứng truy vết, mở Drawer chú thích `📖`, mở Màn hình phụ `↗️`, căn giữa toàn cảnh `🎯`.
 
 ### C. HUD Panel Cyber Cards (Thẻ Thông Tin Khối Kính)
 - Thẻ card chia 2 phần: Header nền pha loãng phát sáng + Body cuộn mượt mà (`overflow-y: auto`).
@@ -124,13 +124,61 @@ Bao gồm:
 
 ---
 
-## 📱 5. Quy Chuẩn Tối Ưu Hóa Online Mobile & Responsive
+## 📱 5. Ma Trận Đa Màn Hình Toàn Diện (Multi-Screen Responsive Matrix)
 
-1. **Media Query Ngưỡng $900\text{px}$**:
-   - Khi độ rộng màn hình $< 900\text{px}$: Tự động chuyển các grid đa cột thành 1 cột (`grid-template-columns: 1fr;`).
-   - Ẩn bớt các chip meta rườm rà trên Header (`.header-meta-cluster { display: none; }`).
-   - Chuyển Vertical Dock sang dạng trượt ngang hoặc ẩn vào menu rút gọn.
-2. **Kích thước vùng chạm (Touch Target)**:
-   - Mọi nút bấm trên di động phải có kích thước tối thiểu $40\text{px} \times 40\text{px}$ để chạm ngón tay không bị trượt.
-3. **Thanh Điều Hướng Nhanh (Mobile Quick Navigation Ribbon)**:
-   - Bố trí dải nút chuyển nhanh phân hệ dạng Ribbon cảm ứng cố định ở trên đầu để người dùng điện thoại không phải mở sidebar liên tục.
+Hệ thống được thiết kế theo nguyên tắc thích ứng tự nhiên (Fluid Adaptive Design) hỗ trợ 4 phân khúc màn hình:
+
+| Thiết Bị / Phân Khúc | Độ Rộng Viewport | Bố Cục Cột (Columns) | Chiều Cao Iframe/Canvas | Trải Nghiệm Điều Khiển |
+| :--- | :--- | :--- | :--- | :--- |
+| **Mobile (Điện thoại)** | $< 768\text{px}$ | 1 cột đơn ($100\%$ width) | $\min 520\text{px}$ hoặc $75\text{vh}$ | Header xếp dọc, dock thu nhỏ $38\text{px}$, chạm 1-tap, cuộn ngang bảng cảm ứng |
+| **Tablet (Máy tính bảng)** | $768\text{px} - 1024\text{px}$ | 2 cột linh hoạt ($2\times 2$ grid) | $\min 600\text{px}$ hoặc $80\text{vh}$ | Header ngang tối giản, Inspector góc an toàn, hỗ trợ cử chỉ vuốt 2 ngón |
+| **Desktop Chuẩn (Laptop/PC)**| $1025\text{px} - 1440\text{px}$| $3 - 4$ cột tiêu chuẩn | $\min 680\text{px}$ hoặc $82\text{vh}$ | Đầy đủ Slim Dock đứng, Drawer chú thích trượt ra, Hover tức thì |
+| **Ultra-Wide & 4K** | $> 1440\text{px}$ ($2\text{K}/4\text{K}$) | Tối đa $1720\text{px}$ căn giữa | $\min 720\text{px} - 800\text{px}$ | Nền không gian sâu bao quanh, không bị kéo giãn méo tỷ lệ font chữ |
+
+---
+
+## 👆 6. Giao Thức Cảm Ứng Chạm (Touch Gestures & Single-Tap Protocol)
+
+Trên thiết bị di động và máy tính bảng, không có sự kiện rê chuột (`hover`/`mousemove`). Cần áp dụng giao thức chuyển hóa thông minh:
+1. **Chạm 1 chạm vào Node (Node Single-Tap)**:
+   - Bắt sự kiện `network.on('click')` và `network.on('selectNode')`.
+   - Cập nhật `hoveredNodeId = params.nodes[0]`.
+   - Kích hoạt luồng sáng **Laser Beam Stream** phát sáng tức thì nối giữa node được chọn và các bài báo liên kết.
+   - Hiển thị **Smart HUD Hover Inspector** ở vị trí an toàn (góc trên màn hình) với đầy đủ Tác giả, Năm, Tạp chí, và Tóm tắt AI.
+2. **Chạm 1 chạm vào Cạnh Mũi Tên (Edge Single-Tap)**:
+   - Bắt sự kiện `network.on('selectEdge')`.
+   - Cập nhật `hoveredEdgeId = params.edges[0]`.
+   - Hiển thị **Edge Epistemic Inspector** (màu hổ phách Amber, font Roboto Light $10.5\text{px}$) giải thích độ trễ tiếp thu tri thức.
+3. **Chạm vào Vùng Trống (Canvas Background Tap)**:
+   - Khi `params.nodes.length === 0 && params.edges.length === 0`, tự động ẩn toàn bộ Inspector và khôi phục trạng thái mạng lưới bình thường.
+
+---
+
+## 🎯 7. Quy Chuẩn Vùng Chạm Tối Thiểu 44px (Fitts's Ergonomic Law)
+
+- Mọi phần tử tương tác (Buttons, Quick Nav Chips, Sidebar Toggles, Theme Switcher, Sliders) trên Mobile phải có kích thước tối thiểu **$44\text{px} \times 44\text{px}$** để đảm bảo ngón tay cái thao tác dễ dàng không bị bấm trượt.
+- Bổ sung `touch-action: manipulation;` để triệt tiêu độ trễ $300\text{ms}$ chạm kép mặc định trên trình duyệt di động WebKit/Blink.
+- Khóa kích thước font `input, select, textarea` tối thiểu $14\text{px} - 16\text{px}$ để tránh iOS Safari tự động phóng to giao diện (auto-zoom) khi focus.
+
+---
+
+## 🌊 8. Chống Tràn Trang Ngang & Cuộn Quán Tính (Zero Horizontal Overflow & Momentum Scrolling)
+
+1. **Khóa tràn trang cấp độ gốc (Root Viewport Containment)**:
+   ```css
+   .main .block-container {
+       max-width: 100% !important;
+       overflow-x: hidden !important;
+       padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px)) !important;
+   }
+   ```
+2. **Cuộn quán tính siêu mượt cho các bảng ma trận (Smooth Touch Scroll)**:
+   ```css
+   .table-responsive, [data-testid="stTable"], [data-testid="stDataFrame"] {
+       overflow-x: auto !important;
+       -webkit-overflow-scrolling: touch !important;
+       overscroll-behavior-x: contain !important;
+   }
+   ```
+3. **Bảo Vệ Tai Thỏ & Thanh Điều Hướng Ảo (Safe Area Insets)**:
+   - Luôn sử dụng `env(safe-area-inset-bottom)` và `env(safe-area-inset-top)` để các nút hành động dưới đáy không bị che lấp bởi Home Bar trên iPhone/iPad.

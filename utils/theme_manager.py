@@ -1038,5 +1038,138 @@ def generate_theme_css(theme_id: str) -> str:
         margin: 0;
         font-weight: 500;
     }}
+
+    /* =========================================================================
+       8. ADAPTIVE RESPONSIVE MULTI-SCREEN SYSTEM (MOBILE, TABLET, ULTRA-WIDE)
+       ========================================================================= */
+    
+    /* A. THIẾT BỊ DI ĐỘNG (MOBILE SCREENS: < 768px) */
+    @media (max-width: 768px) {{
+        .main .block-container {{
+            padding: 10px 8px calc(40px + env(safe-area-inset-bottom, 0px)) 8px !important;
+            max-width: 100% !important;
+            overflow-x: hidden !important;
+        }}
+        
+        /* Chuyển các cột Streamlit sang dạng cuộn dọc 100% */
+        [data-testid="column"] {{
+            width: 100% !important;
+            min-width: 100% !important;
+            flex: 1 1 100% !important;
+            margin-bottom: 8px !important;
+        }}
+        
+        .synapse-header-bar {{
+            padding: 8px 12px !important;
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 8px !important;
+            border-radius: 12px !important;
+        }}
+        .header-meta-cluster {{
+            width: 100% !important;
+            justify-content: flex-start !important;
+            gap: 6px !important;
+            flex-wrap: wrap !important;
+        }}
+        .meta-chip {{
+            font-size: 10px !important;
+            padding: 3px 8px !important;
+        }}
+        
+        .hero-banner-box, .manual-hero-banner {{
+            padding: 14px 16px !important;
+            border-radius: 12px !important;
+        }}
+        .hero-banner-title, .manual-app-title {{
+            font-size: 16px !important;
+            line-height: 1.35 !important;
+        }}
+        .hero-banner-desc {{
+            font-size: 12px !important;
+        }}
+        
+        .metric-card-full {{
+            padding: 10px 12px !important;
+            border-radius: 10px !important;
+        }}
+        .metric-value {{
+            font-size: 19px !important;
+        }}
+        
+        /* Bảo vệ kích thước chạm tối thiểu 44px trên di động (Fitts's Law) */
+        .stButton button, .stDownloadButton button, [data-testid="stSidebarCollapseButton"] {{
+            min-height: 44px !important;
+            font-size: 12.5px !important;
+            touch-action: manipulation !important;
+        }}
+        
+        /* Form Inputs & Selects: tránh iOS tự động zoom khi focus */
+        input, select, textarea, [data-baseweb="select"] {{
+            font-size: 14px !important;
+        }}
+        
+        /* Tối ưu hóa bảng ma trận cuộn cảm ứng với momentum scrolling */
+        .table-responsive, [data-testid="stTable"], [data-testid="stDataFrame"] {{
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+            overscroll-behavior-x: contain !important;
+            border-radius: 10px !important;
+        }}
+        
+        /* Iframe hiển thị đồ thị thích ứng chiều cao trên điện thoại */
+        iframe {{
+            min-height: 520px !important;
+            width: 100% !important;
+            border-radius: 12px !important;
+        }}
+    }}
+
+    /* B. MÁY TÍNH BẢNG (TABLET SCREENS: 768px - 1024px) */
+    @media (min-width: 769px) and (max-width: 1024px) {{
+        .main .block-container {{
+            padding: 16px 16px 50px 16px !important;
+            max-width: 100% !important;
+        }}
+        
+        /* Bố cục 2 cột linh hoạt trên Tablet */
+        .metric-row-tablet {{
+            display: grid !important;
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 10px !important;
+        }}
+        
+        .synapse-header-bar {{
+            padding: 10px 16px !important;
+        }}
+        .hero-banner-title {{
+            font-size: 18px !important;
+        }}
+        .metric-value {{
+            font-size: 21px !important;
+        }}
+        
+        iframe {{
+            min-height: 600px !important;
+        }}
+    }}
+
+    /* C. MÀN HÌNH LỚN & ULTRA-WIDE (> 1440px / 2K / 4K) */
+    @media (min-width: 1441px) {{
+        .main .block-container {{
+            max-width: 1720px !important;
+            margin: 0 auto !important;
+            padding: 24px 36px 60px 36px !important;
+        }}
+        .hero-banner-title {{
+            font-size: 22px !important;
+        }}
+        .metric-value {{
+            font-size: 26px !important;
+        }}
+        iframe {{
+            min-height: 720px !important;
+        }}
+    }}
 </style>
 """
