@@ -295,32 +295,63 @@ class CiteNetAgent:
             height: 100%;
         }}
         
-        /* Floating Control HUD Toolbar */
-        .hud-toolbar {{
+        /* Floating Collapsible Control HUD Toolbar (Mặc định thu gọn) */
+        .hud-controls-drawer {{
             position: absolute;
             top: 14px;
             left: 14px;
-            display: flex;
-            gap: 6px;
             z-index: 100;
-            background: rgba(18, 20, 26, 0.94);
+            background: rgba(18, 20, 26, 0.95);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
-            padding: 8px 12px;
-            border-radius: 14px;
             border: 1px solid #262B38;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
-            align-items: center;
-            flex-wrap: wrap;
+            border-radius: 14px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.6);
             max-width: calc(100% - 28px);
+            transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }}
+        .hud-toggle-btn {{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            background: transparent;
+            border: none;
+            color: #F8FAFC;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 800;
+            padding: 8px 14px;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+        }}
+        .hud-toggle-btn:hover {{
+            color: #38BDF8;
+            background: rgba(56, 189, 248, 0.08);
+        }}
+        .hud-content-panel {{
+            padding: 10px 14px 12px 14px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }}
+        .hud-btn-row {{
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            align-items: center;
         }}
         .hud-btn {{
             background: #181B24;
             border: 1px solid #262B38;
             color: #F8FAFC;
-            padding: 7px 12px;
+            padding: 6px 11px;
             border-radius: 8px;
-            font-size: 12.5px;
+            font-size: 12px;
             font-weight: 600;
             cursor: pointer;
             display: inline-flex;
@@ -352,8 +383,7 @@ class CiteNetAgent:
             color: #FFFFFF;
             padding: 7px 12px;
             border-radius: 8px;
-            font-size: 12.5px;
-            width: 170px;
+            font-size: 12px;
             outline: none;
             transition: border-color 0.2s;
         }}
@@ -646,57 +676,45 @@ class CiteNetAgent:
 
         /* Tối ưu hóa hiển thị trên Máy tính bảng (Tablet) & Điện thoại (Mobile) */
         @media (max-width: 992px) {{
-            .hud-toolbar {{
+            .hud-controls-drawer {{
                 top: 8px;
                 left: 8px;
                 max-width: calc(100% - 16px);
-                gap: 5px;
-                padding: 6px 10px;
+            }}
+            .hud-toggle-btn {{
+                padding: 7px 12px;
+                font-size: 11.5px;
             }}
             .hud-btn {{
-                padding: 6px 10px;
-                font-size: 11.5px;
-            }}
-            .hud-search-box {{
-                width: 140px;
-                font-size: 11.5px;
-                padding: 6px 10px;
+                padding: 5px 9px;
+                font-size: 11px;
             }}
         }}
 
         @media (max-width: 768px) {{
-            .hud-toolbar {{
+            .hud-controls-drawer {{
                 top: 6px;
                 left: 6px;
                 right: 6px;
                 max-width: calc(100% - 12px);
-                display: flex !important;
-                flex-wrap: wrap !important;
-                padding: 6px 8px;
-                gap: 5px;
                 border-radius: 12px;
-                background: rgba(18, 20, 26, 0.98);
+            }}
+            .hud-toggle-btn {{
+                padding: 7px 12px;
+                font-size: 11px;
+                width: 100%;
+            }}
+            .hud-content-panel {{
+                padding: 8px 10px 10px 10px;
+                max-height: 52vh;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
             }}
             .hud-btn {{
                 padding: 5px 8px;
-                font-size: 11px;
-                flex-shrink: 0;
-            }}
-            .hud-search-box {{
-                width: 100%;
-                font-size: 11.5px;
-                padding: 6px 10px;
-                margin-bottom: 2px;
-            }}
-            .hud-legend {{
-                bottom: 8px;
-                left: 8px;
-                right: 8px;
-                font-size: 10px;
-                padding: 6px 10px;
-                gap: 8px;
+                font-size: 10.5px;
+                flex: 1 1 auto;
                 justify-content: center;
-                border-radius: 8px;
             }}
             #floating-hover-card {{
                 display: none !important; /* Ẩn hover card trên thiết bị cảm ứng để tránh vướng màn hình */
@@ -733,35 +751,50 @@ class CiteNetAgent:
 </head>
 <body>
 <div id="network-wrapper" class="bg-obsidian">
-    <!-- Floating HUD Controls Toolbar -->
-    <div class="hud-toolbar">
-        <input type="text" id="nodeSearch" class="hud-search-box" placeholder="🔍 Tìm tác giả / bài báo..." oninput="searchAndFocusNode(this.value)">
+    <!-- Floating Collapsible Control HUD Toolbar (Mặc định thu gọn) -->
+    <div id="hud-controls-drawer" class="hud-controls-drawer">
+        <button id="hudToggleBtn" class="hud-toggle-btn" onclick="toggleHudDrawer()" title="Bấm để mở/thu gọn thanh công cụ (Phóng to, thu nhỏ, căn giữa, bố cục, nền 3D)">
+            <span style="display:inline-flex; align-items:center; gap:6px;">
+                <span>🎛️</span>
+                <span>BẢNG CÔNG CỤ & BỐ CỤC</span>
+            </span>
+            <span id="hudArrowIcon" style="font-size:12px; color:#38BDF8; font-weight:800;">▸</span>
+        </button>
         
-        <!-- Zoom & Fit Controls -->
-        <button class="hud-btn" onclick="zoomIn()" title="Phóng to mạng lưới">🔍+ Phóng to</button>
-        <button class="hud-btn" onclick="zoomOut()" title="Thu nhỏ mạng lưới">🔍- Thu nhỏ</button>
-        <button class="hud-btn" onclick="fitView()" title="Căn giữa toàn cảnh">🎯 Căn giữa</button>
-        
-        <!-- 5 International Scientometric Layout Modes -->
-        <button class="hud-btn active" id="btnModeForce" onclick="switchLayoutMode('force')" title="1. Chuẩn VOSviewer: Cụm lực hút đồng trích dẫn (Force-directed Co-citation)">🕸️ Mạng lưới Cụm</button>
-        <button class="hud-btn" id="btnModeTimeline" onclick="switchLayoutMode('timeline')" title="2. Chuẩn HistCite: Dòng thời gian tiến hóa học thuật (Chronological Lineage)">⏳ Dòng Thời gian</button>
-        <button class="hud-btn" id="btnModeConcentric" onclick="switchLayoutMode('concentric')" title="3. Chuẩn Ego-Network: Quỹ đạo đồng tâm theo thế hệ trích dẫn (Concentric Orbit)">🎯 Quỹ đạo Đồng tâm</button>
-        <button class="hud-btn" id="btnModeHierarchical" onclick="switchLayoutMode('hierarchical')" title="4. Chuẩn CiteSpace: Cây phả hệ phân tầng (Hierarchical DAG Tree)">🌳 Cây Phả hệ</button>
-        <button class="hud-btn" id="btnModeQuartile" onclick="switchLayoutMode('quartile')" title="5. Chuẩn Clarivate / Scimago: Phân làn xếp hạng Scopus Q1/Q2 & Tạp chí (Journal Quartile Grid)">📊 Phân làn Scopus</button>
-        
-        <!-- Background Style & 3D Selector -->
-        <select id="bgSelector" class="hud-search-box" onchange="switchCanvasBg(this.value)" style="width:auto; cursor:pointer; font-weight:700; background:#181B24; border-color:#38BDF8; color:#38BDF8;" title="Chọn kiểu nền hiển thị & không gian 3D tương phản cao">
-            <option value="obsidian">🌌 Nền: Vũ trụ Obsidian</option>
-            <option value="3d-grid">🧊 Nền: Không gian Lưới 3D (Cyber 3D)</option>
-            <option value="blueprint">📐 Nền: Bản vẽ Blueprint</option>
-            <option value="parchment">📜 Nền: Giấy da Ivory (Sáng)</option>
-            <option value="nordic-light">🏛️ Nền: Bắc Âu Slate (Sáng)</option>
-        </select>
-
-        <!-- Physics & Window Controls -->
-        <button class="hud-btn" id="physicsBtn" onclick="togglePhysics()" title="Bật/Tắt mô phỏng vật lý">⚡ Tự sắp xếp</button>
-        <button class="hud-btn" onclick="toggleFullScreen()" title="Phóng to toàn màn hình">⛶ Toàn màn hình</button>
-        <button class="hud-btn primary" onclick="popoutWindow()" title="Mở trong cửa sổ riêng để kéo sang màn hình phụ">🪟 Màn hình phụ</button>
+        <div id="hudContentPanel" class="hud-content-panel" style="display: none;">
+            <!-- Search Box -->
+            <input type="text" id="nodeSearch" class="hud-search-box" style="width: 100%; box-sizing: border-box;" placeholder="🔍 Tìm tác giả / bài báo..." oninput="searchAndFocusNode(this.value)">
+            
+            <!-- Hàng 1: Phóng to, Thu nhỏ, Căn giữa, Physics, Fullscreen, Popout -->
+            <div class="hud-btn-row">
+                <button class="hud-btn" onclick="zoomIn()" title="Phóng to mạng lưới">🔍+ Phóng to</button>
+                <button class="hud-btn" onclick="zoomOut()" title="Thu nhỏ mạng lưới">🔍- Thu nhỏ</button>
+                <button class="hud-btn" onclick="fitView()" title="Căn giữa toàn cảnh">🎯 Căn giữa</button>
+                <button class="hud-btn" id="physicsBtn" onclick="togglePhysics()" title="Bật/Tắt mô phỏng vật lý">⚡ Tự sắp xếp</button>
+                <button class="hud-btn" onclick="toggleFullScreen()" title="Phóng to toàn màn hình">⛶ Toàn màn hình</button>
+                <button class="hud-btn primary" onclick="popoutWindow()" title="Mở trong cửa sổ riêng để kéo sang màn hình phụ">🪟 Màn hình phụ</button>
+            </div>
+            
+            <!-- Hàng 2: 5 Chế độ bố cục Scientometric -->
+            <div class="hud-btn-row">
+                <button class="hud-btn active" id="btnModeForce" onclick="switchLayoutMode('force')" title="1. Chuẩn VOSviewer: Cụm lực hút đồng trích dẫn">🕸️ Mạng Cụm</button>
+                <button class="hud-btn" id="btnModeTimeline" onclick="switchLayoutMode('timeline')" title="2. Chuẩn HistCite: Dòng thời gian tiến hóa học thuật">⏳ Dòng Thời gian</button>
+                <button class="hud-btn" id="btnModeConcentric" onclick="switchLayoutMode('concentric')" title="3. Chuẩn Ego-Network: Quỹ đạo đồng tâm theo thế hệ">🎯 Quỹ đạo Đồng tâm</button>
+                <button class="hud-btn" id="btnModeHierarchical" onclick="switchLayoutMode('hierarchical')" title="4. Chuẩn CiteSpace: Cây phả hệ phân tầng">🌳 Cây Phả hệ</button>
+                <button class="hud-btn" id="btnModeQuartile" onclick="switchLayoutMode('quartile')" title="5. Chuẩn Clarivate: Phân làn Scopus Q1/Q2">📊 Phân làn Scopus</button>
+            </div>
+            
+            <!-- Hàng 3: Chọn kiểu nền & Không gian 3D -->
+            <div class="hud-btn-row" style="margin-top:2px;">
+                <select id="bgSelector" class="hud-search-box" onchange="switchCanvasBg(this.value)" style="width:100%; cursor:pointer; font-weight:700; background:#181B24; border-color:#38BDF8; color:#38BDF8;" title="Chọn kiểu nền hiển thị & không gian 3D tương phản cao">
+                    <option value="obsidian">🌌 Nền: Vũ trụ Obsidian (Mặc định)</option>
+                    <option value="3d-grid">🧊 Nền: Không gian Lưới 3D (Cyber 3D)</option>
+                    <option value="blueprint">📐 Nền: Bản vẽ Blueprint</option>
+                    <option value="parchment">📜 Nền: Giấy da Ivory (Sáng)</option>
+                    <option value="nordic-light">🏛️ Nền: Bắc Âu Slate (Sáng)</option>
+                </select>
+            </div>
+        </div>
     </div>
 
     <!-- Timeline / Mode Axis Marker Bar (Dynamic across modes) -->
@@ -1314,6 +1347,20 @@ class CiteNetAgent:
         if (foundId) {{
             showPaperModal(foundId);
             network.selectNodes([foundId]);
+        }}
+    }}
+
+    // Mở / Thu gọn thanh công cụ trên cùng
+    function toggleHudDrawer() {{
+        var panel = document.getElementById('hudContentPanel');
+        var arrow = document.getElementById('hudArrowIcon');
+        if (!panel) return;
+        if (panel.style.display === 'none' || panel.style.display === '') {{
+            panel.style.display = 'flex';
+            if (arrow) arrow.innerText = '▾';
+        }} else {{
+            panel.style.display = 'none';
+            if (arrow) arrow.innerText = '▸';
         }}
     }}
 
