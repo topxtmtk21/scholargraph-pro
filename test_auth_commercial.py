@@ -109,15 +109,13 @@ def run_auth_tests():
     # Clean up test user
     delete_user_by_admin(test_user_email, SUPER_ADMIN_EMAIL)
     
-    # Reset admin password back to @123 for convenience
-    change_user_password(SUPER_ADMIN_EMAIL, new_pass, DEFAULT_SUPER_ADMIN_PASS, is_first_time=False)
-    # Re-set must_change_password to 1 so the user gets the real first-time change prompt
-    conn = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "scholargraph_auth.db")
-    import sqlite3
-    c = sqlite3.connect(conn)
-    c.execute("UPDATE users SET must_change_password = 1 WHERE email = ?", (SUPER_ADMIN_EMAIL,))
-    c.commit()
-    c.close()
+    # Reset database back to pristine initial state for real app usage
+    if os.path.exists(db_p):
+        try:
+            os.remove(db_p)
+        except Exception:
+            pass
+    init_auth_db()
 
     print("\n" + "=" * 70)
     print("🎉 TẤT CẢ CÁC BÀI TEST BẢO MẬT & PHÂN QUYỀN ĐÃ ĐẠT 100% XUẤT SẮC!")
