@@ -151,30 +151,30 @@ class TestGraphLayoutsAndPalettes(unittest.TestCase):
             self.assertIn(f"value=\"{layout}\"", html_out, f"Layout option {layout} phải có trong select dropdown")
 
     def test_multi_layer_combined_options_and_f0_anchor(self):
-        """Kiểm tra các tùy chọn lọc đa tầng kết hợp và logic neo giữ bài gốc F0"""
+        """Kiểm tra các tùy chọn lọc đa tầng bằng Checkbox và logic neo giữ bài gốc F0"""
         html_out = self.agent.generate_network_html(self.sample_nodes, self.sample_edges)
         
-        # Kiểm tra các option kết hợp trong layerFilter
-        combined_filters = [
-            'value="all"',
-            'value="f0_forward"',
-            'value="f0_backward"',
-            'value="f0_f1"',
-            'value="f0_f2"',
-            'value="f0_r1"',
-            'value="f0_r2"',
-            'value="seed_only"',
-            'value="f1_f3"',
-            'value="r1_r3"'
+        # Kiểm tra các checkbox riêng lẻ cho từng tầng
+        checkbox_ids = [
+            'id="chk_pin_f0"',
+            'id="chk_layer_f0"',
+            'id="chk_layer_f1"',
+            'id="chk_layer_f2"',
+            'id="chk_layer_f3"',
+            'id="chk_layer_r1"',
+            'id="chk_layer_r2"',
+            'id="chk_layer_r3"',
+            'id="chk_layer_isolated"'
         ]
-        for opt in combined_filters:
-            self.assertIn(opt, html_out, f"Bộ lọc đa tầng {opt} phải có trong select layerFilter")
+        for chk in checkbox_ids:
+            self.assertIn(chk, html_out, f"Checkbox {chk} phải có trong giao diện chọn tầng")
             
-        # Kiểm tra logic neo F0 trong JS
-        self.assertIn("layerVal === 'f0_forward'", html_out)
-        self.assertIn("layerVal === 'f0_backward'", html_out)
-        self.assertIn("matchLayer = (isSeed || lvl > 0", html_out)
-        self.assertIn("matchLayer = (isSeed || lvl < 0", html_out)
+        # Kiểm tra các preset nhanh và logic neo F0 trong JS
+        self.assertIn("setLayerPreset('all')", html_out)
+        self.assertIn("setLayerPreset('f0_forward')", html_out)
+        self.assertIn("setLayerPreset('f0_backward')", html_out)
+        self.assertIn("setLayerPreset('f0_only')", html_out)
+        self.assertIn("matchLayer = (chkF0 || chkPinF0)", html_out)
 
     def test_same_year_anti_collision_logic(self):
         """Kiểm tra thuật toán so le trục Y chống đè trùng năm"""

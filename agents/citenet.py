@@ -261,24 +261,24 @@ class CiteNetAgent:
             
             # Nhãn rút gọn chuẩn học thuật [Tác giả, Năm, Tầng & Số trích dẫn]
             if level == 0 or layer == "seed":
-                short_label = f"★ {first_auth} ({year})\\n[F0 • {cites} tc]"
-                full_label = f"★ {first_auth} ({year})\\n{truncated_title}\\n[F0 • {cites} trích dẫn]"
+                short_label = f"★ {first_auth} ({year})\n[F0 • {cites} tc]"
+                full_label = f"★ {first_auth} ({year})\n{truncated_title}\n[F0 • {cites} trích dẫn]"
             elif level < 0 or layer == "backward":
                 r_tag = f"R{abs(level)}" if level != 0 else "R"
                 if is_isolated:
-                    short_label = f"⚡ {first_auth} ({year})\\n[{r_tag} • {cites} tc • Độc lập]"
-                    full_label = f"⚡ {first_auth} ({year})\\n{truncated_title}\\n[{r_tag} • {cites} tc • Độc lập]"
+                    short_label = f"⚡ {first_auth} ({year})\n[{r_tag} • {cites} tc • Độc lập]"
+                    full_label = f"⚡ {first_auth} ({year})\n{truncated_title}\n[{r_tag} • {cites} tc • Độc lập]"
                 else:
-                    short_label = f"🏛️ {first_auth} ({year})\\n[{r_tag} • {cites} tc]"
-                    full_label = f"🏛️ {first_auth} ({year})\\n{truncated_title}\\n[{r_tag} • {cites} trích dẫn]"
+                    short_label = f"🏛️ {first_auth} ({year})\n[{r_tag} • {cites} tc]"
+                    full_label = f"🏛️ {first_auth} ({year})\n{truncated_title}\n[{r_tag} • {cites} trích dẫn]"
             else:
                 f_tag = f"F{level}" if level != 0 else "F"
                 if is_isolated:
-                    short_label = f"⚡ {first_auth} ({year})\\n[{f_tag} • {cites} tc • Độc lập]"
-                    full_label = f"⚡ {first_auth} ({year})\\n{truncated_title}\\n[{f_tag} • {cites} tc • Độc lập]"
+                    short_label = f"⚡ {first_auth} ({year})\n[{f_tag} • {cites} tc • Độc lập]"
+                    full_label = f"⚡ {first_auth} ({year})\n{truncated_title}\n[{f_tag} • {cites} tc • Độc lập]"
                 else:
-                    short_label = f"🚀 {first_auth} ({year})\\n[{f_tag} • {cites} tc]"
-                    full_label = f"🚀 {first_auth} ({year})\\n{truncated_title}\\n[{f_tag} • {cites} trích dẫn]"
+                    short_label = f"🚀 {first_auth} ({year})\n[{f_tag} • {cites} tc]"
+                    full_label = f"🚀 {first_auth} ({year})\n{truncated_title}\n[{f_tag} • {cites} trích dẫn]"
 
             # Tính tọa độ timeline ban đầu
             try:
@@ -1391,19 +1391,68 @@ class CiteNetAgent:
             <div class="graph-top-tools">
                 <input type="text" id="nodeSearchInput" placeholder="🔍 Tìm DOI, tác giả, năm, từ khóa..." oninput="searchAndFocusNode(this.value)" style="background:rgba(0,0,0,0.45); border:1px solid var(--theme-panel-border); color:#FFFFFF; border-radius:8px; padding:4px 9px; font-size:11px; outline:none; width:145px;" title="Tìm kiếm thông minh theo DOI, Tác giả viết tắt/đầy đủ, Năm (ví dụ: 2024, >2020), Tên bài báo, Từ khóa...">
                 
-                <!-- BỘ LỌC TẦNG KẾT HỢP ĐA TẦNG LINH HOẠT VỚI F0 ANCHOR -->
-                <select id="layerFilter" onchange="applyGraphFilters()" style="background:var(--theme-panel-bg); border:1px solid var(--theme-panel-border); color:var(--theme-text-main); border-radius:8px; padding:4px 6px; font-size:11px; font-weight:700; outline:none; cursor:pointer;" title="Lọc kết hợp phân tầng (F0 luôn được bảo tồn làm tâm điểm)">
-                    <option value="all">🌐 Toàn bộ (F0 + R1-R3 + F1-F3)</option>
-                    <option value="f0_forward">🚀 Kế thừa & Bài gốc (F0 + F1-F3)</option>
-                    <option value="f0_backward">🏛️ Cội nguồn & Bài gốc (F0 + R1-R3)</option>
-                    <option value="f0_f1">🌱 Kế thừa trực tiếp (F0 + F1)</option>
-                    <option value="f0_f2">🌿 Kế thừa F1-F2 (F0 + F1 + F2)</option>
-                    <option value="f0_r1">🏺 Cội nguồn trực tiếp (F0 + R1)</option>
-                    <option value="f0_r2">📜 Cội nguồn R1-R2 (F0 + R1 + R2)</option>
-                    <option value="seed_only">★ F0 Tâm điểm duy nhất</option>
-                    <option value="f1_f3">🚀 F1-F3 (Kế thừa mở rộng)</option>
-                    <option value="r1_r3">🏛️ R1-R3 (Cội nguồn mở rộng)</option>
-                </select>
+                <!-- BỘ LỌC TẦNG BẰNG TÍNH NĂNG CHECKBOX LINH HOẠT & NHANH -->
+                <button type="button" id="layerFilterToggleBtn" class="hud-mini-btn active" onclick="toggleLayerFilterPopover()" title="Chọn hiển thị từng tầng theo ý muốn bằng Checkbox (F0 / R1-R3 / F1-F3 / Độc lập)">📑 Chọn Tầng (Check) ▾</button>
+
+                <!-- POPOVER CHỌN TẦNG CHECKBOX THÔNG MINH -->
+                <div id="layerFilterPopover" style="display:none; position:absolute; top:42px; right:110px; z-index:9999; background:rgba(15, 23, 42, 0.96); border:1.5px solid var(--theme-accent); border-radius:12px; padding:12px 16px; box-shadow:0 12px 36px rgba(0,0,0,0.65); min-width:270px; backdrop-filter:blur(14px); text-align:left;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:6px;">
+                        <span style="font-size:11.5px; font-weight:800; color:var(--theme-accent); text-transform:uppercase;">📑 Lọc Tầng (Checkbox)</span>
+                        <span id="layerFilterCountBadge" style="font-size:10px; background:rgba(56,189,248,0.2); color:#38BDF8; padding:2px 6px; border-radius:4px; font-weight:700;">{len(vis_nodes)}/{len(vis_nodes)} bài</span>
+                    </div>
+                    
+                    <!-- Quick Preset Buttons -->
+                    <div style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:10px;">
+                        <button type="button" class="hud-mini-btn active" style="font-size:9.5px; padding:2px 6px;" onclick="setLayerPreset('all')">✓ Tất cả</button>
+                        <button type="button" class="hud-mini-btn" style="font-size:9.5px; padding:2px 6px;" onclick="setLayerPreset('f0_forward')">🚀 F0+Kế thừa</button>
+                        <button type="button" class="hud-mini-btn" style="font-size:9.5px; padding:2px 6px;" onclick="setLayerPreset('f0_backward')">🏛️ F0+Cội nguồn</button>
+                        <button type="button" class="hud-mini-btn" style="font-size:9.5px; padding:2px 6px;" onclick="setLayerPreset('f0_only')">★ Chỉ F0</button>
+                    </div>
+
+                    <!-- Checkboxes list -->
+                    <div style="display:flex; flex-direction:column; gap:6px; font-size:11px; max-height:240px; overflow-y:auto; padding-right:4px;">
+                        <label style="display:flex; align-items:center; gap:8px; color:#F8FAFC; cursor:pointer; font-weight:700;">
+                            <input type="checkbox" id="chk_pin_f0" checked onchange="applyGraphFilters()" style="accent-color:var(--theme-accent); cursor:pointer;">
+                            <span>🔒 Ghim bài gốc F0 (Anchor Pinning)</span>
+                        </label>
+                        <div style="height:1px; background:rgba(255,255,255,0.1); margin:2px 0;"></div>
+                        <label style="display:flex; align-items:center; gap:8px; color:#FDE047; cursor:pointer;">
+                            <input type="checkbox" id="chk_layer_f0" checked onchange="applyGraphFilters()" style="accent-color:#FDE047; cursor:pointer;">
+                            <span>★ F0: Bài báo gốc tâm điểm</span>
+                        </label>
+                        <label style="display:flex; align-items:center; gap:8px; color:#38BDF8; cursor:pointer;">
+                            <input type="checkbox" id="chk_layer_f1" checked onchange="applyGraphFilters()" style="accent-color:#38BDF8; cursor:pointer;">
+                            <span>🚀 F1: Kế thừa trực tiếp</span>
+                        </label>
+                        <label style="display:flex; align-items:center; gap:8px; color:#60A5FA; cursor:pointer;">
+                            <input type="checkbox" id="chk_layer_f2" checked onchange="applyGraphFilters()" style="accent-color:#60A5FA; cursor:pointer;">
+                            <span>🚀 F2: Phát triển thế hệ 2</span>
+                        </label>
+                        <label style="display:flex; align-items:center; gap:8px; color:#93C5FD; cursor:pointer;">
+                            <input type="checkbox" id="chk_layer_f3" checked onchange="applyGraphFilters()" style="accent-color:#93C5FD; cursor:pointer;">
+                            <span>🚀 F3: Kế thừa mở rộng</span>
+                        </label>
+                        <label style="display:flex; align-items:center; gap:8px; color:#A78BFA; cursor:pointer;">
+                            <input type="checkbox" id="chk_layer_r1" checked onchange="applyGraphFilters()" style="accent-color:#A78BFA; cursor:pointer;">
+                            <span>🏛️ R1: Nền tảng trực tiếp</span>
+                        </label>
+                        <label style="display:flex; align-items:center; gap:8px; color:#C084FC; cursor:pointer;">
+                            <input type="checkbox" id="chk_layer_r2" checked onchange="applyGraphFilters()" style="accent-color:#C084FC; cursor:pointer;">
+                            <span>🏛️ R2: Cội nguồn thế hệ 2</span>
+                        </label>
+                        <label style="display:flex; align-items:center; gap:8px; color:#E879F9; cursor:pointer;">
+                            <input type="checkbox" id="chk_layer_r3" checked onchange="applyGraphFilters()" style="accent-color:#E879F9; cursor:pointer;">
+                            <span>🏛️ R3: Kinh điển sâu</span>
+                        </label>
+                        <label style="display:flex; align-items:center; gap:8px; color:#94A3B8; cursor:pointer;">
+                            <input type="checkbox" id="chk_layer_isolated" checked onchange="applyGraphFilters()" style="accent-color:#94A3B8; cursor:pointer;">
+                            <span>⚡ Bài độc lập (Không liên kết)</span>
+                        </label>
+                    </div>
+                    <div style="margin-top:8px; text-align:right;">
+                        <button type="button" class="hud-mini-btn" style="font-size:10px; padding:2px 8px;" onclick="toggleLayerFilterPopover()">Đóng ✕</button>
+                    </div>
+                </div>
 
                 <!-- BỘ LỌC MŨI TÊN KẾT NỐI -->
                 <select id="edgeFilter" onchange="applyGraphFilters()" style="background:var(--theme-panel-bg); border:1px solid var(--theme-panel-border); color:var(--theme-text-main); border-radius:8px; padding:4px 6px; font-size:11px; font-weight:600; outline:none; cursor:pointer;" title="Lọc loại liên kết mũi tên">
@@ -2062,12 +2111,82 @@ class CiteNetAgent:
         stopPlaybackTimer();
     }}
 
-    // DYNAMIC MULTI-LAYER COMBINED FILTERING (BẢO TỒN F0 ANCHOR & MŨI TÊN KẾT HỢP)
+    // BẬT / TẮT POPOVER CHỌN TẦNG CHECKBOX
+    function toggleLayerFilterPopover() {{
+        var pop = document.getElementById('layerFilterPopover');
+        var btn = document.getElementById('layerFilterToggleBtn');
+        if (pop) {{
+            var isHidden = (pop.style.display === 'none' || !pop.style.display);
+            pop.style.display = isHidden ? 'block' : 'none';
+            if (btn) btn.classList.toggle('active', isHidden);
+        }}
+    }}
+
+    // THIẾT LẬP NHANH CÁC PRESET CHO CHECKBOX
+    function setLayerPreset(preset) {{
+        var chkF0 = document.getElementById('chk_layer_f0');
+        var chkF1 = document.getElementById('chk_layer_f1');
+        var chkF2 = document.getElementById('chk_layer_f2');
+        var chkF3 = document.getElementById('chk_layer_f3');
+        var chkR1 = document.getElementById('chk_layer_r1');
+        var chkR2 = document.getElementById('chk_layer_r2');
+        var chkR3 = document.getElementById('chk_layer_r3');
+        var chkIso = document.getElementById('chk_layer_isolated');
+
+        if (preset === 'all') {{
+            if (chkF0) chkF0.checked = true;
+            if (chkF1) chkF1.checked = true;
+            if (chkF2) chkF2.checked = true;
+            if (chkF3) chkF3.checked = true;
+            if (chkR1) chkR1.checked = true;
+            if (chkR2) chkR2.checked = true;
+            if (chkR3) chkR3.checked = true;
+            if (chkIso) chkIso.checked = true;
+        }} else if (preset === 'f0_forward') {{
+            if (chkF0) chkF0.checked = true;
+            if (chkF1) chkF1.checked = true;
+            if (chkF2) chkF2.checked = true;
+            if (chkF3) chkF3.checked = true;
+            if (chkR1) chkR1.checked = false;
+            if (chkR2) chkR2.checked = false;
+            if (chkR3) chkR3.checked = false;
+            if (chkIso) chkIso.checked = true;
+        }} else if (preset === 'f0_backward') {{
+            if (chkF0) chkF0.checked = true;
+            if (chkF1) chkF1.checked = false;
+            if (chkF2) chkF2.checked = false;
+            if (chkF3) chkF3.checked = false;
+            if (chkR1) chkR1.checked = true;
+            if (chkR2) chkR2.checked = true;
+            if (chkR3) chkR3.checked = true;
+            if (chkIso) chkIso.checked = true;
+        }} else if (preset === 'f0_only') {{
+            if (chkF0) chkF0.checked = true;
+            if (chkF1) chkF1.checked = false;
+            if (chkF2) chkF2.checked = false;
+            if (chkF3) chkF3.checked = false;
+            if (chkR1) chkR1.checked = false;
+            if (chkR2) chkR2.checked = false;
+            if (chkR3) chkR3.checked = false;
+            if (chkIso) chkIso.checked = false;
+        }}
+        applyGraphFilters();
+    }}
+
+    // DYNAMIC MULTI-LAYER CHECKBOX FILTERING (CHECK TỪNG TẦNG RIÊNG BIỆT & F0 ANCHOR)
     function applyGraphFilters() {{
         var edgeEl = document.getElementById('edgeFilter');
-        var layerEl = document.getElementById('layerFilter');
         var edgeVal = edgeEl ? edgeEl.value : 'all';
-        var layerVal = layerEl ? layerEl.value : 'all';
+
+        var chkPinF0 = document.getElementById('chk_pin_f0') ? document.getElementById('chk_pin_f0').checked : true;
+        var chkF0 = document.getElementById('chk_layer_f0') ? document.getElementById('chk_layer_f0').checked : true;
+        var chkF1 = document.getElementById('chk_layer_f1') ? document.getElementById('chk_layer_f1').checked : true;
+        var chkF2 = document.getElementById('chk_layer_f2') ? document.getElementById('chk_layer_f2').checked : true;
+        var chkF3 = document.getElementById('chk_layer_f3') ? document.getElementById('chk_layer_f3').checked : true;
+        var chkR1 = document.getElementById('chk_layer_r1') ? document.getElementById('chk_layer_r1').checked : true;
+        var chkR2 = document.getElementById('chk_layer_r2') ? document.getElementById('chk_layer_r2').checked : true;
+        var chkR3 = document.getElementById('chk_layer_r3') ? document.getElementById('chk_layer_r3').checked : true;
+        var chkIso = document.getElementById('chk_layer_isolated') ? document.getElementById('chk_layer_isolated').checked : true;
 
         var visibleNodeIds = new Set();
         var nodeUpdates = [];
@@ -2075,34 +2194,28 @@ class CiteNetAgent:
         rawNodes.forEach(function(n) {{
             var isSeed = (n.level === 0 || n.layer === 'seed');
             var lvl = n.level || 0;
-            var matchLayer = true;
+            var isIso = n.is_isolated || false;
+            var matchLayer = false;
 
-            if (layerVal === 'all') {{
-                matchLayer = true;
-            }} else if (layerVal === 'f0_forward') {{
-                // F0 + Tất cả F1-F3
-                matchLayer = (isSeed || lvl > 0 || n.layer === 'forward');
-            }} else if (layerVal === 'f0_backward') {{
-                // F0 + Tất cả R1-R3
-                matchLayer = (isSeed || lvl < 0 || n.layer === 'backward');
-            }} else if (layerVal === 'f0_f1') {{
-                // F0 + F1
-                matchLayer = (isSeed || lvl === 1);
-            }} else if (layerVal === 'f0_f2') {{
-                // F0 + F1 + F2
-                matchLayer = (isSeed || lvl === 1 || lvl === 2);
-            }} else if (layerVal === 'f0_r1') {{
-                // F0 + R1
-                matchLayer = (isSeed || lvl === -1);
-            }} else if (layerVal === 'f0_r2') {{
-                // F0 + R1 + R2
-                matchLayer = (isSeed || lvl === -1 || lvl === -2);
-            }} else if (layerVal === 'seed_only') {{
-                matchLayer = isSeed;
-            }} else if (layerVal === 'f1_f3') {{
-                matchLayer = (lvl > 0 || n.layer === 'forward');
-            }} else if (layerVal === 'r1_r3') {{
-                matchLayer = (lvl < 0 || n.layer === 'backward');
+            if (isSeed) {{
+                matchLayer = (chkF0 || chkPinF0);
+            }} else if (lvl === 1 || (lvl > 0 && n.layer === 'forward' && lvl === 1)) {{
+                matchLayer = chkF1;
+            }} else if (lvl === 2) {{
+                matchLayer = chkF2;
+            }} else if (lvl >= 3 || (lvl > 0 && n.layer === 'forward')) {{
+                matchLayer = chkF3;
+            }} else if (lvl === -1 || (lvl < 0 && n.layer === 'backward' && lvl === -1)) {{
+                matchLayer = chkR1;
+            }} else if (lvl === -2) {{
+                matchLayer = chkR2;
+            }} else if (lvl <= -3 || (lvl < 0 && n.layer === 'backward')) {{
+                matchLayer = chkR3;
+            }}
+
+            // Nếu bài báo độc lập và người dùng bỏ chọn nhóm độc lập -> ẩn
+            if (isIso && !chkIso) {{
+                matchLayer = false;
             }}
 
             if (matchLayer) visibleNodeIds.add(n.id);
@@ -2118,6 +2231,11 @@ class CiteNetAgent:
             edgeUpdates.push({{ id: e.id, hidden: !isEdgeShown }});
         }});
         edges.update(edgeUpdates);
+
+        var badge = document.getElementById('layerFilterCountBadge');
+        if (badge) {{
+            badge.innerText = visibleNodeIds.size + '/' + rawNodes.length + ' bài';
+        }}
     }}
 
     // Lineage Tracing
@@ -2464,13 +2582,13 @@ class CiteNetAgent:
             ctx.setLineDash([6, 6]);
             ctx.lineWidth = 1.2;
             [180, 290, 400, 520].forEach(function(r, idx) {{
-                ctx.strokeStyle = 'rgba(var(--theme-glow-rgb), 0.20)';
+                ctx.strokeStyle = 'rgba(56, 189, 248, 0.20)';
                 ctx.beginPath();
                 ctx.arc(0, 0, r, 0, 2 * Math.PI, false);
                 ctx.stroke();
             }});
             ctx.font = 'bold 11px JetBrains Mono, monospace';
-            ctx.fillStyle = 'var(--theme-accent)';
+            ctx.fillStyle = '#38BDF8';
             ctx.fillText('📡 RADAR RANGE 180px - 520px', 10, -530);
             ctx.restore();
 
@@ -2480,28 +2598,39 @@ class CiteNetAgent:
                 var xPos = (y - minYrVal) * 260 - ((maxYrVal - minYrVal) * 130);
                 ctx.setLineDash([6, 6]);
                 ctx.lineWidth = 1.0;
-                ctx.strokeStyle = 'rgba(var(--theme-glow-rgb), 0.18)';
+                ctx.strokeStyle = 'rgba(56, 189, 248, 0.18)';
                 ctx.beginPath();
                 ctx.moveTo(xPos, -420);
                 ctx.lineTo(xPos, 420);
                 ctx.stroke();
 
                 ctx.setLineDash([]);
-                ctx.fillStyle = 'var(--theme-panel-bg)';
-                ctx.fillRect(xPos - 44, -435, 88, 24);
-                ctx.strokeStyle = 'var(--theme-accent)';
-                ctx.strokeRect(xPos - 44, -435, 88, 24);
+                // Sleek translucent badge with rounded corners
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.90)';
+                ctx.strokeStyle = 'rgba(56, 189, 248, 0.65)';
+                ctx.lineWidth = 1.2;
 
-                ctx.font = 'bold 11px JetBrains Mono, monospace';
-                ctx.fillStyle = '#FDE047';
+                if (ctx.roundRect) {{
+                    ctx.beginPath();
+                    ctx.roundRect(xPos - 36, -435, 72, 22, 6);
+                    ctx.fill();
+                    ctx.stroke();
+                }} else {{
+                    ctx.fillRect(xPos - 36, -435, 72, 22);
+                    ctx.strokeRect(xPos - 36, -435, 72, 22);
+                }}
+
+                ctx.font = 'bold 11px Plus Jakarta Sans, sans-serif';
+                ctx.fillStyle = '#38BDF8';
                 ctx.textAlign = 'center';
-                ctx.fillText('📅 ' + y, xPos, -419);
+                ctx.textBaseline = 'middle';
+                ctx.fillText('📅 ' + y, xPos, -424);
             }}
             ctx.restore();
 
         }} else if (currentLayoutMode === 'fishbone') {{
             ctx.save();
-            ctx.strokeStyle = 'rgba(var(--theme-glow-rgb), 0.35)';
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
             ctx.lineWidth = 2.5;
             ctx.beginPath();
             ctx.moveTo(-650, 0);
@@ -2509,7 +2638,7 @@ class CiteNetAgent:
             ctx.stroke();
 
             ctx.font = 'bold 12px Plus Jakarta Sans, sans-serif';
-            ctx.fillStyle = 'rgba(var(--theme-glow-rgb), 0.85)';
+            ctx.fillStyle = 'rgba(56, 189, 248, 0.85)';
             ctx.fillText('🐟 TRỤC SỐNG LƯNG THỜI GIAN (CHRONO-BACKBONE)', -620, -12);
             ctx.fillText('🏛️ CỘI NGUỒN (R) ➔', -450, 45);
             ctx.fillText('🚀 KẾ THỪA (F) ➔', 250, -45);
@@ -2594,15 +2723,14 @@ class CiteNetAgent:
         var outC = (p.outgoing_ids || []).length;
         var inC = (p.incoming_ids || []).length;
         
-        var layerFilterVal = document.getElementById('layerFilter') ? document.getElementById('layerFilter').value : 'all';
+        var chkPinF0 = document.getElementById('chk_pin_f0') ? document.getElementById('chk_pin_f0').checked : true;
         var edgeFilterVal = document.getElementById('edgeFilter') ? document.getElementById('edgeFilter').value : 'all';
-        var isFilterActive = (layerFilterVal !== 'all' || edgeFilterVal !== 'all');
 
         var linkNote = '⚡ <b>Liên kết tổng thể:</b> ' + outC + ' tham chiếu (R) ➔ ' + inC + ' kế thừa (F).';
         if (outC === 0 && inC === 0) {{
             linkNote += '<br><span style="color:#FDE047;">⚠️ Ghi chú: Công trình độc lập trong tập mẫu này.</span>';
-        }} else if (isFilterActive && layerFilterVal !== 'all') {{
-            linkNote += '<br><span style="color:var(--theme-accent); font-size:9.5px;">💡 Mẹo: F0 luôn được neo giữ để quan sát mạch tri thức chuẩn xác.</span>';
+        }} else if (chkPinF0) {{
+            linkNote += '<br><span style="color:#38BDF8; font-size:9.5px;">💡 F0 được ghim neo giữ trung tâm để đối chiếu quan hệ kế thừa trực tiếp.</span>';
         }}
         if (linksEl) linksEl.innerHTML = linkNote;
 
