@@ -1,7 +1,30 @@
-# HƯỚNG DẪN CÀI ĐẶT & VẬN HÀNH CỤC BỘ (LOCAL SETUP GUIDE)
+# HƯỚNG DẪN CÀI ĐẶT & VẬN HÀNH BẢN THƯƠNG MẠI (ENTERPRISE COMMERCIAL GUIDE)
 ## HỆ THỐNG MẠNG LƯỚI TRI THỨC HỌC THUẬT & SOẠN THẢO BÁO CHÍ AI
-### **SCHOLARGRAPH PRO (v3.5 Enterprise)**
+### **SCHOLARGRAPH PRO (v3.5 Enterprise Commercial Edition)**
 *Tác giả & Kiến trúc sư hệ thống: **TRẦN DUY (Lead AI Research Engineer)***
+
+---
+
+## 🔐 HỆ THỐNG XÁC THỰC, PHÂN QUYỀN & BẢO MẬT BẢN QUYỀN (RBAC)
+
+### 1. Tài khoản Quản trị Tối cao (Super Admin)
+- **Email Super Admin:** `tranduytno@gmail.com`
+- **Mật khẩu mặc định:** `@123`
+- **Chính sách bảo mật bắt buộc:** Ngay sau khi đăng nhập lần đầu bằng mật khẩu `@123`, hệ thống **bắt buộc người dùng phải đổi sang mật khẩu riêng** (tối thiểu 6 ký tự) trước khi mở khóa các tính năng làm việc.
+
+### 2. Phân quyền & Cấp phép Truy cập
+- Chỉ có Super Admin (`tranduytno@gmail.com`) và các Email được Super Admin cấp phép tại **Menu 09. Quản trị hệ thống & Phân quyền** mới có thể đăng nhập.
+- Các vai trò (Roles) trong hệ thống:
+  - 👑 **Super Admin:** Toàn quyền quản trị, thêm/xóa user, phân quyền, khôi phục mật khẩu, xem nhật ký kiểm toán.
+  - ⭐ **Admin:** Quản trị dự án và cấu hình hệ thống.
+  - 🔬 **Researcher:** Toàn quyền nghiên cứu, quét mạng lưới DOI, bóc tách APA 7, viết CARS, xuất PowerPoint/Word.
+  - 👁️ **Viewer:** Xem và tra cứu hồ sơ tài liệu.
+
+### 3. Quy chế Phục hồi Mật khẩu Khẩn cấp (Dual-Recovery Routing)
+- Trong trường hợp quên mật khẩu hoặc cần reset mật khẩu, một mã Token xác thực mã hóa (thời hạn 2 giờ) sẽ được hệ thống định tuyến **gửi đồng thời về đúng 2 hòm thư bảo mật tối cao**:
+  1. `topxtmtkt21@gmail.com`
+  2. `tranduytno@gmail.com`
+- Chỉ 2 email bảo mật này mới nhận được mã xác thực và liên kết phục hồi mật khẩu.
 
 ---
 

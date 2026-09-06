@@ -72,11 +72,29 @@ from utils.theme_manager import (
     generate_theme_css,
     get_theme_list
 )
+from utils.auth_manager import (
+    SUPER_ADMIN_EMAIL,
+    SECURITY_RECOVERY_EMAILS,
+    DEFAULT_SUPER_ADMIN_PASS,
+    authenticate_user,
+    change_user_password,
+    request_password_reset,
+    verify_and_reset_password,
+    add_user_by_admin,
+    get_all_users,
+    toggle_user_status,
+    update_user_role,
+    delete_user_by_admin,
+    get_audit_logs,
+    log_audit_event
+)
+
 from agents.citenet import CiteNetAgent
 from agents.synthdesk import SynthDeskAgent
 from agents.introwri import IntroWriAgent
 from agents.editor_polisher import EditorPolisherAgent
 from agents.peer_reviewer import PeerReviewerAgent
+
 
 # -----------------------------------------------------------------------------
 # CẤU HÌNH TRANG ỨNG DỤNG — CHUẨN THƯƠNG MẠI HÓA HỌC THUẬT (COMMERCIAL ACADEMIC SAAS)
@@ -119,6 +137,8 @@ def get_secret(key: str, default: str = "") -> str:
 # -----------------------------------------------------------------------------
 # KHỞI TẠO BỘ NHỚ TRẠNG THÁI (SESSION STATE)
 # -----------------------------------------------------------------------------
+if "auth_user" not in st.session_state:
+    st.session_state.auth_user = None
 if "pipeline_results" not in st.session_state:
     st.session_state.pipeline_results = None
 if "doi_input_val" not in st.session_state:
@@ -136,8 +156,140 @@ if "selected_theme" not in st.session_state:
 st.markdown(generate_theme_css(st.session_state.selected_theme), unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
+# CỔNG XÁC THỰC DOANH NGHIỆP & PHÂN QUYỀN (COMMERCIAL AUTHENTICATION GATE)
+# -----------------------------------------------------------------------------
+if not st.session_state.auth_user:
+    st.markdown("""
+    <div style="max-width: 680px; margin: 20px auto 10px auto; text-align: center;">
+        <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(56, 189, 248, 0.1); border:1px solid rgba(56, 189, 248, 0.3); padding:6px 16px; border-radius:24px; color:#38BDF8; font-size:12.5px; font-weight:700; margin-bottom:12px;">
+            🛡️ SCHOLARGRAPH PRO v3.5 ENTERPRISE • CỔNG XÁC THỰC BẢN QUYỀN
+        </div>
+        <h1 style="font-size: 28px; font-weight: 900; color: var(--text-primary); margin-bottom: 6px; letter-spacing:-0.5px;">
+            ĐĂNG NHẬP HỆ THỐNG HỌC THUẬT
+        </h1>
+        <p style="color: var(--text-secondary); font-size: 13.5px; margin: 0;">
+            Hệ thống quản lý truy cập khép kín theo tiêu chuẩn bảo mật Viện Nghiên cứu & Doanh nghiệp.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    c_auth_box = st.container()
+    with c_auth_box:
+        auth_col1, auth_col2, auth_col3 = st.columns([1, 4, 1])
+        with auth_col2:
+            tab_login, tab_forgot, tab_reset = st.tabs([
+                "🔐 1. Đăng nhập",
+                "❓ 2. Quên mật khẩu",
+                "🔑 3. Nhập Token đặt lại mật khẩu"
+            ])
+
+            with tab_login:
+                st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
+                login_email = st.text_input("📧 Địa chỉ Email tài khoản:", value="tranduytno@gmail.com", key="txt_login_email")
+                login_pass = st.text_input("🔑 Mật khẩu truy cập:", type="password", key="txt_login_pass")
+                
+                st.caption("💡 *Tài khoản Super Admin tối cao:* `tranduytno@gmail.com` *(Mật khẩu mặc định: `@123`)*")
+                
+                if st.button("🚀 ĐĂNG NHẬP VÀO HỆ THỐNG NGAY", type="primary", use_container_width=True, key="btn_do_login"):
+                    success, user_obj, msg = authenticate_user(login_email, login_pass)
+                    if success and user_obj:
+                        st.session_state.auth_user = user_obj
+                        st.success(msg)
+                        st.rerun()
+                    else:
+                        st.error(f"❌ {msg}")
+
+            with tab_forgot:
+                st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
+                st.markdown("""
+                <div style="background:rgba(56, 189, 248, 0.06); border:1px solid rgba(56, 189, 248, 0.2); border-radius:10px; padding:12px 14px; font-size:12.5px; color:var(--text-secondary); margin-bottom:12px;">
+                    🛡️ <b>Quy trình bảo mật kép:</b> Khi yêu cầu đặt lại mật khẩu, một mã Token xác thực 32-ký tự sẽ được hệ thống mã hóa và <b>gửi đồng thời về 2 hòm thư bảo mật tối cao</b>:<br/>
+                    1. <code>topxtmtkt21@gmail.com</code><br/>
+                    2. <code>tranduytno@gmail.com</code>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                req_email = st.text_input("Nhập email cần khôi phục:", value=login_email, key="txt_req_reset_email")
+                if st.button("📨 GỬI MÃ PHỤC HỒI ĐẾN EMAIL BẢO MẬT", use_container_width=True, key="btn_send_reset_token"):
+                    ok_r, msg_r, token_val = request_password_reset(req_email)
+                    if ok_r:
+                        st.success(msg_r)
+                        if token_val:
+                            st.info(f"🔑 **Mã Token Xác Thực (Chỉ hiển thị cho Quản trị viên):** `{token_val}`")
+                            st.caption("👉 Hãy sao chép mã Token này và chuyển sang tab **'3. Nhập Token đặt lại mật khẩu'** để tạo mật khẩu mới.")
+                    else:
+                        st.error(msg_r)
+
+            with tab_reset:
+                st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
+                reset_tok_input = st.text_input("Mã Token xác thực (Nhận từ email bảo mật):", key="txt_reset_tok_val")
+                new_p1 = st.text_input("Mật khẩu mới (Tối thiểu 6 ký tự):", type="password", key="txt_new_p1")
+                new_p2 = st.text_input("Xác nhận lại mật khẩu mới:", type="password", key="txt_new_p2")
+
+                if st.button("✓ XÁC NHẬN CẬP NHẬT MẬT KHẨU MỚI", type="primary", use_container_width=True, key="btn_submit_reset_pw"):
+                    if new_p1 != new_p2:
+                        st.error("Mật khẩu xác nhận không khớp.")
+                    else:
+                        ok_reset, msg_reset = verify_and_reset_password(reset_tok_input, new_p1)
+                        if ok_reset:
+                            st.success(msg_reset)
+                        else:
+                            st.error(msg_reset)
+
+    st.markdown("""
+    <div style="text-align: center; color: var(--text-muted); font-size: 11.5px; margin-top: 40px; padding: 16px; border-top: 1px solid var(--border-subtle);">
+        SCHOLARGRAPH PRO &copy; 2026 Enterprise Edition. Phát triển bởi <b>TRẦN DUY (Lead AI Research Engineer)</b>.<br/>
+        Liên hệ hỗ trợ kỹ thuật và phân quyền tài khoản: <code>topxtmtkt21@gmail.com</code> | <code>tranduytno@gmail.com</code>
+    </div>
+    """, unsafe_allow_html=True)
+    st.stop()
+
+# -----------------------------------------------------------------------------
+# BẮT BUỘC ĐỔI MẬT KHẨU LẦN ĐẦU TRUY CẬP (MANDATORY INITIAL PASSWORD CHANGE)
+# -----------------------------------------------------------------------------
+if st.session_state.auth_user and st.session_state.auth_user.get("must_change_password"):
+    u = st.session_state.auth_user
+    st.markdown(f"""
+    <div style="max-width: 620px; margin: 30px auto; background: var(--bg-surface); border: 2px solid #F59E0B; border-radius: 16px; padding: 26px 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
+            <span style="font-size:26px;">⚠️</span>
+            <div>
+                <h2 style="margin:0; font-size:20px; color:#F59E0B;">BẮT BUỘC THAY ĐỔI MẬT KHẨU LẦN ĐẦU</h2>
+                <div style="color:var(--text-secondary); font-size:12.5px;">Tài khoản: <b>{u['email']}</b> ({u['full_name']})</div>
+            </div>
+        </div>
+        <div style="color:var(--text-primary); font-size:13.5px; line-height:1.6; margin-bottom:16px;">
+            Bạn đang đăng nhập bằng mật khẩu mặc định (<code>@123</code>) hoặc mật khẩu vừa được khôi phục. Để tuân thủ chính sách bảo mật doanh nghiệp, <b>bạn phải thiết lập mật khẩu riêng</b> trước khi truy cập không gian làm việc.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    fc_col1, fc_col2, fc_col3 = st.columns([1, 2.2, 1])
+    with fc_col2:
+        cur_pass = st.text_input("Mật khẩu hiện tại (@123):", type="password", key="txt_fc_cur_pass")
+        new_pass1 = st.text_input("Mật khẩu mới (Tối thiểu 6 ký tự, khác @123):", type="password", key="txt_fc_new_pass1")
+        new_pass2 = st.text_input("Xác nhận mật khẩu mới:", type="password", key="txt_fc_new_pass2")
+
+        if st.button("🔒 ĐỔI MẬT KHẨU & MỞ KHÓA KHÔNG GIAN LÀM VIỆC", type="primary", use_container_width=True, key="btn_submit_first_change"):
+            if new_pass1 != new_pass2:
+                st.error("Mật khẩu xác nhận không trùng khớp.")
+            else:
+                ok_c, msg_c = change_user_password(u["email"], cur_pass, new_pass1, is_first_time=True)
+                if ok_c:
+                    st.session_state.auth_user["must_change_password"] = 0
+                    st.success("✓ Đã đổi mật khẩu thành công! Chào mừng bạn vào hệ thống.")
+                    st.rerun()
+                else:
+                    st.error(f"❌ {msg_c}")
+    st.stop()
+
+# -----------------------------------------------------------------------------
 # TRÌNH ĐƠN BÊN TRÁI (SIDEBAR NAVIGATION — VIẾT HOA CHUẨN NGỮ PHÁP TIẾNG VIỆT)
 # -----------------------------------------------------------------------------
+cur_auth = st.session_state.auth_user
+is_super_admin = (cur_auth.get("role") == "super_admin")
+is_admin_or_super = (cur_auth.get("role") in ["super_admin", "admin"])
+
 with st.sidebar:
     st.markdown(f"""
     <div class="sidebar-brand-box">
@@ -153,6 +305,44 @@ with st.sidebar:
         <div class="developer-pill">Người phát triển: TRẦN DUY</div>
     </div>
     """, unsafe_allow_html=True)
+
+    # THÔNG TIN TÀI KHOẢN ĐANG ĐĂNG NHẬP
+    role_title_map = {
+        "super_admin": "👑 Super Admin Tối Cao",
+        "admin": "⭐ Quản Trị Viên (Admin)",
+        "researcher": "🔬 Chuyên Gia Nghiên Cứu",
+        "viewer": "👁️ Khách Xem (Viewer)"
+    }
+    role_label = role_title_map.get(cur_auth.get("role", "researcher"), "🔬 Chuyên Gia")
+    
+    st.markdown(f"""
+    <div style="background:var(--bg-surface-elevated); border:1px solid var(--border-subtle); border-radius:10px; padding:10px 12px; margin-bottom:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:11px; color:var(--text-muted); font-weight:700;">TÀI KHOẢN TRUY CẬP</span>
+            <span style="width:8px; height:8px; border-radius:50%; background:#10B981;" title="Online"></span>
+        </div>
+        <div style="color:var(--text-primary); font-weight:700; font-size:12.5px; margin-top:2px; word-break:break-all;">{cur_auth['email']}</div>
+        <div style="color:var(--primary-accent); font-size:11.5px; font-weight:600; margin-top:2px;">{role_label}</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    col_u_act1, col_u_act2 = st.columns(2)
+    with col_u_act1:
+        with st.popover("🔑 Đổi pass"):
+            st.markdown("##### 🔒 Đổi mật khẩu tài khoản:")
+            old_p_pop = st.text_input("Mật khẩu hiện tại:", type="password", key="pop_old_p")
+            new_p_pop = st.text_input("Mật khẩu mới:", type="password", key="pop_new_p")
+            if st.button("Cập nhật", key="btn_pop_update_pw", use_container_width=True):
+                ok_up, msg_up = change_user_password(cur_auth["email"], old_p_pop, new_p_pop)
+                if ok_up:
+                    st.success(msg_up)
+                else:
+                    st.error(msg_up)
+    with col_u_act2:
+        if st.button("🚪 Đăng xuất", use_container_width=True, key="btn_sidebar_logout"):
+            log_audit_event(cur_auth["email"], "LOGOUT", "Đăng xuất thành công")
+            st.session_state.auth_user = None
+            st.rerun()
 
     # 🎨 CHỌN GIAO DIỆN HỌC THUẬT (10 BỘ THEME TƯƠNG PHẢN CAO)
     st.markdown('<div class="menu-header-badge">🎨 GIAO DIỆN & THEME (10 BỘ)</div>', unsafe_allow_html=True)
@@ -174,20 +364,25 @@ with st.sidebar:
 
     st.markdown('<div class="menu-header-badge" style="margin-top:12px;">TRÌNH ĐƠN KHÔNG GIAN LÀM VIỆC</div>', unsafe_allow_html=True)
     
+    nav_options = [
+        "01. Khởi tạo & Nhập mã DOI",
+        "02. Mạng lưới trích dẫn khoa học",
+        "03. Bảng tổng hợp phương pháp (APA 7)",
+        "04. Tóm lược luận điểm song ngữ",
+        "05. Soạn thảo CARS & Phản biện mô phỏng",
+        "06. Tải về trọn bộ hồ sơ & AI Copilot",
+        "07. Cài đặt hệ thống & Gemini 2.0",
+        "08. Hướng dẫn sử dụng & Cẩm nang"
+    ]
+    if is_admin_or_super:
+        nav_options.append("09. Quản trị hệ thống & Phân quyền")
+
     workspace_nav = st.radio(
         "Chọn màn hình làm việc:",
-        [
-            "01. Khởi tạo & Nhập mã DOI",
-            "02. Mạng lưới trích dẫn khoa học",
-            "03. Bảng tổng hợp phương pháp (APA 7)",
-            "04. Tóm lược luận điểm song ngữ",
-            "05. Soạn thảo CARS & Phản biện mô phỏng",
-            "06. Tải về trọn bộ hồ sơ & AI Copilot",
-            "07. Cài đặt hệ thống & Gemini 2.0",
-            "08. Hướng dẫn sử dụng & Cẩm nang"
-        ],
+        nav_options,
         label_visibility="collapsed"
     )
+
 
     st.markdown("""
     <div style="background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 12px; font-size: 12px; margin-top: 14px;">
@@ -2119,10 +2314,210 @@ elif "08." in workspace_nav:
             with st.expander(f"📌 {faq['q']}", expanded=False):
                 st.markdown(f"<div style='color:var(--text-primary); font-size:13.5px; line-height:1.6;'>{faq['a']}</div>", unsafe_allow_html=True)
 
+# -----------------------------------------------------------------------------
+# MÀN HÌNH 9: QUẢN TRỊ HỆ THỐNG & PHÂN QUYỀN NGƯỜI DÙNG (SUPER ADMIN PORTAL)
+# -----------------------------------------------------------------------------
+elif "09." in workspace_nav:
+    if not is_admin_or_super:
+        st.error("🚫 Bạn không có quyền truy cập vào Cổng Quản Trị Hệ Thống.")
+    else:
+        st.markdown(f"""
+        <div class="frame-box">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                <div>
+                    <h2 style="color:var(--primary-accent); margin:0 0 4px 0;">👑 Cổng Quản trị Hệ thống & Phân quyền Doanh nghiệp (Enterprise Admin Portal)</h2>
+                    <div style="color:var(--text-secondary); font-size:13.5px;">Quản trị tài khoản truy cập, phân quyền vai trò (RBAC), kiểm soát chính sách mật khẩu và giám sát nhật ký bảo mật.</div>
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <span class="custom-badge badge-purple">Super Admin: {SUPER_ADMIN_EMAIL}</span>
+                    <span class="custom-badge badge-green">Bảo mật: PBKDF2-HMAC-SHA256</span>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        tab_m_users, tab_m_recovery, tab_m_audit = st.tabs([
+            "👥 1. Quản lý Người dùng & Phân quyền (RBAC)",
+            "🔑 2. Phục hồi Mật khẩu & Điều hướng Email Bảo mật",
+            "🛡️ 3. Nhật ký Kiểm toán Bảo mật (Audit Logs)"
+        ])
+
+        # ---------------------------------------------------------------------
+        # TAB 1: QUẢN LÝ NGƯỜI DÙNG & PHÂN QUYỀN
+        # ---------------------------------------------------------------------
+        with tab_m_users:
+            all_users_data = get_all_users()
+            st.markdown(f"##### 📋 Danh sách tài khoản đã cấp phép ({len(all_users_data)} người dùng):")
+            
+            # Display user cards/table
+            for u_item in all_users_data:
+                u_email = u_item["email"]
+                is_sa = (u_email == SUPER_ADMIN_EMAIL)
+                role_badge_class = "badge-purple" if is_sa else ("badge-blue" if u_item["role"] == "admin" else "badge-green")
+                status_badge = '<span class="status-chip green">Đang hoạt động</span>' if u_item["is_active"] else '<span class="status-chip rose">Bị tạm khóa</span>'
+                must_change_badge = '<span style="color:#F59E0B; font-size:11.5px; font-weight:700;">[Chưa đổi pass @123]</span>' if u_item["must_change_password"] else '<span style="color:#10B981; font-size:11.5px;">[Đã đổi pass riêng]</span>'
+                
+                st.markdown(f"""
+                <div style="background:var(--bg-surface); border:1px solid var(--border-subtle); border-radius:12px; padding:14px 18px; margin-bottom:10px;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px;">
+                        <div>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span style="font-weight:800; font-size:15px; color:var(--text-primary);">{u_item['full_name']}</span>
+                                <span class="custom-badge {role_badge_class}">{u_item['role'].upper()}</span>
+                                {status_badge}
+                                {must_change_badge}
+                            </div>
+                            <div style="color:var(--text-secondary); font-size:13px; margin-top:3px;">
+                                📧 <code>{u_email}</code> • Tạo ngày: <i>{u_item['created_at'][:10]}</i> • Đăng nhập cuối: <i>{u_item['last_login'][:16] if u_item['last_login'] else 'Chưa đăng nhập'}</i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            st.markdown("<div style='height: 14px;'></div>", unsafe_allow_html=True)
+            
+            c_add_u, c_mod_u = st.columns([1.2, 1.8], gap="large")
+            with c_add_u:
+                st.markdown("##### ➕ Cấp phép tài khoản mới:")
+                with st.form("form_add_new_user", clear_on_submit=True):
+                    new_u_email = st.text_input("Địa chỉ Email người dùng:", placeholder="researcher@university.edu.vn")
+                    new_u_name = st.text_input("Họ và tên:", placeholder="TS. Nguyễn Văn A")
+                    new_u_role = st.selectbox("Phân quyền vai trò:", ["researcher", "admin", "viewer"], format_func=lambda r: "🔬 Chuyên gia nghiên cứu (Researcher)" if r == "researcher" else ("⭐ Quản trị viên (Admin)" if r == "admin" else "👁️ Khách xem (Viewer)"))
+                    new_u_pass = st.text_input("Mật khẩu tạm thời ban đầu:", value="@123", help="Người dùng sẽ bắt buộc phải đổi mật khẩu khi đăng nhập lần đầu.")
+                    
+                    btn_submit_add = st.form_submit_button("CẤP PHÉP TÀI KHOẢN NGAY", type="primary", use_container_width=True)
+                    if btn_submit_add:
+                        if not new_u_email:
+                            st.error("Vui lòng nhập địa chỉ email.")
+                        else:
+                            ok_add, msg_add = add_user_by_admin(new_u_email, new_u_name, new_u_role, cur_auth["email"], new_u_pass)
+                            if ok_add:
+                                st.success(msg_add)
+                                st.rerun()
+                            else:
+                                st.error(msg_add)
+
+            with c_mod_u:
+                st.markdown("##### ⚙️ Thao tác quản lý tài khoản:")
+                manageable_users = [u["email"] for u in all_users_data if u["email"] != SUPER_ADMIN_EMAIL]
+                if not manageable_users:
+                    st.info("Hiện tại chưa có tài khoản phụ nào khác.")
+                else:
+                    sel_target_email = st.selectbox("Chọn tài khoản cần thao tác:", manageable_users, key="sb_target_manage_user")
+                    target_obj = next((u for u in all_users_data if u["email"] == sel_target_email), None)
+                    
+                    if target_obj:
+                        col_act1, col_act2, col_act3 = st.columns(3)
+                        with col_act1:
+                            new_r_choice = st.selectbox("Đổi vai trò:", ["researcher", "admin", "viewer"], index=["researcher", "admin", "viewer"].index(target_obj["role"]) if target_obj["role"] in ["researcher", "admin", "viewer"] else 0, key="sb_change_role_choice")
+                            if st.button("Cập nhật vai trò", key="btn_apply_new_role", use_container_width=True):
+                                ok_r, msg_r = update_user_role(sel_target_email, new_r_choice, cur_auth["email"])
+                                if ok_r:
+                                    st.success(msg_r)
+                                    st.rerun()
+                                else:
+                                    st.error(msg_r)
+
+                        with col_act2:
+                            is_currently_active = bool(target_obj["is_active"])
+                            toggle_btn_label = "🔒 Khóa tài khoản" if is_currently_active else "🔓 Mở khóa tài khoản"
+                            st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
+                            if st.button(toggle_btn_label, key="btn_toggle_active_status", use_container_width=True):
+                                ok_t, msg_t = toggle_user_status(sel_target_email, not is_currently_active, cur_auth["email"])
+                                if ok_t:
+                                    st.success(msg_t)
+                                    st.rerun()
+                                else:
+                                    st.error(msg_t)
+
+                        with col_act3:
+                            st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
+                            if st.button("🗑️ Xóa tài khoản vĩnh viễn", type="secondary", key="btn_delete_user_perm", use_container_width=True):
+                                ok_del, msg_del = delete_user_by_admin(sel_target_email, cur_auth["email"])
+                                if ok_del:
+                                    st.success(msg_del)
+                                    st.rerun()
+                                else:
+                                    st.error(msg_del)
+
+        # ---------------------------------------------------------------------
+        # TAB 2: TRUNG TÂM PHỤC HỒI MẬT KHẨU & ĐIỀU HƯỚNG EMAIL BẢO MẬT
+        # ---------------------------------------------------------------------
+        with tab_m_recovery:
+            st.markdown(f"""
+            <div style="background:rgba(56, 189, 248, 0.08); border:1px solid #38BDF8; border-radius:14px; padding:18px 22px; margin-bottom:16px;">
+                <div style="color:#38BDF8; font-weight:800; font-size:16px; margin-bottom:6px;">
+                    🛡️ Cơ chế Phục hồi Mật khẩu Bảo mật Đa Tầng (Dual-Recovery Routing)
+                </div>
+                <div style="color:var(--text-secondary); font-size:13.5px; line-height:1.6;">
+                    Khi bất kỳ người dùng nào yêu cầu khôi phục mật khẩu hoặc Admin phát lệnh đặt lại mật khẩu khẩn cấp, hệ thống sẽ sinh ra <b>Mã Token 32 ký tự mã hóa</b> có thời hạn 2 giờ và <b>tự động gửi về đúng 2 địa chỉ bảo mật tối cao</b>:
+                    <ul style="margin-top:6px; margin-bottom:0;">
+                        <li><code>topxtmtkt21@gmail.com</code></li>
+                        <li><code>tranduytno@gmail.com</code></li>
+                    </ul>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            col_rec1, col_rec2 = st.columns([1.5, 2.5], gap="large")
+            with col_rec1:
+                st.markdown("##### ⚡ Phát lệnh đặt lại mật khẩu khẩn cấp:")
+                all_emails = [u["email"] for u in all_users_data]
+                selected_reset_target = st.selectbox("Chọn tài khoản cần cấp lại mật khẩu:", all_emails, key="sb_rec_target_user")
+                
+                if st.button("🚀 PHÁT LỆNH ĐẶT LẠI MẬT KHẨU NGAY", type="primary", use_container_width=True, key="btn_issue_admin_reset"):
+                    ok_is, msg_is, token_is = request_password_reset(selected_reset_target)
+                    if ok_is:
+                        st.session_state["last_issued_admin_token"] = token_is
+                        st.session_state["last_issued_target_user"] = selected_reset_target
+                        st.success(msg_is)
+                    else:
+                        st.error(msg_is)
+
+            with col_rec2:
+                st.markdown("##### 🔑 Chi tiết Token và Trình kích hoạt:")
+                if st.session_state.get("last_issued_admin_token"):
+                    tok = st.session_state["last_issued_admin_token"]
+                    u_t = st.session_state.get("last_issued_target_user", "")
+                    st.markdown(f"""
+                    <div style="background:var(--bg-surface-elevated); border:1px solid #10B981; border-radius:12px; padding:16px 20px;">
+                        <div style="color:#10B981; font-weight:700; font-size:14px; margin-bottom:4px;">✓ ĐÃ TẠO TOKEN XÁC THỰC THÀNH CÔNG:</div>
+                        <div style="color:var(--text-secondary); font-size:12.5px;">Tài khoản áp dụng: <b>{u_t}</b></div>
+                        <div style="background:rgba(0,0,0,0.3); padding:10px 14px; border-radius:8px; font-family:monospace; color:#38BDF8; font-size:14px; font-weight:700; margin:10px 0; word-break:break-all;">
+                            {tok}
+                        </div>
+                        <div style="color:var(--text-muted); font-size:11.5px;">
+                            Token này có hiệu lực trong 2 giờ và đã được điều hướng gửi thông báo đến <code>topxtmtkt21@gmail.com</code> và <code>tranduytno@gmail.com</code>.
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+        # ---------------------------------------------------------------------
+        # TAB 3: NHẬT KÝ KIỂM TOÁN BẢO MẬT (SECURITY AUDIT LOGS)
+        # ---------------------------------------------------------------------
+        with tab_m_audit:
+            st.markdown("##### 🛡️ Nhật ký kiểm toán 50 sự kiện bảo mật gần nhất (Security Audit Trail):")
+            audit_records = get_audit_logs(limit=50)
+            
+            if not audit_records:
+                st.info("Chưa có sự kiện nào được ghi nhận.")
+            else:
+                audit_df = pd.DataFrame(audit_records)
+                audit_df = audit_df.rename(columns={
+                    "timestamp": "Thời gian",
+                    "actor_email": "Tài khoản thực hiện",
+                    "action": "Hành vi",
+                    "details": "Chi tiết sự kiện",
+                    "ip_address": "Địa chỉ IP"
+                })
+                st.dataframe(audit_df, use_container_width=True, height=450)
+
     st.markdown("""
     <div style="text-align: center; color: var(--text-muted); font-size: 12px; margin-top: 40px; padding: 20px; border-top: 1px solid var(--border-subtle);">
         SCHOLARGRAPH PRO &copy; 2026. Kiến trúc và phát triển bởi <b>TRẦN DUY (Lead AI Research Engineer)</b>.<br/>
         Hệ thống chuyên dụng phục vụ Viện nghiên cứu, Trường Đại học và Tòa soạn Báo chí Hiện đại.
     </div>
     """, unsafe_allow_html=True)
+
 
