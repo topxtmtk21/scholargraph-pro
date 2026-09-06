@@ -781,45 +781,25 @@ class CiteNetAgent:
             height: 100%;
         }}
 
-        /* FLOATING HUD CONTROLS INSIDE GRAPH */
-        .graph-overlay-header {{
-            position: absolute;
-            top: 14px;
-            left: 16px;
-            z-index: 50;
-            pointer-events: none;
-        }}
-        .graph-title {{
-            font-size: 15px;
-            font-weight: 800;
-            letter-spacing: 0.04em;
-            color: var(--theme-text-main);
-            text-shadow: 0 0 12px rgba(var(--theme-glow-rgb), 0.45);
-        }}
-        .graph-subtitle {{
-            font-size: 11px;
-            color: var(--theme-accent);
-            font-weight: 600;
-            letter-spacing: 0.02em;
-        }}
-
+        /* FLOATING HUD CONTROLS INSIDE GRAPH (ZERO SCROLLBARS, CLEAN 1-ROW VIEW) */
         .graph-top-tools {{
             position: absolute;
-            top: 12px;
-            right: 14px;
+            top: 10px;
+            right: 12px;
             z-index: 60;
             display: flex;
             align-items: center;
-            gap: 6px;
-            background: rgba(var(--theme-glow-rgb), 0.08);
-            backdrop-filter: blur(16px);
+            gap: 5px;
+            background: rgba(15, 23, 42, 0.88);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             padding: 4px 8px;
-            border-radius: 12px;
+            border-radius: 10px;
             border: 1px solid var(--theme-panel-border);
-            box-shadow: 0 0 16px rgba(var(--theme-glow-rgb), 0.15);
-            max-width: calc(100% - 32px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            max-width: calc(100% - 24px);
             flex-wrap: nowrap;
-            overflow-x: auto;
+            overflow: visible !important;
             justify-content: flex-end;
         }}
         .hud-mini-btn {{
@@ -1784,10 +1764,6 @@ class CiteNetAgent:
                 👁️ MỞ LẠI MENU ĐIỀU KHIỂN
             </button>
 
-            <div class="graph-overlay-header">
-                <div class="graph-title">Global Citation Knowledge Network</div>
-                <div class="graph-subtitle">Project: {short_project_name}</div>
-            </div>
 
             <!-- SMART HUD HOVER INSPECTOR Ở VÙNG AN TOÀN TRÁI (CHO NODE - CÓ NÚT ĐÓNG) -->
             <div id="graphHoverInspector" class="hud-hover-inspector">
@@ -1930,25 +1906,17 @@ class CiteNetAgent:
                     <span id="photonSpeedVal" style="font-size:10px; font-family:'JetBrains Mono', monospace; font-weight:700; color:#FDE047; min-width:20px;">1.0x</span>
                 </div>
 
-                <!-- NÚT BẬT MENU HIỆU ỨNG THỊ GIÁC POPOVER (KHÔNG BỊ TRÀN 2 HÀNG) -->
-                <button type="button" id="effectsPopoverToggleBtn" class="hud-mini-btn active desktop-only-btn" onclick="toggleEffectsPopover()" title="Tùy chỉnh hiệu ứng thị giác (Hạt photon, Tia laser, Mũi tên động, Nhãn, Nhịp thở, Truy vết...)">✨ Hiệu ứng ▾</button>
-
-                <!-- POPOVER HIỆU ỨNG THỊ GIÁC -->
-                <div id="effectsPopover" onclick="event.stopPropagation();" style="display:none; position:absolute; top:46px; right:8px; z-index:99999; background:rgba(15, 23, 42, 0.98); border:1.5px solid var(--theme-accent); border-radius:12px; padding:10px 14px; box-shadow:0 12px 36px rgba(0,0,0,0.85), 0 0 18px rgba(var(--theme-glow-rgb),0.3); width:280px; backdrop-filter:blur(16px); text-align:left;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:4px;">
-                        <span style="font-size:11px; font-weight:800; color:var(--theme-accent); text-transform:uppercase;">✨ Tùy biến hiệu ứng</span>
-                        <button type="button" onclick="toggleEffectsPopover()" style="background:transparent; border:none; color:var(--theme-text-dim); font-size:13px; cursor:pointer; padding:0 3px; line-height:1;" title="Đóng menu">✕</button>
-                    </div>
-                    <div style="display:flex; flex-direction:column; gap:5px;">
-                        <button class="hud-mini-btn active" id="labelModeBtn" style="width:100%; justify-content:flex-start;" onclick="cycleLabelMode()" title="Chuyển chế độ nhãn">🏷️ Chế độ nhãn: Gọn</button>
-                        <button class="hud-mini-btn active" id="arrowMotionBtn" style="width:100%; justify-content:flex-start;" onclick="toggleArrowMotion()" title="Bật/Tắt mũi tên nhân quả chuyển động">🏹 Mũi tên nhân quả động</button>
-                        <button class="hud-mini-btn active" id="particlesBtn" style="width:100%; justify-content:flex-start;" onclick="toggleParticles()" title="Bật/Tắt dòng hạt photon di chuyển">✨ Dòng hạt photon</button>
-                        <button class="hud-mini-btn active" id="laserBtn" style="width:100%; justify-content:flex-start;" onclick="toggleLaserBeam()" title="Bật/Tắt tia laser neon khi chọn/hover">⚡ Tia laser kết nối</button>
-                        <button class="hud-mini-btn active" id="pulseBtn" style="width:100%; justify-content:flex-start;" onclick="togglePulseGlow()" title="Bật/Tắt hào quang nhịp thở node">💓 Hào quang nhịp thở</button>
-                        <button class="hud-mini-btn active" id="lineageBtn" style="width:100%; justify-content:flex-start;" onclick="toggleLineageMode()" title="Bật/Tắt chế độ truy vết phả hệ">🧬 Truy vết phả hệ</button>
-                        <button class="hud-mini-btn" id="timeplayBtn" style="width:100%; justify-content:flex-start;" onclick="toggleTimelinePlayback()" title="Tua lịch sử phát triển theo năm">⏯️ Tua lịch sử năm</button>
-                    </div>
-                </div>
+                <!-- BỘ CHỌN HIỆU ỨNG THỊ GIÁC (DẠNG MENU SỔ DROPDOWN, BẤM VÀO LÀ TẮT/MỞ) -->
+                <select id="effectsSelect" class="desktop-only-btn" onchange="handleEffectSelect(this.value)" style="background:var(--theme-panel-bg); border:1.5px solid var(--theme-accent); color:var(--theme-accent); border-radius:8px; padding:4px 8px; font-size:11px; font-weight:800; outline:none; cursor:pointer;" title="Tùy chọn Bật/Tắt các hiệu ứng thị giác">
+                    <option value="" selected>✨ Hiệu ứng ▾</option>
+                    <option value="arrow" id="opt_arrow">🏹 Mũi tên động: [BẬT]</option>
+                    <option value="particles" id="opt_particles">✨ Hạt photon: [BẬT]</option>
+                    <option value="laser" id="opt_laser">⚡ Tia laser kết nối: [BẬT]</option>
+                    <option value="pulse" id="opt_pulse">💓 Hào quang nhịp thở: [BẬT]</option>
+                    <option value="lineage" id="opt_lineage">🧬 Truy vết phả hệ: [BẬT]</option>
+                    <option value="label" id="opt_label">🏷️ Chế độ nhãn: [Gọn]</option>
+                    <option value="timeplay" id="opt_timeplay">⏯️ Tua lịch sử năm: [TẮT]</option>
+                </select>
 
                 <button class="hud-mini-btn" onclick="zoomIn()" title="Phóng to">🔍+</button>
                 <button class="hud-mini-btn" onclick="zoomOut()" title="Thu nhỏ">🔍-</button>
@@ -2899,27 +2867,51 @@ class CiteNetAgent:
 
     // BẬT / TẮT POPOVER CHỌN TẦNG CHECKBOX
     function toggleLayerFilterPopover() {{
+    // XỬ LÝ CHỌN BẬT / TẮT TỪNG HIỆU ỨNG THỊ GIÁC (DROPDOWN SELECT)
+    function handleEffectSelect(val) {{
+        var sel = document.getElementById('effectsSelect');
+        if (!val) return;
+        if (val === 'arrow') {{
+            toggleArrowMotion();
+            var opt = document.getElementById('opt_arrow');
+            if (opt) opt.innerText = '🏹 Mũi tên động: [' + (isArrowsMotionOn ? 'BẬT' : 'TẮT') + ']';
+        }} else if (val === 'particles') {{
+            toggleParticles();
+            var opt = document.getElementById('opt_particles');
+            if (opt) opt.innerText = '✨ Hạt photon: [' + (isParticlesOn ? 'BẬT' : 'TẮT') + ']';
+        }} else if (val === 'laser') {{
+            toggleLaserBeam();
+            var opt = document.getElementById('opt_laser');
+            if (opt) opt.innerText = '⚡ Tia laser kết nối: [' + (isLaserBeamOn ? 'BẬT' : 'TẮT') + ']';
+        }} else if (val === 'pulse') {{
+            togglePulseGlow();
+            var opt = document.getElementById('opt_pulse');
+            if (opt) opt.innerText = '💓 Hào quang nhịp thở: [' + (isPulsingOn ? 'BẬT' : 'TẮT') + ']';
+        }} else if (val === 'lineage') {{
+            toggleLineageMode();
+            var opt = document.getElementById('opt_lineage');
+            if (opt) opt.innerText = '🧬 Truy vết phả hệ: [' + (isLineageTracingOn ? 'BẬT' : 'TẮT') + ']';
+        }} else if (val === 'label') {{
+            cycleLabelMode();
+            var lblModeName = (currentLabelMode === 'short' ? 'Gọn' : (currentLabelMode === 'full' ? 'Đầy Đủ' : 'Ẩn'));
+            var opt = document.getElementById('opt_label');
+            if (opt) opt.innerText = '🏷️ Chế độ nhãn: [' + lblModeName + ']';
+        }} else if (val === 'timeplay') {{
+            toggleTimelinePlayback();
+            var opt = document.getElementById('opt_timeplay');
+            if (opt) opt.innerText = '⏯️ Tua lịch sử năm: [' + (isTimelinePlaybackActive ? 'BẬT' : 'TẮT') + ']';
+        }}
+        if (sel) sel.value = "";
+    }}
+
+    // BẬT / TẮT POPOVER CHỌN TẦNG CHECKBOX
+    function toggleLayerFilterPopover() {{
         var pop = document.getElementById('layerFilterPopover');
         var btn = document.getElementById('layerFilterToggleBtn');
         if (pop) {{
             var isHidden = (pop.style.display === 'none' || !pop.style.display);
             pop.style.display = isHidden ? 'block' : 'none';
             if (btn) btn.classList.toggle('active', isHidden);
-            var epop = document.getElementById('effectsPopover');
-            if (epop && isHidden) epop.style.display = 'none';
-        }}
-    }}
-
-    // BẬT / TẮT POPOVER TÙY BIẾN HIỆU ỨNG THỊ GIÁC
-    function toggleEffectsPopover() {{
-        var pop = document.getElementById('effectsPopover');
-        var btn = document.getElementById('effectsPopoverToggleBtn');
-        if (pop) {{
-            var isHidden = (pop.style.display === 'none' || !pop.style.display);
-            pop.style.display = isHidden ? 'block' : 'none';
-            if (btn) btn.classList.toggle('active', isHidden);
-            var lpop = document.getElementById('layerFilterPopover');
-            if (lpop && isHidden) lpop.style.display = 'none';
         }}
     }}
 
@@ -2930,12 +2922,6 @@ class CiteNetAgent:
         if (lpop && lbtn && lpop.style.display === 'block' && !lpop.contains(e.target) && !lbtn.contains(e.target)) {{
             lpop.style.display = 'none';
             lbtn.classList.remove('active');
-        }}
-        var epop = document.getElementById('effectsPopover');
-        var ebtn = document.getElementById('effectsPopoverToggleBtn');
-        if (epop && ebtn && epop.style.display === 'block' && !epop.contains(e.target) && !ebtn.contains(e.target)) {{
-            epop.style.display = 'none';
-            ebtn.classList.remove('active');
         }}
     }});
 
