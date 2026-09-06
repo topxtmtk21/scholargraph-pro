@@ -182,3 +182,24 @@ Trên thiết bị di động và máy tính bảng, không có sự kiện rê 
    ```
 3. **Bảo Vệ Tai Thỏ & Thanh Điều Hướng Ảo (Safe Area Insets)**:
    - Luôn sử dụng `env(safe-area-inset-bottom)` và `env(safe-area-inset-top)` để các nút hành động dưới đáy không bị che lấp bởi Home Bar trên iPhone/iPad.
+
+---
+
+## 🔍 9. Tìm Kiếm Đa Tiêu Chí Đồ Thị & Cẩm Nang Thuật Ngữ Thông Minh (Multi-Facet Search)
+
+1. **Bộ Tìm Kiếm Node Đồ Thị (Smart Node Search Engine)**:
+   - Hỗ trợ phân giải đa tiêu chí: DOI chuẩn (`10.xxxx` hoặc link đầy đủ), Tên tác giả (viết tắt `Nguyen, V. A.` hoặc họ/tên đầy đủ), Năm xuất bản (`2024`, `>2020`, `<2015`), Tiêu đề/Từ khóa, Tạp chí/Venue và Tóm tắt (Abstract).
+   - Tự động làm mờ các node không liên quan ($0.15$ opacity), bật vòng hào quang phát sáng quanh kết quả tìm thấy và focus camera phóng to mượt mà $400\text{ms}$.
+2. **Bộ Tìm Kiếm Nội Bộ Trong Khay Hướng Dẫn (Legend Drawer Search)**:
+   - Lọc thời gian thực các thẻ định nghĩa thuật ngữ ($F_0, R_1-R_3, F_1-F_3$, 4 loại mũi tên, nguyên tắc kích thước Price's Law, điều tốc photon) khi người dùng gõ từ khóa.
+3. **Diễn Giải Ngữ Nghĩa Khi Lọc Phân Tầng (Filter Context Explanation)**:
+   - Khi người dùng lọc nhanh (ví dụ: chỉ xem $F_1-F_3$), hệ thống tự động giải thích trong Smart Inspector lý do vì sao một số node không có mũi tên hiển thị (do liên kết với $F_0$ hoặc tầng $R$ đang bị ẩn bởi bộ lọc).
+
+---
+
+## 🔄 10. Tự Động Căn Khớp Khung Nhìn (Orientation & Viewport Auto-Fitting)
+
+1. **Khớp hướng thiết bị (Orientation Fit)**:
+   - Bắt sự kiện `window.addEventListener('orientationchange')` và `resize` để tự động tính toán lại kích thước mạng lưới và gọi `network.fit()` sau $250\text{ms}$.
+2. **Chế độ Màn hình phụ $100\text{vh}$ Toàn Năng (Full Device Dedicated Viewport)**:
+   - Khi mở cửa sổ mới hoặc chế độ toàn màn hình (`⛶`), iframe tự động mở rộng $100\text{vw} \times 100\text{vh}$ không viền thừa, tối ưu hóa $100\%$ diện tích tương tác cho màn hình di động và tablet.

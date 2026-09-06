@@ -1163,47 +1163,83 @@ class CiteNetAgent:
             <!-- SLIDE-OUT LEGEND DRAWER TỪ DOCK BÊN TRÁI -->
             <div id="dockLegendDrawer" class="dock-legend-drawer">
                 <div class="drawer-header">
-                    <span>📖 QUY ƯỚC & HƯỚNG DẪN MẠNG LƯỚI</span>
+                    <span>📖 QUY ƯỚC, THUẬT NGỮ & HƯỚNG DẪN MẠNG LƯỚI</span>
                     <button onclick="toggleLegendDrawer()" style="background:none; border:none; color:var(--theme-accent); font-size:14px; cursor:pointer; padding:2px 6px;">✕</button>
                 </div>
-                <div class="drawer-body">
-                    <div style="font-weight:800; color:var(--theme-accent); margin-bottom:6px; text-transform:uppercase;">1. Phân Tầng Node Học Thuật:</div>
-                    <div class="legend-item-card">
-                        <span class="legend-color-chip" style="background:#EA4335; box-shadow:0 0 6px #EA4335;"></span>
-                        <div><b>🔴 F0 (Bài báo gốc):</b> Đặt tại tâm điểm nghiên cứu của dự án.</div>
+                <!-- Ô TÌM KIẾM THÔNG MINH TRONG HƯỚNG DẪN -->
+                <div style="padding: 8px 12px; background: rgba(0,0,0,0.3); border-bottom: 1px solid var(--theme-panel-border);">
+                    <input type="text" id="guideSearchInput" placeholder="🔍 Tìm kiếm thuật ngữ, quy ước, mũi tên, F1, R1..." oninput="filterGuideDrawer(this.value)" style="width:100%; background:rgba(0,0,0,0.4); border:1px solid var(--theme-panel-border); color:#FFFFFF; border-radius:8px; padding:6px 10px; font-size:11px; outline:none;">
+                </div>
+                <div class="drawer-body" id="guideDrawerBody">
+                    <div id="guideSearchEmpty" style="display:none; color:#F87171; font-size:11px; text-align:center; padding:12px;">Không tìm thấy thuật ngữ phù hợp!</div>
+
+                    <div class="guide-searchable-item" style="font-weight:800; color:var(--theme-accent); margin-bottom:6px; text-transform:uppercase;">1. Phân Tầng Node & Quy Chuẩn Kích Thước (Price's Law):</div>
+                    <div class="legend-item-card guide-searchable-item">
+                        <span class="legend-color-chip" style="background:#EA4335; box-shadow:0 0 8px #EA4335;"></span>
+                        <div><b>🔴 F0 (Seed Paper - Bài báo gốc):</b> Đặt tại tâm điểm nghiên cứu của đề tài. Node luôn có kích thước lớn nhất và phát sáng nhịp thở liên tục.</div>
                     </div>
-                    <div class="legend-item-card">
+                    <div class="legend-item-card guide-searchable-item">
                         <span class="legend-color-chip" style="background:#7C3AED; box-shadow:0 0 6px #7C3AED;"></span>
-                        <div><b>🟣 R1-R3 (Nền tảng cội nguồn):</b> Các công trình tham chiếu quá khứ (Backward Roots).</div>
+                        <div><b>🟣 R1-R3 (Backward References - Cội nguồn lý thuyết):</b> Các công trình kinh điển quá khứ mà đề tài gốc kế thừa. Kích thước tỷ lệ thuận với số trích dẫn quốc tế.</div>
                     </div>
-                    <div class="legend-item-card">
+                    <div class="legend-item-card guide-searchable-item">
                         <span class="legend-color-chip" style="background:#0284C7; box-shadow:0 0 6px #0284C7;"></span>
-                        <div><b>🟢 F1-F3 (Kế thừa & Phát triển):</b> Bước tiến tương lai kế thừa đề tài gốc (Forward Frontier).</div>
+                        <div><b>🟢 F1-F3 (Forward Citations - Bước tiến tương lai):</b> Các công trình phát triển tiếp nối sau bài gốc, kiểm chứng thực nghiệm hoặc mở rộng mô hình.</div>
+                    </div>
+                    <div class="legend-item-card guide-searchable-item">
+                        <span style="font-size:13px;">⚖️</span>
+                        <div><b>Quy tắc Kích Thước Node:</b> Tính toán tự động theo quy luật Logarit số trích dẫn (Price's Law). Công trình có tầm ảnh hưởng lớn (> 200-1000 trích dẫn) sẽ to vượt trội.</div>
                     </div>
 
-                    <div style="font-weight:800; color:var(--theme-accent); margin:10px 0 6px 0; text-transform:uppercase;">2. Mã Hóa 4 Loại Mũi Tên:</div>
-                    <div class="legend-item-card">
-                        <span style="color:#38BDF8; font-weight:800;">🔷</span>
-                        <div><b>Xanh Sky (1 chiều):</b> Dòng kế thừa trực tiếp 1 chiều.</div>
+                    <div class="guide-searchable-item" style="font-weight:800; color:var(--theme-accent); margin:12px 0 6px 0; text-transform:uppercase;">2. Giải Mã 4 Loại Mũi Tên & Dòng Truyền Tri Thức:</div>
+                    <div class="legend-item-card guide-searchable-item">
+                        <span style="color:#38BDF8; font-weight:800; font-size:14px;">🔷</span>
+                        <div>
+                            <b>Xanh Sky (1 chiều nét liền): Kế thừa trực tiếp (Direct Citation)</b><br>
+                            <i>Ý nghĩa:</i> Công trình sau trích dẫn và tiếp thu khung lý thuyết / mô hình của công trình trước.<br>
+                            <i>Ví dụ:</i> [Bài B (2024)] ➔ [Bài A (2020)]: B mở rộng phát hiện của A với dữ liệu mới.
+                        </div>
                     </div>
-                    <div class="legend-item-card">
-                        <span style="color:#F59E0B; font-weight:800;">🔶</span>
-                        <div><b>Vàng Kim (2 đầu):</b> Hai công trình đối thoại / trích dẫn chéo tương hỗ.</div>
+                    <div class="legend-item-card guide-searchable-item">
+                        <span style="color:#F59E0B; font-weight:800; font-size:14px;">🔶</span>
+                        <div>
+                            <b>Vàng Kim (2 đầu mũi tên): Đối thoại học thuật 2 chiều (Reciprocal Debate)</b><br>
+                            <i>Ý nghĩa:</i> Hai nhóm tác giả cùng trích dẫn chéo lẫn nhau, tạo thành trường phái tranh luận đối trọng chuyên sâu.<br>
+                            <i>Ví dụ:</i> Hai bài báo xuất bản cùng giai đoạn phản biện và hoàn thiện khung lý thuyết cho nhau.
+                        </div>
                     </div>
-                    <div class="legend-item-card">
-                        <span style="color:#C084FC; font-weight:800;">🔮</span>
-                        <div><b>Tím Neon (Đứt):</b> Công trình mới bắc cầu neo thẳng vào cội nguồn lý thuyết.</div>
+                    <div class="legend-item-card guide-searchable-item">
+                        <span style="color:#C084FC; font-weight:800; font-size:14px;">🔮</span>
+                        <div>
+                            <b>Tím Neon (Đứt nét dài): Bắc cầu xuyên tầng cội nguồn (Cross-Bridge)</b><br>
+                            <i>Ý nghĩa:</i> Công trình tương lai mới ($F_2/F_3$) trích dẫn trực tiếp vào nền tảng kinh điển ban đầu ($R_2/R_3$) mà bỏ qua các bước trung gian.<br>
+                            <i>Ví dụ:</i> Đột phá công nghệ năm 2024 ứng dụng lại nguyên lý toán học kinh điển từ năm 2005.
+                        </div>
                     </div>
-                    <div class="legend-item-card">
-                        <span style="color:#34D399; font-weight:800;">🟢</span>
-                        <div><b>Ngọc Lục (Chấm):</b> Liên kết nội bộ trong cùng phân tầng.</div>
+                    <div class="legend-item-card guide-searchable-item">
+                        <span style="color:#34D399; font-weight:800; font-size:14px;">🟢</span>
+                        <div>
+                            <b>Ngọc Lục (Chấm nhỏ): Đồng phát triển cùng phân tầng (Intra-Layer)</b><br>
+                            <i>Ý nghĩa:</i> Các công trình trong cùng thế hệ nghiên cứu chia sẻ dữ liệu hoặc cùng áp dụng một bối cảnh thực chứng.
+                        </div>
                     </div>
 
-                    <div style="font-weight:800; color:var(--theme-accent); margin:10px 0 6px 0; text-transform:uppercase;">3. Tương Tác Nhanh:</div>
-                    <div style="color:var(--theme-text-dim); font-size:10.5px;">
-                        • <b>Hover chuột vào node:</b> Tự động phát sáng tia laser liên kết tức thì và hiện bảng Inspector ở góc trên.<br>
-                        • <b>Thanh trượt Tốc độ:</b> Điều chỉnh tốc độ dòng photon và tia sáng (0x đến 3x).<br>
-                        • <b>🧬 Truy Vết:</b> Bấm rồi nhấp vào bài báo để phát sáng toàn bộ chuỗi phả hệ cội nguồn.
+                    <div class="guide-searchable-item" style="font-weight:800; color:var(--theme-accent); margin:12px 0 6px 0; text-transform:uppercase;">3. Giải Thích Hiện Tượng Node Độc Lập Khi Lọc:</div>
+                    <div class="legend-item-card guide-searchable-item">
+                        <span style="color:#FDE047; font-size:13px;">⚠️</span>
+                        <div>
+                            <b>Vì sao chọn lọc F1-F3 hoặc R1-R3 lại có node không có mũi tên?</b><br>
+                            Khi bạn lọc riêng phân tầng F1-F3, các mũi tên kết nối với bài gốc F0 hoặc tầng cội nguồn R tạm thời bị ẩn. Node hiển thị độc lập vì các bài trong tập lọc này chưa trích dẫn chéo lẫn nhau, nhưng tất cả đều là nhánh kế thừa hợp lệ của đề tài gốc.
+                        </div>
+                    </div>
+
+                    <div class="guide-searchable-item" style="font-weight:800; color:var(--theme-accent); margin:12px 0 6px 0; text-transform:uppercase;">4. Tương Tác Nhanh & Điều Khiển Lượng Tử:</div>
+                    <div class="guide-searchable-item" style="color:var(--theme-text-dim); font-size:10.5px; line-height:1.55;">
+                        • <b>Chạm/Hover vào Node:</b> Kích hoạt luồng sáng Laser Neon kết nối và mở Smart Inspector ở góc an toàn.<br>
+                        • <b>Chạm/Hover vào Mũi Tên:</b> Xem bảng phân tích Epistemic giải thích độ trễ tiếp thu và vai trò học thuật.<br>
+                        • <b>⚡ Tốc độ Photon:</b> Điều chỉnh tốc độ từ 0x (đứng yên) đến 3x (siêu tốc).<br>
+                        • <b>🧬 Truy Vết Phả Hệ:</b> Nhấp vào bài báo để làm nổi bật toàn bộ chuỗi cội nguồn và phát triển.<br>
+                        • <b>🌐 Cửa Sổ Mới ↗:</b> Mở Màn hình phụ 100vh độc lập qua chuẩn W3C Blob URL.
                     </div>
                 </div>
             </div>
@@ -1225,6 +1261,7 @@ class CiteNetAgent:
                 <div id="hoverInspectorTitle" class="hover-inspector-title">Paper Title</div>
                 <div id="hoverInspectorMeta" class="hover-inspector-meta">Author • Journal • Citations</div>
                 <div id="hoverInspectorLinks" class="hover-inspector-links">↳ Đang liên kết: 3 tham chiếu • 5 kế thừa</div>
+                <div id="hoverInspectorAbstract" style="font-size:10px; color:#94A3B8; margin-top:4px; line-height:1.35; display:none;"></div>
             </div>
 
             <!-- EDGE EPISTEMIC INSPECTOR Ở VÙNG AN TOÀN PHẢI (CHO MŨI TÊN - ROBOTO LIGHT) -->
@@ -1239,7 +1276,7 @@ class CiteNetAgent:
 
             <!-- TOP RIGHT MINI CONTROLS -->
             <div class="graph-top-tools">
-                <input type="text" id="nodeSearchInput" placeholder="🔍 Tìm kiếm bài báo..." oninput="searchAndFocusNode(this.value)" style="background:rgba(0,0,0,0.4); border:1px solid var(--theme-panel-border); color:#FFFFFF; border-radius:6px; padding:4px 8px; font-size:11px; outline:none; width:120px;">
+                <input type="text" id="nodeSearchInput" placeholder="🔍 Tìm DOI, tác giả, năm, từ khóa..." oninput="searchAndFocusNode(this.value)" style="background:rgba(0,0,0,0.45); border:1px solid var(--theme-panel-border); color:#FFFFFF; border-radius:8px; padding:4px 9px; font-size:11px; outline:none; width:150px;" title="Tìm kiếm thông minh theo DOI, Tác giả viết tắt/đầy đủ, Năm (ví dụ: 2024, >2020), Tên bài báo, Từ khóa...">
                 
                 <select id="edgeFilter" onchange="applyGraphFilters()" style="background:var(--theme-panel-bg); border:1px solid var(--theme-panel-border); color:var(--theme-text-main); border-radius:8px; padding:4px 6px; font-size:11px; font-weight:600; outline:none; cursor:pointer;" title="Lọc loại liên kết mũi tên">
                     <option value="all">⚡ Tất cả mũi tên</option>
@@ -1594,20 +1631,24 @@ class CiteNetAgent:
         network.fit({{ animation: {{ duration: 450, easingFunction: 'easeInOutQuad' }} }});
     }}
     function toggleFullScreen() {{
-        var elem = document.documentElement;
-        if (!document.fullscreenElement) {{
+        var elem = document.getElementById('synapse-hud-deck') || document.documentElement;
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) {{
             if (elem.requestFullscreen) elem.requestFullscreen();
+            else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
         }} else {{
             if (document.exitFullscreen) document.exitFullscreen();
+            else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
         }}
+        setTimeout(fitView, 350);
     }}
 
     // Open Standalone Dedicated Viewport in New Tab/Window
     function openDedicatedViewport() {{
         try {{
             var rawHtml = document.documentElement.outerHTML;
-            var customHtml = rawHtml.replace('height: 860px', 'height: 100vh')
-                                    .replace('display: grid', 'display: none !important');
+            var customHtml = rawHtml.replace(/height:\s*860px/g, 'height: 100vh !important')
+                                    .replace(/min-height:\s*860px/g, 'min-height: 100vh !important')
+                                    .replace(/display:\s*grid/g, 'display: none !important');
             var blob = new Blob([customHtml], {{ type: 'text/html;charset=utf-8' }});
             var blobUrl = URL.createObjectURL(blob);
             var win = window.open(blobUrl, '_blank');
@@ -2033,6 +2074,26 @@ class CiteNetAgent:
         }}
     }}
 
+    // Smart Filter Inside Legend Drawer
+    function filterGuideDrawer(query) {{
+        var q = (query || '').trim().toLowerCase();
+        var cards = document.querySelectorAll('.guide-searchable-item');
+        var count = 0;
+        cards.forEach(function(card) {{
+            var text = card.innerText.toLowerCase();
+            if (!q || text.indexOf(q) !== -1) {{
+                card.style.display = 'flex';
+                count++;
+            }} else {{
+                card.style.display = 'none';
+            }}
+        }});
+        var emptyEl = document.getElementById('guideSearchEmpty');
+        if (emptyEl) {{
+            emptyEl.style.display = (count === 0 ? 'block' : 'none');
+        }}
+    }}
+
     // Smart HUD Hover Inspector ở vùng an toàn (Góc trên canvas)
     function updateHoverInspectorNode(nid) {{
         var p = metaDict[nid];
@@ -2045,21 +2106,117 @@ class CiteNetAgent:
         var titleEl = document.getElementById('hoverInspectorTitle');
         var metaEl = document.getElementById('hoverInspectorMeta');
         var linksEl = document.getElementById('hoverInspectorLinks');
+        var absEl = document.getElementById('hoverInspectorAbstract');
 
-        if (typeEl) {{
-            if (p.level === 0 || p.layer === 'seed') typeEl.innerText = '★ F0 BÀI GỐC';
-            else if (p.level < 0 || p.layer === 'backward') typeEl.innerText = '🏛️ CỘI NGUỒN (R' + Math.abs(p.level || 1) + ')';
-            else typeEl.innerText = '🚀 KẾ THỪA (F' + Math.abs(p.level || 1) + ')';
+        if (p.level === 0 || p.layer === 'seed') {{
+            if (typeEl) typeEl.innerText = '★ F0 BÀI GỐC';
+        }} else if (p.level < 0 || p.layer === 'backward') {{
+            if (typeEl) typeEl.innerText = '🏛️ CỘI NGUỒN (R' + Math.abs(p.level || 1) + ')';
+        }} else {{
+            if (typeEl) typeEl.innerText = '🚀 KẾ THỪA (F' + Math.abs(p.level || 1) + ')';
         }}
+
         if (yearEl) yearEl.innerText = p.year || 'n.d.';
         if (titleEl) titleEl.innerText = p.title || 'Untitled Paper';
-        if (metaEl) metaEl.innerText = (p.first_author || 'Author') + ' • ' + (p.venue || 'Journal') + ' • ' + (p.citation_count || 0) + ' trích dẫn';
-        if (linksEl) {{
-            var outC = (p.outgoing_ids || []).length;
-            var inC = (p.incoming_ids || []).length;
-            linksEl.innerHTML = '⚡ <b>Liên kết:</b> ' + outC + ' tham chiếu (R) • ' + inC + ' kế thừa (F) (Đang phát sáng tia năng lượng ➔)';
+        if (metaEl) metaEl.innerText = (p.authors || p.first_author || 'Author') + ' • ' + (p.venue || 'Journal') + ' • ' + (p.citation_count || 0) + ' trích dẫn';
+        
+        var outC = (p.outgoing_ids || []).length;
+        var inC = (p.incoming_ids || []).length;
+        
+        var layerFilterVal = document.getElementById('layerFilter') ? document.getElementById('layerFilter').value : 'all';
+        var edgeFilterVal = document.getElementById('edgeFilter') ? document.getElementById('edgeFilter').value : 'all';
+        var isFilterActive = (layerFilterVal !== 'all' || edgeFilterVal !== 'all');
+
+        var linkNote = '⚡ <b>Liên kết tổng thể:</b> ' + outC + ' tham chiếu (R) ➔ ' + inC + ' kế thừa (F).';
+        if (outC === 0 && inC === 0) {{
+            linkNote += '<br><span style="color:#FDE047;">⚠️ Ghi chú: Công trình độc lập trong tập mẫu này.</span>';
+        }} else if (isFilterActive && (layerFilterVal === 'forward' || layerFilterVal === 'backward')) {{
+            linkNote += '<br><span style="color:#93C5FD; font-size:9.5px;">💡 Mẹo: Mũi tên kết nối với bài gốc F0 hoặc tầng khác đang tạm ẩn bởi bộ lọc "' + layerFilterVal.toUpperCase() + '".</span>';
         }}
+        if (linksEl) linksEl.innerHTML = linkNote;
+
+        if (absEl && p.abstract) {{
+            var cleanAbs = p.abstract.replace(/<[^>]*>?/gm, '');
+            var shortAbs = cleanAbs.length > 130 ? cleanAbs.substring(0, 130) + '...' : cleanAbs;
+            absEl.innerHTML = '<b>Tóm tắt:</b> ' + shortAbs;
+            absEl.style.display = 'block';
+        }} else if (absEl) {{
+            absEl.style.display = 'none';
+        }}
+
         insp.classList.add('visible');
+    }}
+
+    // Smart Node Search (DOI, Authors, Year, Exact Title, Keywords, Abstract)
+    function searchAndFocusNode(query) {{
+        if (!query || !query.trim()) {{
+            var resetUpdates = rawNodes.map(function(n) {{
+                return {{ id: n.id, opacity: 1.0, shadow: {{ enabled: true, color: 'rgba(0,0,0,0.5)', size: 8 }} }};
+            }});
+            nodes.update(resetUpdates);
+            hideHoverInspector();
+            return;
+        }}
+
+        var q = query.trim().toLowerCase();
+        var cleanQ = q.replace(/^https?:\/\/doi\.org\//i, '').replace(/^(doi:)/i, '').trim();
+
+        var matchedIds = new Set();
+        var primaryMatchId = null;
+
+        rawNodes.forEach(function(n) {{
+            var p = metaDict[n.id] || {{}};
+            var title = (p.title || '').toLowerCase();
+            var authors = (p.authors || '').toLowerCase();
+            var firstAuth = (p.first_author || '').toLowerCase();
+            var year = String(p.year || '');
+            var doi = (p.doi || '').toLowerCase();
+            var venue = (p.venue || '').toLowerCase();
+            var abs = (p.abstract || '').toLowerCase();
+            var layer = (p.layer || '').toLowerCase();
+            var levelTag = (p.level === 0 ? 'f0' : (p.level < 0 ? 'r' + Math.abs(p.level) : 'f' + p.level)).toLowerCase();
+
+            var match = false;
+            // 1. DOI
+            if (doi && (doi.indexOf(cleanQ) !== -1 || cleanQ.indexOf(doi) !== -1)) match = true;
+            // 2. Tác giả
+            else if (authors.indexOf(q) !== -1 || firstAuth.indexOf(q) !== -1) match = true;
+            // 3. Năm
+            else if (year === q || (q.startsWith('>') && parseInt(year) > parseInt(q.slice(1))) || (q.startsWith('<') && parseInt(year) < parseInt(q.slice(1)))) match = true;
+            // 4. Tiêu đề
+            else if (title.indexOf(q) !== -1) match = true;
+            // 5. Tạp chí
+            else if (venue.indexOf(q) !== -1) match = true;
+            // 6. Phân tầng
+            else if (levelTag === q || layer === q) match = true;
+            // 7. Tóm tắt
+            else if (abs.indexOf(q) !== -1) match = true;
+
+            if (match) {{
+                matchedIds.add(n.id);
+                if (!primaryMatchId) primaryMatchId = n.id;
+            }}
+        }});
+
+        var updates = [];
+        rawNodes.forEach(function(n) {{
+            var isM = matchedIds.has(n.id);
+            updates.push({{
+                id: n.id,
+                opacity: (matchedIds.size > 0 ? (isM ? 1.0 : 0.15) : 1.0),
+                shadow: isM ? {{ enabled: true, color: '#00F2FE', size: 18 }} : {{ enabled: false }}
+            }});
+        }});
+        nodes.update(updates);
+
+        if (primaryMatchId) {{
+            network.focus(primaryMatchId, {{
+                scale: 1.35,
+                animation: {{ duration: 400, easingFunction: 'easeInOutQuad' }}
+            }});
+            updateHoverInspectorNode(primaryMatchId);
+            selectPaperFromTable(primaryMatchId);
+        }}
     }}
 
     function updateHoverInspectorEdge(eid) {{
@@ -2280,16 +2437,20 @@ class CiteNetAgent:
     }}
     requestAnimationFrame(dynamicAnimationLoop);
 
-    function searchAndFocusNode(q) {{
-        if (!q || q.trim() === '') return;
-        var query = q.toLowerCase().trim();
-        var foundId = null;
-        rawNodes.forEach(function(n) {{
-            var lbl = (n.label_full || n.label || '').toLowerCase();
-            if (lbl.indexOf(query) !== -1) foundId = n.id;
-        }});
-        if (foundId) selectPaperFromTable(foundId);
-    }}
+    // Auto-fit & Redraw on Mobile Viewport Resize / Orientation Change
+    window.addEventListener('resize', function() {{
+        if (network) {{
+            network.redraw();
+        }}
+    }});
+    window.addEventListener('orientationchange', function() {{
+        setTimeout(function() {{
+            if (network) {{
+                network.redraw();
+                network.fit({{ animation: {{ duration: 350, easingFunction: 'easeInOutQuad' }} }});
+            }}
+        }}, 250);
+    }});
 
     // Auto-select primary seed on initial load
     setTimeout(function() {{
