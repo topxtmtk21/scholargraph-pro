@@ -668,70 +668,14 @@ def run_academic_pipeline(dois: List[str], g1_lim: int, g2_lim: int, target_synt
                 "apa7_refs_md": apa7_refs_md,
                 "zip_bytes": zip_bytes
             }
-            st.session_state.show_completion_popup = True
+            st.session_state.show_completion_popup = False
+            st.session_state["workspace_nav"] = "02. Mạng lưới trích dẫn khoa học"
+            st.toast("🎉 Đã phân tích DOI xong! Đang chuyển sang Sơ đồ mạng lưới trích dẫn khoa học...", icon="🧬")
             st.balloons()
             st.rerun()
     except Exception as err:
         st.error(f"❌ Có lỗi xảy ra trong quá trình xử lý: {err}")
         st.info("💡 Gợi ý: Kiểm tra kết nối mạng Internet hoặc sử dụng chế độ Trí tuệ Nhân tạo Nội bộ (Local Engine).")
-
-# HỘP THOẠI POPUP THÔNG BÁO HOÀN TẤT
-if hasattr(st, "dialog"):
-    @st.dialog("🎉 ĐÃ HOÀN TẤT PHÂN TÍCH HỌC THUẬT & SOẠN THẢO CHUẨN APA 7!")
-    def show_completion_modal(results):
-        c_stats = results["citenet"]["stats"]
-        s_stats = results["synthdesk"]["grounding_stats"]
-        i_metrics = results["introwri"]["audit_report_dict"]["metrics"]
-        
-        st.markdown(f"""
-        <div style="background:var(--bg-surface); border:1px solid var(--badge-green-border); border-radius:14px; padding:18px; margin-bottom:14px;">
-            <h3 style="color:var(--badge-green-text); font-size:16.5px; margin:0 0 6px 0;">✓ Quá trình quét và phân tích dữ liệu đã hoàn thành 100%!</h3>
-            <p style="color:var(--text-secondary); font-size:13px; margin:0; line-height:1.55;">
-                Hệ thống đã xây dựng mạng lưới trích dẫn, bóc tách bằng chứng chuẩn <b>APA 7</b> và hoàn thiện bản thảo Mở đầu song ngữ theo mô hình <b>John Swales CARS</b>.
-            </p>
-        </div>
-        <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; margin-bottom:16px;">
-            <div style="background:var(--bg-surface-elevated); padding:12px; border-radius:10px; border:1px solid var(--border-subtle);">
-                <div style="font-size:11px; color:var(--text-muted); font-weight:700;">TỔNG SỐ BÀI BÁO</div>
-                <div style="font-size:19px; font-weight:800; color:var(--primary-accent);">{c_stats['total_papers']} bài ({c_stats['gen0_count']} bài gốc)</div>
-            </div>
-            <div style="background:var(--bg-surface-elevated); padding:12px; border-radius:10px; border:1px solid var(--border-subtle);">
-                <div style="font-size:11px; color:var(--text-muted); font-weight:700;">LIÊN KẾT TRÍCH DẪN</div>
-                <div style="font-size:19px; font-weight:800; color:var(--badge-green-text);">{c_stats['total_links']} mối liên kết</div>
-            </div>
-            <div style="background:var(--bg-surface-elevated); padding:12px; border-radius:10px; border:1px solid var(--border-subtle);">
-                <div style="font-size:11px; color:var(--text-muted); font-weight:700;">ĐỘ CHÍNH XÁC NGUỒN</div>
-                <div style="font-size:19px; font-weight:800; color:var(--badge-blue-text);">{s_stats['coverage_percent']}% (≥96%)</div>
-            </div>
-            <div style="background:var(--bg-surface-elevated); padding:12px; border-radius:10px; border:1px solid var(--border-subtle);">
-                <div style="font-size:11px; color:var(--text-muted); font-weight:700;">BẢN THẢO SONG NGỮ</div>
-                <div style="font-size:19px; font-weight:800; color:var(--badge-rose-text);">{i_metrics['total_word_count']} từ ({i_metrics['verified_grounded_claims']} dẫn chứng)</div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        col_p1, col_p2 = st.columns([1.2, 1.8])
-        with col_p1:
-            st.download_button(
-                "📦 Tải về trọn bộ (.ZIP)",
-                data=results["zip_bytes"],
-                file_name="ho_so_nghien_cuu_bao_chi_ai_apa7.zip",
-                mime="application/zip",
-                type="secondary",
-                use_container_width=True
-            )
-        with col_p2:
-            if st.button("🌐 XEM SƠ ĐỒ MẠNG LƯỚI TRÍCH DẪN NGAY ➔", type="primary", use_container_width=True, key="btn_modal_goto_m2"):
-                st.session_state.show_completion_popup = False
-                st.session_state["workspace_nav"] = "02. Mạng lưới trích dẫn khoa học"
-                st.rerun()
-
-# Hiển thị Popup khi hoàn thành
-if st.session_state.get("show_completion_popup") and st.session_state.pipeline_results:
-    if hasattr(st, "dialog"):
-        show_completion_modal(st.session_state.pipeline_results)
-    else:
-        st.success("🎉 ĐÃ HOÀN TẤT KIỂM TRA DOI & PHÂN TÍCH HỌC THUẬT! Bạn có thể chuyển sang Menu 2 để khám phá sơ đồ mạng lưới.")
 
 # Tham số mặc định
 gen1_limit = 20
