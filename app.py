@@ -1291,6 +1291,26 @@ elif "02." in workspace_nav:
         b64_standalone = base64.b64encode(active_standalone_html.encode("utf-8")).decode("utf-8")
         standalone_data_uri = f"data:text/html;charset=utf-8;base64,{b64_standalone}"
 
+        popout_btn_html = f"""
+        <button onclick="openStandaloneWindow()" style="width:100%; height:38px; background:linear-gradient(135deg, #0284C7 0%, #0369A1 100%); color:#FFFFFF; border:1px solid #38BDF8; border-radius:8px; font-weight:700; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 0 12px rgba(56,189,248,0.35);">
+            <span>🌐</span> <span>MÀN HÌNH PHỤ 100VH ↗</span>
+        </button>
+        <script>
+        function openStandaloneWindow() {{
+            var b64 = "{b64_standalone}";
+            var binStr = atob(b64);
+            var len = binStr.length;
+            var bytes = new Uint8Array(len);
+            for (var i = 0; i < len; i++) {{
+                bytes[i] = binStr.charCodeAt(i);
+            }}
+            var blob = new Blob([bytes], {{type: 'text/html;charset=utf-8'}});
+            var blobUrl = URL.createObjectURL(blob);
+            window.open(blobUrl, '_blank');
+        }}
+        </script>
+        """
+
         with st.expander("⚙️ Tùy chỉnh công cụ, Màn hình phụ & Xuất tệp HTML mạng lưới (Thu gọn / Xổ ra)", expanded=False):
             col_g1, col_g2, col_g3 = st.columns([2.2, 1.4, 0.9], gap="small")
             with col_g1:

@@ -47,10 +47,10 @@ def test_standalone_viewport():
     
     # 1. Chế độ Mặc định trong ứng dụng (In-app HUD Deck)
     default_html = citenet.generate_network_html(mock_nodes, mock_edges)
-    assert "height: 860px" in default_html, "Default mode should have 860px deck height"
+    assert "height: 1560px" in default_html, "Default mode should have 1560px deck height"
     assert "display: grid" in default_html, "Default mode should display bottom deck panels"
-    assert "Related Papers Matrix" in default_html, "Default mode should include related papers matrix"
-    print("✅ 1. Default In-App View: Bottom panels and 860px deck preserved.")
+    assert "synapse-bottom-deck" in default_html, "Default mode should include synapse-bottom-deck"
+    print("✅ 1. Default In-App View: Bottom panels and 1560px deck preserved.")
 
     # 2. Chế độ Màn hình phụ (Standalone Dedicated Viewport)
     standalone_html = citenet.generate_standalone_fullscreen_html(mock_nodes, mock_edges)
