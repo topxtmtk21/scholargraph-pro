@@ -1459,6 +1459,62 @@ elif "03." in workspace_nav:
                 is_oa = p.get("is_oa", False) or bool(p.get("pdf_url"))
                 pdf_url = p.get("pdf_url", "")
                 doi_val = p.get("doi", "")
+                auth_str = p.get("authors_formatted", p.get("first_author", "N/A"))
+                yr_str = str(p.get("year", ""))
+                title_str = p.get("title", "")
+                journal_str = p.get("journal", "")
+                cites = p.get("citation_count", 0)
+                
+                oa_chip = '<span class="status-chip green" style="font-size:11px;">🔓 Full PDF Open Access</span>' if is_oa else '<span class="status-chip rose" style="font-size:11px;">🔒 Cần quyền truy cập</span>'
+                
+                st.markdown(f"""
+                <div class="evidence-card" style="border-left: 4px solid var(--primary-accent); margin-bottom: 16px;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 8px;">
+                        <div style="font-weight: 800; font-size: 15px; color: var(--text-primary);">
+                            #{idx}. {title_str}
+                        </div>
+                        {oa_chip}
+                    </div>
+                    <div style="font-size: 12.5px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.5;">
+                        <b>Tác giả:</b> {auth_str} ({yr_str}) • <b>Tạp chí:</b> <i>{journal_str}</i> • <b>Trích dẫn:</b> {cites} lượt • <b>DOI:</b> <code>{doi_val}</code>
+                    </div>
+                    
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+                        <div style="background: var(--bg-surface); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-subtle);">
+                            <div style="font-size: 11px; font-weight: 700; color: var(--badge-blue-text); margin-bottom: 3px;">🏛️ BỐI CẢNH & VẤN ĐỀ NGHIÊN CỨU</div>
+                            <div style="font-size: 12.5px; color: var(--text-primary); line-height: 1.5;">{p.get('context', 'Chưa có thông tin')}</div>
+                        </div>
+                        <div style="background: var(--bg-surface); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-subtle);">
+                            <div style="font-size: 11px; font-weight: 700; color: var(--primary-accent); margin-bottom: 3px;">🔬 PHƯƠNG PHÁP & DỮ LIỆU THỰC NGHIỆM</div>
+                            <div style="font-size: 12.5px; color: var(--text-primary); line-height: 1.5;">{p.get('methodology', 'Chưa có thông tin')}</div>
+                        </div>
+                        <div style="background: var(--bg-surface); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-subtle);">
+                            <div style="font-size: 11px; font-weight: 700; color: var(--badge-green-text); margin-bottom: 3px;">📊 KẾT QUẢ & PHÁT HIỆN THEN CHỐT</div>
+                            <div style="font-size: 12.5px; color: var(--text-primary); line-height: 1.5;">{p.get('findings', 'Chưa có thông tin')}</div>
+                        </div>
+                        <div style="background: var(--bg-surface); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-subtle);">
+                            <div style="font-size: 11px; font-weight: 700; color: var(--badge-rose-text); margin-bottom: 3px;">⚖️ RANH GIỚI ĐẠO ĐỨC & KHUYẾN NGHỊ</div>
+                            <div style="font-size: 12.5px; color: var(--text-primary); line-height: 1.5;">{p.get('ethics', 'Chưa có thông tin')}</div>
+                        </div>
+                    </div>
+                    
+                    <div style="font-size: 12px; color: var(--text-muted); background: var(--bg-surface); padding: 8px 12px; border-radius: 6px; border-left: 3px solid #64748B;">
+                        <b>Trích dẫn chuẩn APA 7:</b> {format_apa7_reference(p)}
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+        with tab_apa_table:
+            st.markdown(s_res.get("evidence_table_apa7_md", generate_apa7_evidence_table_markdown(evidence_pool)))
+            
+        with tab_interactive:
+            df_ev = s_res.get("evidence_dataframe")
+            if df_ev is None or df_ev.empty:
+                df_ev = papers_to_dataframe(evidence_pool)
+            st.dataframe(df_ev, use_container_width=True, height=450)
+    else:
+        st.info("💡 Vui lòng phân tích bài báo từ Menu 1 để xem Bảng tổng hợp phương pháp & bằng chứng chuẩn APA 7.")
+
 # -----------------------------------------------------------------------------
 # MÀN HÌNH 4: TÓM LƯỢC LUẬN ĐIỂM NGHIÊN CỨU (SONG NGỮ & ĐA ĐỊNH DẠNG TẢI)
 # -----------------------------------------------------------------------------
@@ -1507,6 +1563,8 @@ elif "04." in workspace_nav:
 elif "05." in workspace_nav:
     if st.session_state.pipeline_results:
         i_res = st.session_state.pipeline_results["introwri"]
+        s_res = st.session_state.pipeline_results.get("synthdesk", {})
+        evidence_pool = s_res.get("evidence_pool", [])
         audit_dict = i_res["audit_report_dict"]
         status_label = audit_dict["compliance_status"]
         status_color = "#10B981" if audit_dict["audit_passed"] else "#F59E0B"
