@@ -758,32 +758,131 @@ class CiteNetAgent:
             box-shadow: 0 0 12px var(--theme-glow);
         }}
 
-        /* CHÚ THÍCH NHANH GÓC DƯỚI TRÁI CANVAS */
-        .graph-bottom-legend {{
-            position: absolute;
-            bottom: 12px;
-            left: 16px;
-            z-index: 50;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: rgba(var(--theme-glow-rgb), 0.06);
-            backdrop-filter: blur(12px);
-            padding: 6px 12px;
-            border-radius: 20px;
-            border: 1px solid var(--theme-panel-border);
-            font-size: 11px;
-            font-weight: 600;
-        }}
-        .legend-indicator {{
+        /* SPEED SLIDER CLUSTER TRÊN THANH CÔNG CỤ */
+        .speed-control-cluster {{
             display: flex;
             align-items: center;
             gap: 5px;
+            background: var(--theme-panel-bg);
+            border: 1px solid var(--theme-panel-border);
+            padding: 3px 8px;
+            border-radius: 8px;
         }}
-        .ind-dot {{
-            width: 8px;
-            height: 8px;
+        .speed-slider-input {{
+            width: 65px;
+            cursor: pointer;
+            accent-color: var(--theme-accent);
+            height: 4px;
+        }}
+
+        /* SMART HUD HOVER INSPECTOR (VÙNG AN TOÀN - KHÔNG CHE NODE) */
+        .hud-hover-inspector {{
+            position: absolute;
+            top: 58px;
+            left: 16px;
+            z-index: 65;
+            width: 330px;
+            background: var(--theme-panel-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1.5px solid var(--theme-accent);
+            border-radius: 12px;
+            padding: 10px 14px;
+            box-shadow: 0 0 20px rgba(var(--theme-glow-rgb), 0.35);
+            pointer-events: none;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            opacity: 0;
+            transform: translateY(-4px);
+        }}
+        .hud-hover-inspector.visible {{
+            opacity: 1;
+            transform: translateY(0);
+        }}
+        .hover-inspector-header {{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }}
+        .hover-inspector-title {{
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--theme-text-main);
+            line-height: 1.35;
+            margin-bottom: 5px;
+        }}
+        .hover-inspector-meta {{
+            font-size: 10.5px;
+            color: var(--theme-accent);
+            font-weight: 600;
+            margin-bottom: 4px;
+        }}
+        .hover-inspector-links {{
+            font-size: 10px;
+            color: var(--theme-text-dim);
+            border-top: 1px solid rgba(var(--theme-glow-rgb), 0.15);
+            padding-top: 4px;
+        }}
+
+        /* SLIDE-OUT LEGEND DRAWER FROM SLIM DOCK */
+        .dock-legend-drawer {{
+            position: absolute;
+            left: 64px;
+            top: 0;
+            bottom: 0;
+            width: 320px;
+            background: var(--theme-panel-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--theme-panel-border);
+            border-radius: 14px;
+            box-shadow: 0 0 30px rgba(var(--theme-glow-rgb), 0.25);
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            animation: drawerSlide 0.22s ease forwards;
+        }}
+        @keyframes drawerSlide {{
+            from {{ opacity: 0; transform: translateX(-15px); }}
+            to {{ opacity: 1; transform: translateX(0); }}
+        }}
+        .drawer-header {{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            background: rgba(var(--theme-glow-rgb), 0.08);
+            border-bottom: 1px solid var(--theme-panel-border);
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--theme-accent);
+            letter-spacing: 0.04em;
+        }}
+        .drawer-body {{
+            padding: 12px 14px;
+            overflow-y: auto;
+            flex: 1;
+            font-size: 11px;
+            line-height: 1.45;
+            color: var(--theme-text-main);
+        }}
+        .legend-item-card {{
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            padding: 6px 9px;
+            background: rgba(var(--theme-glow-rgb), 0.04);
+            border: 1px solid rgba(var(--theme-glow-rgb), 0.15);
+            border-radius: 8px;
+            margin-bottom: 6px;
+        }}
+        .legend-color-chip {{
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
+            flex-shrink: 0;
+            margin-top: 2px;
         }}
 
         /* 3. BOTTOM EXPANDABLE PANELS DECK (RELATED PAPERS + SELECTED DETAILS) */
@@ -973,7 +1072,7 @@ class CiteNetAgent:
     <!-- 2. MIDDLE DECK (DOCK + NETWORK CANVAS) -->
     <div class="synapse-middle-deck">
         <!-- SLIM VERTICAL DOCK -->
-        <nav class="synapse-vertical-dock">
+        <nav class="synapse-vertical-dock" style="position:relative;">
             <div class="dock-btn-group">
                 <button class="dock-icon-btn active" id="dockBtnForce" onclick="switchLayoutMode('force')" title="1. Mạng Cụm (VOSviewer)">🕸️</button>
                 <button class="dock-icon-btn" id="dockBtnTimeline" onclick="switchLayoutMode('timeline')" title="2. Dòng Thời Gian (HistCite)">⏳</button>
@@ -983,25 +1082,85 @@ class CiteNetAgent:
             </div>
             
             <div class="dock-btn-group">
+                <button class="dock-icon-btn" id="dockBtnLegend" onclick="toggleLegendDrawer()" title="📖 Ghi chú & Hướng dẫn quy ước mạng lưới">📖</button>
                 <button class="dock-icon-btn active" id="dockBtnTrace" onclick="toggleLineageMode()" title="🧬 Bật/Tắt Truy Vết Phả Hệ">🧬</button>
                 <button class="dock-icon-btn" onclick="cycleThemes()" title="🎨 Chuyển đổi 5 Mẫu Theme Kính Dạ Quang">🎨</button>
                 <button class="dock-icon-btn" onclick="openDedicatedViewport()" title="🌐 Mở Màn hình phụ (Cửa sổ mới ↗)">↗️</button>
                 <button class="dock-icon-btn" onclick="fitView()" title="🎯 Căn giữa toàn cảnh">🎯</button>
             </div>
+
+            <!-- SLIDE-OUT LEGEND DRAWER TỪ DOCK BÊN TRÁI -->
+            <div id="dockLegendDrawer" class="dock-legend-drawer">
+                <div class="drawer-header">
+                    <span>📖 QUY ƯỚC & HƯỚNG DẪN MẠNG LƯỚI</span>
+                    <button onclick="toggleLegendDrawer()" style="background:none; border:none; color:var(--theme-accent); font-size:14px; cursor:pointer; padding:2px 6px;">✕</button>
+                </div>
+                <div class="drawer-body">
+                    <div style="font-weight:800; color:var(--theme-accent); margin-bottom:6px; text-transform:uppercase;">1. Phân Tầng Node Học Thuật:</div>
+                    <div class="legend-item-card">
+                        <span class="legend-color-chip" style="background:#EA4335; box-shadow:0 0 6px #EA4335;"></span>
+                        <div><b>🔴 F0 (Bài báo gốc):</b> Đặt tại tâm điểm nghiên cứu của dự án.</div>
+                    </div>
+                    <div class="legend-item-card">
+                        <span class="legend-color-chip" style="background:#7C3AED; box-shadow:0 0 6px #7C3AED;"></span>
+                        <div><b>🟣 R1-R3 (Nền tảng cội nguồn):</b> Các công trình tham chiếu quá khứ (Backward Roots).</div>
+                    </div>
+                    <div class="legend-item-card">
+                        <span class="legend-color-chip" style="background:#0284C7; box-shadow:0 0 6px #0284C7;"></span>
+                        <div><b>🟢 F1-F3 (Kế thừa & Phát triển):</b> Bước tiến tương lai kế thừa đề tài gốc (Forward Frontier).</div>
+                    </div>
+
+                    <div style="font-weight:800; color:var(--theme-accent); margin:10px 0 6px 0; text-transform:uppercase;">2. Mã Hóa 4 Loại Mũi Tên:</div>
+                    <div class="legend-item-card">
+                        <span style="color:#38BDF8; font-weight:800;">🔷</span>
+                        <div><b>Xanh Sky (1 chiều):</b> Dòng kế thừa trực tiếp 1 chiều.</div>
+                    </div>
+                    <div class="legend-item-card">
+                        <span style="color:#F59E0B; font-weight:800;">🔶</span>
+                        <div><b>Vàng Kim (2 đầu):</b> Hai công trình đối thoại / trích dẫn chéo tương hỗ.</div>
+                    </div>
+                    <div class="legend-item-card">
+                        <span style="color:#C084FC; font-weight:800;">🔮</span>
+                        <div><b>Tím Neon (Đứt):</b> Công trình mới bắc cầu neo thẳng vào cội nguồn lý thuyết.</div>
+                    </div>
+                    <div class="legend-item-card">
+                        <span style="color:#34D399; font-weight:800;">🟢</span>
+                        <div><b>Ngọc Lục (Chấm):</b> Liên kết nội bộ trong cùng phân tầng.</div>
+                    </div>
+
+                    <div style="font-weight:800; color:var(--theme-accent); margin:10px 0 6px 0; text-transform:uppercase;">3. Tương Tác Nhanh:</div>
+                    <div style="color:var(--theme-text-dim); font-size:10.5px;">
+                        • <b>Hover chuột vào node:</b> Tự động phát sáng tia laser liên kết tức thì và hiện bảng Inspector ở góc trên.<br>
+                        • <b>Thanh trượt Tốc độ:</b> Điều chỉnh tốc độ dòng photon và tia sáng (0x đến 3x).<br>
+                        • <b>🧬 Truy Vết:</b> Bấm rồi nhấp vào bài báo để phát sáng toàn bộ chuỗi phả hệ cội nguồn.
+                    </div>
+                </div>
+            </div>
         </nav>
 
         <!-- GRAPH CANVAS -->
-        <div class="synapse-graph-container">
+        <div class="synapse-graph-container" style="position:relative;">
             <div class="graph-overlay-header">
                 <div class="graph-title">Global Citation Knowledge Network</div>
                 <div class="graph-subtitle">Project: {short_project_name}</div>
             </div>
 
+            <!-- SMART HUD HOVER INSPECTOR Ở VÙNG AN TOÀN (KHÔNG CHE NODE) -->
+            <div id="graphHoverInspector" class="hud-hover-inspector">
+                <div class="hover-inspector-header">
+                    <span id="hoverChipType" class="meta-chip" style="font-size:10px; padding:2px 8px; border-color:var(--theme-accent);">★ BÀI BÁO</span>
+                    <span id="hoverChipYear" class="meta-chip" style="font-size:10px; padding:2px 8px; color:#FDE047;">2024</span>
+                </div>
+                <div id="hoverInspectorTitle" class="hover-inspector-title">Paper Title</div>
+                <div id="hoverInspectorMeta" class="hover-inspector-meta">Author • Journal • Citations</div>
+                <div id="hoverInspectorLinks" class="hover-inspector-links">↳ Đang liên kết: 3 tham chiếu • 5 kế thừa</div>
+            </div>
+
             <!-- TOP RIGHT MINI CONTROLS -->
             <div class="graph-top-tools">
-                <input type="text" id="nodeSearchInput" placeholder="🔍 Tìm kiếm bài báo..." oninput="searchAndFocusNode(this.value)" style="background:rgba(0,0,0,0.4); border:1px solid var(--theme-panel-border); color:#FFFFFF; border-radius:6px; padding:4px 8px; font-size:11px; outline:none; width:130px;">
+                <input type="text" id="nodeSearchInput" placeholder="🔍 Tìm kiếm bài báo..." oninput="searchAndFocusNode(this.value)" style="background:rgba(0,0,0,0.4); border:1px solid var(--theme-panel-border); color:#FFFFFF; border-radius:6px; padding:4px 8px; font-size:11px; outline:none; width:120px;">
                 
-                <select id="edgeFilter" onchange="applyGraphFilters()" style="background:var(--theme-panel-bg); border:1px solid var(--theme-panel-border); color:var(--theme-text-main); border-radius:8px; padding:4px 7px; font-size:11px; font-weight:600; outline:none; cursor:pointer;" title="Lọc loại liên kết mũi tên">
+                <select id="edgeFilter" onchange="applyGraphFilters()" style="background:var(--theme-panel-bg); border:1px solid var(--theme-panel-border); color:var(--theme-text-main); border-radius:8px; padding:4px 6px; font-size:11px; font-weight:600; outline:none; cursor:pointer;" title="Lọc loại liên kết mũi tên">
                     <option value="all">⚡ Tất cả mũi tên</option>
                     <option value="direct">🔷 Kế thừa 1 chiều</option>
                     <option value="mutual">🔶 Đối thoại 2 chiều</option>
@@ -1009,12 +1168,19 @@ class CiteNetAgent:
                     <option value="intra_layer">🟢 Cùng phân tầng</option>
                 </select>
 
-                <select id="layerFilter" onchange="applyGraphFilters()" style="background:var(--theme-panel-bg); border:1px solid var(--theme-panel-border); color:var(--theme-text-main); border-radius:8px; padding:4px 7px; font-size:11px; font-weight:600; outline:none; cursor:pointer;" title="Lọc phân tầng tri thức">
+                <select id="layerFilter" onchange="applyGraphFilters()" style="background:var(--theme-panel-bg); border:1px solid var(--theme-panel-border); color:var(--theme-text-main); border-radius:8px; padding:4px 6px; font-size:11px; font-weight:600; outline:none; cursor:pointer;" title="Lọc phân tầng tri thức">
                     <option value="all">🌐 Toàn bộ tầng</option>
                     <option value="seed">★ F0 Bài gốc</option>
                     <option value="backward">🏛️ R1-R3 Cội nguồn</option>
                     <option value="forward">🚀 F1-F3 Kế thừa</option>
                 </select>
+
+                <!-- THANH TRƯỢT ĐIỀU TỐC PHOTON & TIA SÁNG HOVER -->
+                <div class="speed-control-cluster" title="Điều chỉnh tốc độ di chuyển hạt Photon & Tia sáng kết nối (0x: Đứng yên -> 3x: Nhanh tối đa)">
+                    <span style="font-size:10.5px; font-weight:700; color:var(--theme-accent);">⚡ Tốc độ:</span>
+                    <input type="range" id="photonSpeedSlider" class="speed-slider-input" min="0" max="3" step="0.2" value="1.0" oninput="setPhotonSpeed(this.value)">
+                    <span id="photonSpeedVal" style="font-size:10.5px; font-family:'JetBrains Mono', monospace; font-weight:700; color:#FDE047; min-width:26px;">1.0x</span>
+                </div>
 
                 <button class="hud-mini-btn active" id="lineageBtn" onclick="toggleLineageMode()" title="Bật/Tắt chế độ truy vết phả hệ">🧬 Truy Vết</button>
                 <button class="hud-mini-btn active" id="labelModeBtn" onclick="cycleLabelMode()" title="Chuyển kiểu nhãn">🏷️ Nhãn</button>
@@ -1025,14 +1191,6 @@ class CiteNetAgent:
                 <button class="hud-mini-btn" onclick="zoomOut()" title="Thu nhỏ">🔍-</button>
                 <button class="hud-mini-btn" onclick="openDedicatedViewport()" title="Mở Màn hình phụ (Cửa sổ mới ↗)">🌐 Cửa Sổ Mới ↗</button>
                 <button class="hud-mini-btn" onclick="toggleFullScreen()" title="Toàn màn hình">⛶</button>
-            </div>
-
-            <!-- BOTTOM LEFT FAST LEGEND -->
-            <div class="graph-bottom-legend">
-                <div class="legend-indicator"><span class="ind-dot" style="background:#EA4335; box-shadow:0 0 6px #EA4335;"></span> <span>F0 Tâm điểm</span></div>
-                <div class="legend-indicator"><span class="ind-dot" style="background:#7C3AED; box-shadow:0 0 6px #7C3AED;"></span> <span>Nền tảng (R1-R3)</span></div>
-                <div class="legend-indicator"><span class="ind-dot" style="background:#0284C7; box-shadow:0 0 6px #0284C7;"></span> <span>Kế thừa (F1-F3)</span></div>
-                <div class="legend-indicator" style="color:var(--theme-accent);">✨ <span>60 FPS Photon Stream</span></div>
             </div>
 
             <!-- TIMELINE PLAYBACK BAR (NỔI KHI BẬT) -->
@@ -1747,11 +1905,114 @@ class CiteNetAgent:
         }}
     }});
 
-    // Particles & Pulsing Halos (afterDrawing)
+    var photonSpeedFactor = 1.0;
+    var hoveredNodeId = null;
+    var hoveredEdgeId = null;
+    var isLegendDrawerOpen = false;
+
+    // Điều khiển tốc độ photon & tia laser hover
+    function setPhotonSpeed(val) {{
+        photonSpeedFactor = parseFloat(val);
+        var lbl = document.getElementById('photonSpeedVal');
+        if (lbl) {{
+            lbl.innerText = (photonSpeedFactor === 0 ? '0x' : photonSpeedFactor.toFixed(1) + 'x');
+        }}
+    }}
+
+    // Bật/Tắt Drawer Ghi chú & Hướng dẫn từ Dock
+    function toggleLegendDrawer() {{
+        isLegendDrawerOpen = !isLegendDrawerOpen;
+        var drawer = document.getElementById('dockLegendDrawer');
+        var btn = document.getElementById('dockBtnLegend');
+        if (drawer) {{
+            drawer.style.display = isLegendDrawerOpen ? 'flex' : 'none';
+        }}
+        if (btn) {{
+            if (isLegendDrawerOpen) btn.classList.add('active');
+            else btn.classList.remove('active');
+        }}
+    }}
+
+    // Smart HUD Hover Inspector ở vùng an toàn (Góc trên canvas)
+    function updateHoverInspectorNode(nid) {{
+        var p = metaDict[nid];
+        if (!p) return;
+        var insp = document.getElementById('graphHoverInspector');
+        if (!insp) return;
+
+        var typeEl = document.getElementById('hoverChipType');
+        var yearEl = document.getElementById('hoverChipYear');
+        var titleEl = document.getElementById('hoverInspectorTitle');
+        var metaEl = document.getElementById('hoverInspectorMeta');
+        var linksEl = document.getElementById('hoverInspectorLinks');
+
+        if (typeEl) {{
+            if (p.level === 0 || p.layer === 'seed') typeEl.innerText = '★ F0 BÀI GỐC';
+            else if (p.level < 0 || p.layer === 'backward') typeEl.innerText = '🏛️ CỘI NGUỒN (R' + Math.abs(p.level || 1) + ')';
+            else typeEl.innerText = '🚀 KẾ THỪA (F' + Math.abs(p.level || 1) + ')';
+        }}
+        if (yearEl) yearEl.innerText = p.year || 'n.d.';
+        if (titleEl) titleEl.innerText = p.title || 'Untitled Paper';
+        if (metaEl) metaEl.innerText = (p.first_author || 'Author') + ' • ' + (p.venue || 'Journal') + ' • ' + (p.citation_count || 0) + ' trích dẫn';
+        if (linksEl) {{
+            var outC = (p.outgoing_ids || []).length;
+            var inC = (p.incoming_ids || []).length;
+            linksEl.innerHTML = '⚡ <b>Liên kết:</b> ' + outC + ' tham chiếu (R) • ' + inC + ' kế thừa (F) (Đang phát sáng tia năng lượng ➔)';
+        }}
+        insp.classList.add('visible');
+    }}
+
+    function updateHoverInspectorEdge(eid) {{
+        var e = rawEdges.find(function(item) {{ return item.id === eid; }});
+        if (!e) return;
+        var sP = metaDict[e.from] || {{}};
+        var dP = metaDict[e.to] || {{}};
+        var insp = document.getElementById('graphHoverInspector');
+        if (!insp) return;
+
+        var typeEl = document.getElementById('hoverChipType');
+        var yearEl = document.getElementById('hoverChipYear');
+        var titleEl = document.getElementById('hoverInspectorTitle');
+        var metaEl = document.getElementById('hoverInspectorMeta');
+        var linksEl = document.getElementById('hoverInspectorLinks');
+
+        if (typeEl) typeEl.innerText = '⚡ MŨI TÊN TRÍCH DẪN';
+        if (yearEl) yearEl.innerText = (sP.year || '') + ' ➔ ' + (dP.year || '');
+        if (titleEl) titleEl.innerText = '[' + (sP.first_author || 'Paper') + '] kế thừa / tham chiếu [' + (dP.first_author || 'Paper') + ']';
+        if (metaEl) metaEl.innerText = (sP.venue || 'Venue') + ' ➔ ' + (dP.venue || 'Venue');
+        if (linksEl) linksEl.innerHTML = '✨ Luồng tri thức đang kích hoạt tia sáng laser liên tục';
+        insp.classList.add('visible');
+    }}
+
+    function hideHoverInspector() {{
+        var insp = document.getElementById('graphHoverInspector');
+        if (insp) insp.classList.remove('visible');
+    }}
+
+    // Đăng ký sự kiện Hover chuẩn của Vis-Network
+    network.on('hoverNode', function(params) {{
+        hoveredNodeId = params.node;
+        updateHoverInspectorNode(params.node);
+    }});
+    network.on('blurNode', function(params) {{
+        hoveredNodeId = null;
+        hideHoverInspector();
+    }});
+    network.on('hoverEdge', function(params) {{
+        hoveredEdgeId = params.edge;
+        updateHoverInspectorEdge(params.edge);
+    }});
+    network.on('blurEdge', function(params) {{
+        hoveredEdgeId = null;
+        hideHoverInspector();
+    }});
+
+    // Particles & Pulsing Halos & Instant Active Laser Beam Stream (afterDrawing)
     network.on('afterDrawing', function(ctx) {{
         var now = Date.now();
         var positions = network.getPositions();
 
+        // 1. Halo Nhịp thở
         if (isPulsingOn) {{
             var pulse = (Math.sin(now / 550) + 1) / 2;
             rawNodes.forEach(function(n) {{
@@ -1782,8 +2043,9 @@ class CiteNetAgent:
             }});
         }}
 
+        // 2. Dòng Hạt Photon Bình Thường (Có điều tốc)
         if (isParticlesOn) {{
-            var tNow = now / 1100;
+            var tNow = (photonSpeedFactor > 0) ? (now / 1100 * photonSpeedFactor) : 0;
             rawEdges.forEach(function(e, idx) {{
                 var p1 = positions[e.from];
                 var p2 = positions[e.to];
@@ -1792,7 +2054,7 @@ class CiteNetAgent:
                 var currentEdge = edges.get(e.id);
                 if (currentEdge && currentEdge.hidden) return;
 
-                var t = (tNow + (idx * 0.19)) % 1.0;
+                var t = (photonSpeedFactor > 0) ? ((tNow + (idx * 0.19)) % 1.0) : ((idx * 0.19) % 1.0);
                 var x = p1.x + (p2.x - p1.x) * t;
                 var y = p1.y + (p2.y - p1.y) * t;
 
@@ -1805,6 +2067,76 @@ class CiteNetAgent:
                 ctx.fill();
                 ctx.restore();
             }});
+        }}
+
+        // 3. HIỆU ỨNG TIA SÁNG LASER CHẠY LIÊN TỤC KHI HOVER (Instant Active Beam Highlight Stream)
+        if (hoveredNodeId) {{
+            var connectedEdges = rawEdges.filter(function(e) {{
+                return (e.from === hoveredNodeId || e.to === hoveredNodeId);
+            }});
+
+            var beamProgress = (photonSpeedFactor > 0) ? ((now / 650 * photonSpeedFactor) % 1.0) : 0.5;
+            var beamProgress2 = (beamProgress + 0.5) % 1.0;
+
+            connectedEdges.forEach(function(e) {{
+                var p1 = positions[e.from];
+                var p2 = positions[e.to];
+                if (!p1 || !p2) return;
+
+                // Đường sáng Neon rực rỡ toàn bộ cạnh nối
+                ctx.save();
+                ctx.strokeStyle = '#00F2FE';
+                ctx.lineWidth = 3.8;
+                ctx.shadowColor = '#00F2FE';
+                ctx.shadowBlur = 14;
+                ctx.beginPath();
+                ctx.moveTo(p1.x, p1.y);
+                ctx.lineTo(p2.x, p2.y);
+                ctx.stroke();
+
+                // 2 Chùm tia Photon Laser chuyển động liên tục dọc theo cạnh
+                [beamProgress, beamProgress2].forEach(function(bt) {{
+                    var bx = p1.x + (p2.x - p1.x) * bt;
+                    var by = p1.y + (p2.y - p1.y) * bt;
+
+                    ctx.beginPath();
+                    ctx.arc(bx, by, 5.5, 0, 2 * Math.PI, false);
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.shadowColor = '#FDE047';
+                    ctx.shadowBlur = 16;
+                    ctx.fill();
+                }});
+
+                ctx.restore();
+            }});
+        }} else if (hoveredEdgeId) {{
+            var targetEdge = rawEdges.find(function(e) {{ return e.id === hoveredEdgeId; }});
+            if (targetEdge) {{
+                var p1 = positions[targetEdge.from];
+                var p2 = positions[targetEdge.to];
+                if (p1 && p2) {{
+                    var bProg = (photonSpeedFactor > 0) ? ((now / 600 * photonSpeedFactor) % 1.0) : 0.5;
+                    ctx.save();
+                    ctx.strokeStyle = '#F59E0B';
+                    ctx.lineWidth = 4.2;
+                    ctx.shadowColor = '#F59E0B';
+                    ctx.shadowBlur = 16;
+                    ctx.beginPath();
+                    ctx.moveTo(p1.x, p1.y);
+                    ctx.lineTo(p2.x, p2.y);
+                    ctx.stroke();
+
+                    var bx = p1.x + (p2.x - p1.x) * bProg;
+                    var by = p1.y + (p2.y - p1.y) * bProg;
+                    ctx.beginPath();
+                    ctx.arc(bx, by, 6.0, 0, 2 * Math.PI, false);
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.shadowColor = '#FFFFFF';
+                    ctx.shadowBlur = 16;
+                    ctx.fill();
+                    ctx.restore();
+                }}
+            }}
         }}
     }});
 

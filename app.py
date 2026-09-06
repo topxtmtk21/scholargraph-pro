@@ -1264,21 +1264,13 @@ elif "02." in workspace_nav:
         b64_standalone = base64.b64encode(active_standalone_html.encode("utf-8")).decode("utf-8")
         standalone_data_uri = f"data:text/html;charset=utf-8;base64,{b64_standalone}"
 
-        col_g1, col_g2, col_g3 = st.columns([1.8, 1.3, 0.9], gap="small")
+        col_g1, col_g2, col_g3 = st.columns([2.2, 1.4, 0.9], gap="small")
         with col_g1:
-            with st.expander("💡 Hướng dẫn & Quy ước Mạng lưới Kim Cương & Dòng Chảy Tri Thức", expanded=False):
-                st.markdown("""
-                - **🔴 Nút Đỏ (F0):** Bài báo gốc đặt tại tâm điểm nghiên cứu.
-                - **🟣 Nút Tím / Indigo (R1-R3):** Nền tảng tham chiếu quá khứ (Backward Roots) - cội nguồn lý thuyết.
-                - **🟢 Nút Xanh / Ngọc lục bảo (F1-F3):** Kế thừa và phát triển tương lai (Forward Frontier) - bước tiến mở rộng.
-                - **Mã Hóa Mũi Tên:**
-                  - 🔷 **Xanh Sky:** Dòng kế thừa 1 chiều trực tiếp.
-                  - 🔶 **Vàng Kim (2 đầu):** Hai công trình đối thoại / trích dẫn chéo tương hỗ.
-                  - 🔮 **Tím Neon (Đứt):** Công trình mới bắc cầu neo trực tiếp vào cội nguồn lý thuyết.
-                  - 🟢 **Ngọc Lục (Chấm):** Liên kết nội bộ trong cùng một thế hệ.
-                  - ✨ **Hạt Sáng (60 FPS):** Mô phỏng trực tiếp tốc độ và hướng truyền tri thức.
-                - **Tương tác Đột phá:** Bấm nút **🧬 Truy Vết** trên thanh công cụ đồ thị rồi nhấp vào bất kỳ bài báo nào để **phát sáng toàn bộ chuỗi phả hệ cội nguồn** và làm mờ các bài không liên quan!
-                """)
+            st.markdown("""
+            <div style="display:flex; align-items:center; gap:8px; height:38px; padding:0 12px; background:rgba(var(--glow-rgb), 0.04); border:1px solid var(--border-subtle); border-radius:9px; font-size:11.5px; color:var(--text-secondary);">
+                <span>💡</span> <span>Bấm biểu tượng <b>📖</b> trên thanh Dock bên trái để xem bảng quy ước màu & 4 loại liên kết. Hover vào bài báo để kích hoạt tia sáng laser liên kết tức thì.</span>
+            </div>
+            """, unsafe_allow_html=True)
         with col_g2:
             popout_btn_html = f"""<!DOCTYPE html>
 <html>
