@@ -1325,7 +1325,19 @@ elif "02." in workspace_nav:
         st.markdown("<div style='height: 18px;'></div>", unsafe_allow_html=True)
 
         # Gom nhóm danh mục, Bản đồ khoảng trống & Quyền truy cập tài liệu
-        st.markdown("### 📊 Gom nhóm danh mục, Bản đồ khoảng trống & Quyền truy cập tài liệu:")
+        st.markdown("""
+        <div style="background:var(--bg-surface-elevated); border:1.5px solid var(--border-subtle); border-radius:14px; padding:16px 20px; margin-bottom:14px; box-shadow:0 8px 24px rgba(0,0,0,0.25); display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <div style="font-size:16px; font-weight:800; color:var(--primary-accent); display:flex; align-items:center; gap:8px;">
+                    <span>📊</span> <span>GOM NHÓM DANH MỤC, BẢN ĐỒ KHOẢNG TRỐNG & QUYỀN TRUY CẬP TÀI LIỆU</span>
+                </div>
+                <div style="font-size:12.5px; color:var(--text-secondary); margin-top:3px;">
+                    Phân tích toàn diện: Hướng dẫn thuật ngữ Topo, phân tầng Kim cương 2 chiều, tài liệu Open Access/Paywall, dòng thời gian & bản đồ nhiệt khoảng trống nghiên cứu.
+                </div>
+            </div>
+            <span class="status-chip green" style="font-size:11px; font-weight:700;">8 Danh mục phân tích</span>
+        </div>
+        """, unsafe_allow_html=True)
         
         tab_topo_guide, tab_diamond_layers, tab_oa_group, tab_paywall_group, tab_timeline, tab_burst, tab_heatmap, tab_single_lookup = st.tabs([
             "📖 Hướng dẫn thuật ngữ & Phân loại liên kết",
@@ -1339,8 +1351,7 @@ elif "02." in workspace_nav:
         ])
 
         with tab_topo_guide:
-            st.markdown("""
-            <style>
+            st.markdown("""<style>
             .topo-hover-container {
                 display: grid;
                 grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -1389,14 +1400,12 @@ elif "02." in workspace_nav:
                 transform: translateX(-50%) translateY(0);
             }
             </style>
-
             <div style="background:var(--bg-surface-elevated); border:1px solid var(--border-subtle); border-radius:12px; padding:12px 18px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center;">
                 <div>
                     <span style="font-weight:800; color:var(--primary-accent); font-size:14px;">📚 HỆ THỐNG THUẬT NGỮ & PHÂN LOẠI TOPO LIÊN KẾT TRÍCH DẪN QUỐC TẾ</span>
                     <span style="font-size:12.5px; color:var(--text-secondary); margin-left:10px;">(Rê chuột / Hover vào từng thẻ bên dưới để xem định nghĩa, ý nghĩa học thuật & ví dụ thực tế)</span>
                 </div>
             </div>
-
             <div class="topo-hover-container">
                 <div class="topo-badge-item" style="border-left: 4px solid #10B981;">
                     <div style="font-size:13px; font-weight:800; color:#34D399; margin-bottom:3px;">🟢 CÙNG PHÂN TẦNG (INTRA-LAYER)</div>
@@ -1407,7 +1416,6 @@ elif "02." in workspace_nav:
                         <div style="color:#CBD5E1; font-size:11px; background:rgba(0,0,0,0.35); padding:6px 8px; border-radius:6px;">💡 <b>Ý nghĩa & Ví dụ:</b> Song hành kiểm chứng chéo mô hình hoặc bổ trợ thực chứng trong cùng bối cảnh thời gian. Ví dụ: Hai bài báo 2024 về ứng dụng ChatGPT trong tòa soạn trích dẫn chéo nhau.</div>
                     </div>
                 </div>
-
                 <div class="topo-badge-item" style="border-left: 4px solid #A855F7;">
                     <div style="font-size:13px; font-weight:800; color:#C084FC; margin-bottom:3px;">🔮 BẮC CẦU XUYÊN TẦNG (CROSS-BRIDGE)</div>
                     <div style="font-size:11.5px; color:var(--text-secondary);">Liên kết nhảy cóc (F3 ➔ R1/R2)</div>
@@ -1417,7 +1425,6 @@ elif "02." in workspace_nav:
                         <div style="color:#CBD5E1; font-size:11px; background:rgba(0,0,0,0.35); padding:6px 8px; border-radius:6px;">💡 <b>Ý nghĩa & Ví dụ:</b> Neo trực tiếp vào nền tảng lý thuyết kinh điển ban đầu, tạo bước nhảy vọt tư duy. Ví dụ: Bài báo 2025 về AI Journalism trích dẫn trực tiếp lý thuyết Gatekeeping năm 1950.</div>
                     </div>
                 </div>
-
                 <div class="topo-badge-item" style="border-left: 4px solid #F59E0B;">
                     <div style="font-size:13px; font-weight:800; color:#FDE047; margin-bottom:3px;">🔶 ĐỐI THOẠI HAI CHIỀU (RECIPROCAL)</div>
                     <div style="font-size:11.5px; color:var(--text-secondary);">Trích dẫn song phương tương hỗ (A ↔ B)</div>
@@ -1427,7 +1434,6 @@ elif "02." in workspace_nav:
                         <div style="color:#CBD5E1; font-size:11px; background:rgba(0,0,0,0.35); padding:6px 8px; border-radius:6px;">💡 <b>Ý nghĩa & Ví dụ:</b> Hai trường phái trực tiếp tranh luận, phản biện chuyên sâu hoặc đồng kiến tạo lý thuyết mới. Ví dụ: Nhóm A đề xuất khung đạo đức, nhóm B phản biện, nhóm A tiếp thu hoàn thiện.</div>
                     </div>
                 </div>
-
                 <div class="topo-badge-item" style="border-left: 4px solid #0284C7;">
                     <div style="font-size:13px; font-weight:800; color:#38BDF8; margin-bottom:3px;">🔷 KẾ THỪA MỘT CHIỀU (DIRECT)</div>
                     <div style="font-size:11.5px; color:var(--text-secondary);">Trích dẫn đơn hướng kế thừa (A ➔ B)</div>
@@ -1437,8 +1443,7 @@ elif "02." in workspace_nav:
                         <div style="color:#CBD5E1; font-size:11px; background:rgba(0,0,0,0.35); padding:6px 8px; border-radius:6px;">💡 <b>Ý nghĩa & Ví dụ:</b> Kế thừa phương pháp, dữ liệu hoặc phát hiện thực nghiệm từ công trình nguồn để phát triển nghiên cứu tiếp theo.</div>
                     </div>
                 </div>
-            </div>
-            """, unsafe_allow_html=True)
+            </div>""", unsafe_allow_html=True)
 
             # BỘ LỌC GROUP THEO PHÂN LOẠI TOPO
             st.markdown("##### 🔍 Lọc danh mục liên kết theo phân loại Topo:")
@@ -2310,8 +2315,71 @@ elif "05." in workspace_nav:
                 """, unsafe_allow_html=True)
 
         st.markdown("<div style='height: 16px;'></div>", unsafe_allow_html=True)
-        st.markdown("### 🔗 Danh mục tài liệu đã trích dẫn trong bản thảo (Tải nhanh toàn văn PDF):")
+        st.markdown("### 🔗 Danh mục tài liệu đã trích dẫn trong bản thảo & Tải đồng loạt PDF:")
         
+        oa_cited_pool = [p for p in evidence_pool if p.get("is_oa") or bool(p.get("pdf_url"))]
+        
+        # HỘP GOM NHANH VÀ TẢI ĐỒNG LOẠT FILE PDF (.ZIP)
+        st.markdown(f"""
+        <div style="background:var(--bg-surface-elevated); border:1.5px solid var(--border-subtle); border-radius:14px; padding:16px 20px; margin-bottom:14px; box-shadow:0 6px 20px rgba(0,0,0,0.2);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <div style="font-size:15px; font-weight:800; color:var(--badge-green-text); display:flex; align-items:center; gap:8px;">
+                    <span>📦</span> <span>GOM NHANH & TẢI ĐỒNG LOẠT FILE PDF TRÍCH DẪN (NÉN .ZIP)</span>
+                </div>
+                <span class="status-chip green" style="font-size:11px; font-weight:700;">{len(oa_cited_pool)}/{len(evidence_pool)} bài có Full PDF</span>
+            </div>
+            <div style="font-size:12.5px; color:var(--text-secondary); line-height:1.5;">
+                Hệ thống tự động tập hợp các bài báo Open Access được trích dẫn trong bản thảo CARS. Bạn có thể chọn các bài mong muốn và bấm tải về trọn gói dạng tệp nén ZIP chỉ trong một lần bấm.
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        if oa_cited_pool:
+            oa_cited_labels_map = {}
+            for idx, p in enumerate(oa_cited_pool, 1):
+                p_auth = p.get('first_author', 'Tác giả')
+                p_yr = str(p.get('year', 'n.d.'))
+                p_title = clean_academic_text(p.get('title', 'Untitled'))[:60]
+                lbl = f"#{idx} [{p_yr}] {p_auth}: {p_title}..."
+                oa_cited_labels_map[lbl] = p
+
+            col_s5_chk1, col_s5_chk2 = st.columns([1.2, 2.8], gap="medium")
+            with col_s5_chk1:
+                select_all_s5 = st.checkbox(f"✓ Chọn tất cả ({len(oa_cited_pool)}) bài có PDF", value=True, key="chk_select_all_oa_s5")
+            with col_s5_chk2:
+                default_s5_selected = list(oa_cited_labels_map.keys()) if select_all_s5 else []
+                selected_s5_items = st.multiselect(
+                    "Danh sách bài báo tải về:",
+                    options=list(oa_cited_labels_map.keys()),
+                    default=default_s5_selected,
+                    key="ms_selected_oa_s5"
+                )
+
+            c_dl_s5_1, c_dl_s5_2 = st.columns([2, 2], gap="medium")
+            with c_dl_s5_1:
+                if st.button("📦 NÉN & TẢI XUỐNG TẤT CẢ TÀI LIỆU PDF ĐƯỢC CHỌN (.ZIP)", type="primary", use_container_width=True, key="btn_prep_zip_oa_s5"):
+                    with st.spinner("⏳ Đang tải các tệp PDF và đóng gói tệp nén ZIP..."):
+                        selected_paper_objs = [oa_cited_labels_map[k] for k in selected_s5_items if k in oa_cited_labels_map]
+                        target_temp_dir = os.path.join(os.getcwd(), "artifacts", "batch_cars_pdfs")
+                        dl_res = batch_download_papers(selected_paper_objs, target_temp_dir, timeout=30)
+                        zip_binary = create_zip_from_downloaded_files(dl_res.get("successful_downloads", []))
+                        st.session_state["cars_oa_batch_zip_bytes"] = zip_binary
+                        st.toast(f"✓ Đã nén thành công {dl_res.get('success_count', 0)}/{len(selected_paper_objs)} tệp PDF!")
+
+            with c_dl_s5_2:
+                if st.session_state.get("cars_oa_batch_zip_bytes"):
+                    st.download_button(
+                        label="💾 BẤM ĐỂ LƯU TỆP ZIP VỀ THIẾT BỊ NGAY ⬇",
+                        data=st.session_state["cars_oa_batch_zip_bytes"],
+                        file_name="tai_lieu_pdf_trich_dan_cars.zip",
+                        mime="application/zip",
+                        type="secondary",
+                        use_container_width=True,
+                        key="btn_save_zip_oa_s5"
+                    )
+
+            st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
+
         cited_c1, cited_c2 = st.columns(2, gap="medium")
         for c_idx, p in enumerate(evidence_pool):
             target_col = cited_c1 if c_idx % 2 == 0 else cited_c2

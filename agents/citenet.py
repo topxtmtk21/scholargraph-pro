@@ -818,7 +818,8 @@ class CiteNetAgent:
             border: 1px solid var(--theme-panel-border);
             box-shadow: 0 0 16px rgba(var(--theme-glow-rgb), 0.15);
             max-width: calc(100% - 32px);
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
+            overflow-x: auto;
             justify-content: flex-end;
         }}
         .hud-mini-btn {{
@@ -1359,8 +1360,9 @@ class CiteNetAgent:
         .details-grid {{
             display: grid;
             grid-template-columns: 1.35fr 1fr;
-            gap: 12px;
-            height: 100%;
+            gap: 14px;
+            height: auto;
+            min-height: 100%;
         }}
         .detail-abstract-pane {{
             display: flex;
@@ -1369,7 +1371,6 @@ class CiteNetAgent:
             font-size: 11.5px;
             line-height: 1.55;
             color: var(--theme-text-main);
-            overflow-y: auto;
         }}
         .detail-cocitation-pane {{
             display: flex;
@@ -1378,8 +1379,7 @@ class CiteNetAgent:
             background: rgba(0,0,0,0.25);
             border: 1px solid rgba(var(--theme-glow-rgb), 0.18);
             border-radius: 10px;
-            padding: 8px 10px;
-            overflow-y: auto;
+            padding: 10px 12px;
         }}
         .cocite-item {{
             display: flex;
@@ -1813,7 +1813,7 @@ class CiteNetAgent:
                 </div>
             </div>
 
-            <!-- TOP RIGHT MINI CONTROLS (TÌM KIẾM, LỌC TẦNG KẾT HỢP & BỐ CỤC) -->
+            <!-- TOP RIGHT MINI CONTROLS (TÌM KIẾM, LỌC TẦNG KẾT HỢP, BỐ CỤC & HIỆU ỨNG) -->
             <div class="graph-top-tools">
                 <!-- Nút Focus Mode / Thu gọn Menu để tập trung bản đồ -->
                 <button type="button" class="hud-mini-btn desktop-only-btn" id="focusModeBtn" onclick="toggleFocusMode()" title="Thu gọn thanh tiêu đề & bảng dưới để tập trung 100% diện tích vào bản đồ trích dẫn">👁️ Tập trung bản đồ</button>
@@ -1821,7 +1821,7 @@ class CiteNetAgent:
                 <!-- Nút Menu toàn diện dành riêng cho phiên bản di động -->
                 <button type="button" class="hud-mini-btn mobile-only-btn" onclick="toggleMobileMenuDrawer()" title="Mở danh mục điều khiển phiên bản di động" style="background:var(--theme-accent); color:#040914; font-weight:800;">📱 Menu</button>
 
-                <input type="text" id="nodeSearchInput" placeholder="🔍 Tìm DOI, tác giả, năm..." oninput="searchAndFocusNode(this.value)" style="background:rgba(0,0,0,0.45); border:1px solid var(--theme-panel-border); color:#FFFFFF; border-radius:8px; padding:4px 9px; font-size:11px; outline:none; width:135px;" title="Tìm kiếm thông minh theo DOI, Tác giả viết tắt/đầy đủ, Năm (ví dụ: 2024, >2020), Tên bài báo, Từ khóa...">
+                <input type="text" id="nodeSearchInput" placeholder="🔍 Tìm DOI, tác giả, năm..." oninput="searchAndFocusNode(this.value)" style="background:rgba(0,0,0,0.45); border:1px solid var(--theme-panel-border); color:#FFFFFF; border-radius:8px; padding:4px 9px; font-size:11px; outline:none; width:130px;" title="Tìm kiếm thông minh theo DOI, Tác giả viết tắt/đầy đủ, Năm (ví dụ: 2024, >2020), Tên bài báo, Từ khóa...">
                 
                 <!-- BỘ LỌC TẦNG BẰNG TÍNH NĂNG CHECKBOX LINH HOẠT & NHANH (DESKTOP) -->
                 <button type="button" id="layerFilterToggleBtn" class="hud-mini-btn active desktop-only-btn" onclick="toggleLayerFilterPopover()" title="Chọn hiển thị từng tầng theo ý muốn bằng hộp kiểm (F0 / R1-R3 / F1-F3 / Độc lập)">📑 Chọn tầng (Check) ▾</button>
@@ -1909,32 +1909,45 @@ class CiteNetAgent:
 
                 <!-- BỘ CHỌN 10 BỐ CỤC HỌC THUẬT (DESKTOP) -->
                 <select id="layoutSelector" class="desktop-only-btn" onchange="switchLayoutMode(this.value)" style="background:var(--theme-panel-bg); border:1px solid var(--theme-panel-border); color:var(--theme-accent); border-radius:8px; padding:4px 6px; font-size:11px; font-weight:700; outline:none; cursor:pointer;" title="Chọn 1 trong 10 chế độ bố cục học thuật">
-                    <option value="force" selected>1. 🕸️ Force-Directed Quantum (Mặc định)</option>
-                    <option value="timeline">2. ⏳ Linear Timeline (HistCite)</option>
-                    <option value="radar">3. 📡 Concentric Radar Timeline</option>
-                    <option value="fishbone">4. 🐟 Ishikawa Fishbone Diagram</option>
-                    <option value="dendrogram">5. 🌿 Dendrogram Branching Tree</option>
-                    <option value="hierarchical">6. 🌳 CiteSpace DAG Tree</option>
-                    <option value="matrix">7. ▦ Clustered Topic Matrix</option>
-                    <option value="quartile">8. 📊 Scopus Quartile Lanes</option>
-                    <option value="diamond">9. 💎 Dual-Diamond Horizon</option>
-                    <option value="fanchart">10. 🪭 Ancestry Fan Chart</option>
+                    <option value="force" selected>1. 🕸️ Force Quantum</option>
+                    <option value="timeline">2. ⏳ Linear Timeline</option>
+                    <option value="radar">3. 📡 Radar Timeline</option>
+                    <option value="fishbone">4. 🐟 Ishikawa Fishbone</option>
+                    <option value="dendrogram">5. 🌿 Dendrogram Tree</option>
+                    <option value="hierarchical">6. 🌳 CiteSpace DAG</option>
+                    <option value="matrix">7. ▦ Clustered Matrix</option>
+                    <option value="quartile">8. 📊 Quartile Lanes</option>
+                    <option value="diamond">9. 💎 Dual-Diamond</option>
+                    <option value="fanchart">10. 🪭 Fan Chart</option>
                 </select>
 
-                <!-- THANH TRƯỢT ĐIỀU TỐC PHOTON, MŨI TÊN NHÂN QUẢ & TIA SÁNG HOVER (DESKTOP) -->
-                <div class="speed-control-cluster desktop-only-btn" title="Điều chỉnh tốc độ di chuyển mũi tên nhân quả, hạt photon & tia sáng kết nối (0x: Đứng yên -> 3x: Nhanh tối đa)">
-                    <span style="font-size:10.5px; font-weight:700; color:var(--theme-accent);">⚡ Tốc độ:</span>
+                <!-- THANH TRƯỢT ĐIỀU TỐC PHOTON (DESKTOP) -->
+                <div class="speed-control-cluster desktop-only-btn" title="Điều chỉnh tốc độ di chuyển mũi tên nhân quả, hạt photon & tia sáng kết nối">
+                    <span style="font-size:10px; font-weight:700; color:var(--theme-accent);">⚡ Tốc độ:</span>
                     <input type="range" id="photonSpeedSlider" class="speed-slider-input" min="0" max="3" step="0.2" value="1.0" oninput="setPhotonSpeed(this.value)">
-                    <span id="photonSpeedVal" style="font-size:10.5px; font-family:'JetBrains Mono', monospace; font-weight:700; color:#FDE047; min-width:24px;">1.0x</span>
+                    <span id="photonSpeedVal" style="font-size:10px; font-family:'JetBrains Mono', monospace; font-weight:700; color:#FDE047; min-width:20px;">1.0x</span>
                 </div>
 
-                <button class="hud-mini-btn active desktop-only-btn" id="labelModeBtn" onclick="cycleLabelMode()" title="Chuyển chế độ nhãn (Gọn / Đầy đủ / Ẩn)">🏷️ Nhãn: Gọn</button>
-                <button class="hud-mini-btn active desktop-only-btn" id="arrowMotionBtn" onclick="toggleArrowMotion()" title="Bật/Tắt mũi tên nhân quả chuyển động (Causal Directional Flow)">🏹 Mũi tên động</button>
-                <button class="hud-mini-btn active desktop-only-btn" id="particlesBtn" onclick="toggleParticles()" title="Bật/Tắt dòng hạt photon di chuyển">✨ Hạt photon</button>
-                <button class="hud-mini-btn active desktop-only-btn" id="laserBtn" onclick="toggleLaserBeam()" title="Bật/Tắt tia laser neon & đường kết nối khi chọn/hover">⚡ Tia laser</button>
-                <button class="hud-mini-btn active desktop-only-btn" id="pulseBtn" onclick="togglePulseGlow()" title="Bật/Tắt hào quang nhịp thở node">💓 Nhịp thở</button>
-                <button class="hud-mini-btn active desktop-only-btn" id="lineageBtn" onclick="toggleLineageMode()" title="Bật/Tắt chế độ truy vết phả hệ">🧬 Truy vết</button>
-                <button class="hud-mini-btn desktop-only-btn" id="timeplayBtn" onclick="toggleTimelinePlayback()" title="Tua lịch sử phát triển theo năm">⏯️ Tua năm</button>
+                <!-- NÚT BẬT MENU HIỆU ỨNG THỊ GIÁC POPOVER (KHÔNG BỊ TRÀN 2 HÀNG) -->
+                <button type="button" id="effectsPopoverToggleBtn" class="hud-mini-btn active desktop-only-btn" onclick="toggleEffectsPopover()" title="Tùy chỉnh hiệu ứng thị giác (Hạt photon, Tia laser, Mũi tên động, Nhãn, Nhịp thở, Truy vết...)">✨ Hiệu ứng ▾</button>
+
+                <!-- POPOVER HIỆU ỨNG THỊ GIÁC -->
+                <div id="effectsPopover" onclick="event.stopPropagation();" style="display:none; position:absolute; top:46px; right:8px; z-index:99999; background:rgba(15, 23, 42, 0.98); border:1.5px solid var(--theme-accent); border-radius:12px; padding:10px 14px; box-shadow:0 12px 36px rgba(0,0,0,0.85), 0 0 18px rgba(var(--theme-glow-rgb),0.3); width:280px; backdrop-filter:blur(16px); text-align:left;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:4px;">
+                        <span style="font-size:11px; font-weight:800; color:var(--theme-accent); text-transform:uppercase;">✨ Tùy biến hiệu ứng</span>
+                        <button type="button" onclick="toggleEffectsPopover()" style="background:transparent; border:none; color:var(--theme-text-dim); font-size:13px; cursor:pointer; padding:0 3px; line-height:1;" title="Đóng menu">✕</button>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:5px;">
+                        <button class="hud-mini-btn active" id="labelModeBtn" style="width:100%; justify-content:flex-start;" onclick="cycleLabelMode()" title="Chuyển chế độ nhãn">🏷️ Chế độ nhãn: Gọn</button>
+                        <button class="hud-mini-btn active" id="arrowMotionBtn" style="width:100%; justify-content:flex-start;" onclick="toggleArrowMotion()" title="Bật/Tắt mũi tên nhân quả chuyển động">🏹 Mũi tên nhân quả động</button>
+                        <button class="hud-mini-btn active" id="particlesBtn" style="width:100%; justify-content:flex-start;" onclick="toggleParticles()" title="Bật/Tắt dòng hạt photon di chuyển">✨ Dòng hạt photon</button>
+                        <button class="hud-mini-btn active" id="laserBtn" style="width:100%; justify-content:flex-start;" onclick="toggleLaserBeam()" title="Bật/Tắt tia laser neon khi chọn/hover">⚡ Tia laser kết nối</button>
+                        <button class="hud-mini-btn active" id="pulseBtn" style="width:100%; justify-content:flex-start;" onclick="togglePulseGlow()" title="Bật/Tắt hào quang nhịp thở node">💓 Hào quang nhịp thở</button>
+                        <button class="hud-mini-btn active" id="lineageBtn" style="width:100%; justify-content:flex-start;" onclick="toggleLineageMode()" title="Bật/Tắt chế độ truy vết phả hệ">🧬 Truy vết phả hệ</button>
+                        <button class="hud-mini-btn" id="timeplayBtn" style="width:100%; justify-content:flex-start;" onclick="toggleTimelinePlayback()" title="Tua lịch sử phát triển theo năm">⏯️ Tua lịch sử năm</button>
+                    </div>
+                </div>
+
                 <button class="hud-mini-btn" onclick="zoomIn()" title="Phóng to">🔍+</button>
                 <button class="hud-mini-btn" onclick="zoomOut()" title="Thu nhỏ">🔍-</button>
                 <button class="hud-mini-btn desktop-only-btn" onclick="openDedicatedViewport()" title="Mở màn hình phụ độc lập (Cửa sổ mới ↗)">🌐 Cửa sổ mới ↗</button>
@@ -2086,16 +2099,16 @@ class CiteNetAgent:
                 <div class="details-grid">
                     <!-- LEFT PANE: TITLE & ABSTRACT -->
                     <div class="detail-abstract-pane">
-                        <div id="selTitle" style="font-size:12.5px; font-weight:700; color:#FFFFFF; line-height:1.4;">Vui lòng chọn một bài báo trên đồ thị hoặc bảng bên trái</div>
-                        <div id="selMeta" style="font-size:11px; color:var(--theme-text-dim);"></div>
-                        <div id="selAbstract" style="font-size:11px; color:var(--theme-text-main); line-height:1.55; max-height:85px; overflow-y:auto; background:rgba(0,0,0,0.2); padding:6px 8px; border-radius:6px; border:1px solid rgba(255,255,255,0.05);"></div>
+                        <div id="selTitle" style="font-size:13px; font-weight:800; color:#FFFFFF; line-height:1.45; margin-bottom:4px;">Vui lòng chọn một bài báo trên đồ thị hoặc bảng bên trái</div>
+                        <div id="selMeta" style="font-size:11.5px; color:var(--theme-text-dim); margin-bottom:6px;"></div>
+                        <div id="selAbstract" style="font-size:11.5px; color:var(--theme-text-main); line-height:1.6; background:rgba(0,0,0,0.25); padding:10px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.08);"></div>
                     </div>
 
                     <!-- RIGHT PANE: CO-CITATION PATH & LINEAGE -->
                     <div class="detail-cocitation-pane">
-                        <div style="font-size:10.5px; font-weight:800; color:var(--theme-accent); text-transform:uppercase; letter-spacing:0.04em;">🧬 Đường dẫn đồng trích dẫn:</div>
-                        <div id="selLineageList" style="display:flex; flex-direction:column; gap:4px; overflow-y:auto; max-height:110px;">
-                            <div style="color:var(--theme-text-dim); font-size:10.5px; font-style:italic;">Chưa chọn bài báo.</div>
+                        <div style="font-size:11px; font-weight:800; color:var(--theme-accent); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:6px;">🧬 Đường dẫn đồng trích dẫn:</div>
+                        <div id="selLineageList" style="display:flex; flex-direction:column; gap:6px;">
+                            <div style="color:var(--theme-text-dim); font-size:11px; font-style:italic;">Chưa chọn bài báo.</div>
                         </div>
                     </div>
                 </div>
@@ -2617,18 +2630,24 @@ class CiteNetAgent:
             var listHtml = '';
             
             if (outList.length > 0) {{
-                outList.slice(0, 3).forEach(function(tid) {{
+                outList.slice(0, 8).forEach(function(tid) {{
                     var tp = metaDict[tid];
-                    if (tp) listHtml += '<div class="cocite-item" onclick="selectPaperFromTable(\\'' + tid + '\\')">↳ <b>R (Tham chiếu):</b> ' + tp.first_author + ' (' + tp.year + ')</div>';
+                    if (tp) {{
+                        var shortT = tp.title ? (tp.title.length > 55 ? tp.title.substring(0, 52) + '...' : tp.title) : '';
+                        listHtml += '<div class="cocite-item" onclick="selectPaperFromTable(\\'' + tid + '\\')">↳ <b>R (Tham chiếu):</b> ' + tp.first_author + ' (' + tp.year + ')' + (shortT ? ' • <span style="color:var(--theme-text-main); font-weight:400;">' + shortT + '</span>' : '') + '</div>';
+                    }}
                 }});
             }}
             if (inList.length > 0) {{
-                inList.slice(0, 3).forEach(function(sid) {{
+                inList.slice(0, 8).forEach(function(sid) {{
                     var sp = metaDict[sid];
-                    if (sp) listHtml += '<div class="cocite-item" onclick="selectPaperFromTable(\\'' + sid + '\\')">↰ <b>F (Kế thừa):</b> ' + sp.first_author + ' (' + sp.year + ')</div>';
+                    if (sp) {{
+                        var shortT = sp.title ? (sp.title.length > 55 ? sp.title.substring(0, 52) + '...' : sp.title) : '';
+                        listHtml += '<div class="cocite-item" onclick="selectPaperFromTable(\\'' + sid + '\\')">↰ <b>F (Kế thừa):</b> ' + sp.first_author + ' (' + sp.year + ')' + (shortT ? ' • <span style="color:var(--theme-text-main); font-weight:400;">' + shortT + '</span>' : '') + '</div>';
+                    }}
                 }});
             }}
-            if (!listHtml) listHtml = '<div style="color:var(--theme-text-dim); font-size:10.5px;">Không có nhánh trích dẫn trực tiếp trong tập mẫu này.</div>';
+            if (!listHtml) listHtml = '<div style="color:var(--theme-text-dim); font-size:11px; font-style:italic;">Không có nhánh trích dẫn trực tiếp trong tập mẫu này.</div>';
             lEl.innerHTML = listHtml;
         }}
     }}
@@ -2884,8 +2903,39 @@ class CiteNetAgent:
             var isHidden = (pop.style.display === 'none' || !pop.style.display);
             pop.style.display = isHidden ? 'block' : 'none';
             if (btn) btn.classList.toggle('active', isHidden);
+            var epop = document.getElementById('effectsPopover');
+            if (epop && isHidden) epop.style.display = 'none';
         }}
     }}
+
+    // BẬT / TẮT POPOVER TÙY BIẾN HIỆU ỨNG THỊ GIÁC
+    function toggleEffectsPopover() {{
+        var pop = document.getElementById('effectsPopover');
+        var btn = document.getElementById('effectsPopoverToggleBtn');
+        if (pop) {{
+            var isHidden = (pop.style.display === 'none' || !pop.style.display);
+            pop.style.display = isHidden ? 'block' : 'none';
+            if (btn) btn.classList.toggle('active', isHidden);
+            var lpop = document.getElementById('layerFilterPopover');
+            if (lpop && isHidden) lpop.style.display = 'none';
+        }}
+    }}
+
+    // Tự động đóng popover khi nhấp bên ngoài
+    document.addEventListener('click', function(e) {{
+        var lpop = document.getElementById('layerFilterPopover');
+        var lbtn = document.getElementById('layerFilterToggleBtn');
+        if (lpop && lbtn && lpop.style.display === 'block' && !lpop.contains(e.target) && !lbtn.contains(e.target)) {{
+            lpop.style.display = 'none';
+            lbtn.classList.remove('active');
+        }}
+        var epop = document.getElementById('effectsPopover');
+        var ebtn = document.getElementById('effectsPopoverToggleBtn');
+        if (epop && ebtn && epop.style.display === 'block' && !epop.contains(e.target) && !ebtn.contains(e.target)) {{
+            epop.style.display = 'none';
+            ebtn.classList.remove('active');
+        }}
+    }});
 
     // THIẾT LẬP NHANH CÁC PRESET CHO CHECKBOX
     function setLayerPreset(preset) {{
