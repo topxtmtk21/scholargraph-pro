@@ -322,6 +322,9 @@ with st.sidebar:
         </div>
         <div class="sidebar-brand-sub">Hệ thống mạng lưới tri thức học thuật & soạn thảo báo chí AI</div>
         <div class="developer-pill">Người phát triển: TRẦN DUY</div>
+        <div style="font-size:11px; color:var(--text-muted); margin-top:6px; word-break:break-all;">
+            🌐 <a href="https://topxtmtk21-scholargraph-pro-app-9rbsz8.streamlit.app/" target="_blank" style="color:var(--primary-accent); text-decoration:none; font-weight:600;">Bản Cloud trực tuyến ↗</a>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -2579,6 +2582,7 @@ elif "09." in workspace_nav:
     st.markdown("""
     <div style="text-align: center; color: var(--text-muted); font-size: 12px; margin-top: 40px; padding: 20px; border-top: 1px solid var(--border-subtle);">
         SCHOLARGRAPH PRO &copy; 2026. Kiến trúc và phát triển bởi <b>TRẦN DUY (Lead AI Research Engineer)</b>.<br/>
+        🌐 <b>Cổng ứng dụng trực tuyến:</b> <a href="https://topxtmtk21-scholargraph-pro-app-9rbsz8.streamlit.app/" target="_blank" style="color:var(--primary-accent); text-decoration:none; font-weight:700;">https://topxtmtk21-scholargraph-pro-app-9rbsz8.streamlit.app/</a><br/>
         Hệ thống chuyên dụng phục vụ Viện nghiên cứu, Trường Đại học và Tòa soạn Báo chí Hiện đại.
     </div>
     """, unsafe_allow_html=True)

@@ -1,4 +1,6 @@
-# 🔬 HỆ THỐNG ĐỘI NGŨ TRỢ LÝ NGHIÊN CỨU AI (1 DOI → 11 PHÚT 03 GIÂY)
+# 🔬 SCHOLARGRAPH PRO v3.5 ENTERPRISE (1 DOI → 11 PHÚT 03 GIÂY)
+> **Tác giả:** TRẦN DUY (Lead AI Research Engineer)  
+> 🌐 **Cổng ứng dụng trực tuyến chính thức:** [https://topxtmtk21-scholargraph-pro-app-9rbsz8.streamlit.app/](https://topxtmtk21-scholargraph-pro-app-9rbsz8.streamlit.app/)
 
 Hệ thống Pipeline Nghiên cứu Học thuật Tự động hóa Toàn diện dựa trên Kiến trúc Đa Tác tử (Multi-Agent Architecture) theo mô hình **Zero-Hallucination**, **Human-in-the-Loop**, và **Structured Workflow**.
 
