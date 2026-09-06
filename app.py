@@ -1073,19 +1073,31 @@ elif "02." in workspace_nav:
             only_oa=oa_only_filter
         )
 
-        col_g1, col_g2 = st.columns([2.8, 1.2])
+        col_g1, col_g2, col_g3 = st.columns([2, 1.2, 1.2], gap="small")
         with col_g1:
             st.markdown("""
             <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.6; display:flex; align-items:center; gap:8px;">
-                <span>💡 <b>Quy chuẩn quốc tế:</b> Kích thước node tỷ lệ thuận với số trích dẫn (Impact). Dùng các nút <b>🔍+ / 🔍- / 🎯 Căn giữa</b> và <b>⏳ Bố cục Dòng thời gian</b> trên thanh công cụ để khám phá.</span>
+                <span>💡 <b>Quy chuẩn quốc tế:</b> Kích thước node tỷ lệ thuận với số trích dẫn (Impact). Dùng các nút <b>🔍+ / 🔍- / 🎯 Căn giữa / 🪟 Màn hình phụ</b> trên thanh công cụ để khám phá.</span>
             </div>
             """, unsafe_allow_html=True)
         with col_g2:
             st.download_button(
-                "📥 Tải tệp sơ đồ tương tác (.html)",
+                "📥 Tải tệp HTML tương tác",
                 data=active_network_html,
                 file_name="so_do_mang_luoi_trich_dan.html",
                 mime="text/html",
+                use_container_width=True,
+                key="btn_dl_active_net_html"
+            )
+        with col_g3:
+            # Tạo data URI để mở trực tiếp trong tab mới / cửa sổ riêng
+            import base64
+            encoded_html = base64.b64encode(active_network_html.encode('utf-8')).decode('utf-8')
+            html_data_url = f"data:text/html;base64,{encoded_html}"
+            st.link_button(
+                "🪟 Mở Màn Hình Phụ ↗",
+                url=html_data_url,
+                type="primary",
                 use_container_width=True
             )
 

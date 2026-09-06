@@ -599,28 +599,23 @@ class CiteNetAgent:
                 left: 6px;
                 right: 6px;
                 max-width: calc(100% - 12px);
-                overflow-x: auto;
-                flex-wrap: nowrap;
-                white-space: nowrap;
-                -webkit-overflow-scrolling: touch;
-                scrollbar-width: none;
+                display: flex !important;
+                flex-wrap: wrap !important;
                 padding: 6px 8px;
-                gap: 4px;
-                border-radius: 10px;
-            }}
-            .hud-toolbar::-webkit-scrollbar {{
-                display: none;
+                gap: 5px;
+                border-radius: 12px;
+                background: rgba(18, 20, 26, 0.98);
             }}
             .hud-btn {{
-                padding: 6px 9px;
+                padding: 5px 8px;
                 font-size: 11px;
                 flex-shrink: 0;
             }}
             .hud-search-box {{
-                width: 130px;
-                font-size: 11px;
-                padding: 5px 8px;
-                flex-shrink: 0;
+                width: 100%;
+                font-size: 11.5px;
+                padding: 6px 10px;
+                margin-bottom: 2px;
             }}
             .hud-legend {{
                 bottom: 8px;
