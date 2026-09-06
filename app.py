@@ -1291,105 +1291,33 @@ elif "02." in workspace_nav:
         b64_standalone = base64.b64encode(active_standalone_html.encode("utf-8")).decode("utf-8")
         standalone_data_uri = f"data:text/html;charset=utf-8;base64,{b64_standalone}"
 
-        col_g1, col_g2, col_g3 = st.columns([2.2, 1.4, 0.9], gap="small")
-        with col_g1:
-            st.markdown("""
-            <div style="display:flex; align-items:center; gap:8px; height:38px; padding:0 12px; background:rgba(var(--glow-rgb), 0.04); border:1px solid var(--border-subtle); border-radius:9px; font-size:11.5px; color:var(--text-secondary);">
-                <span>💡</span> <span>Bấm biểu tượng <b>📖</b> trên thanh Dock bên trái để xem bảng quy ước màu & 4 loại liên kết. Hover vào bài báo để kích hoạt tia sáng laser liên kết tức thì.</span>
-            </div>
-            """, unsafe_allow_html=True)
-        with col_g2:
-            popout_btn_html = f"""<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-<style>
-* {{ box-sizing: border-box; margin: 0; padding: 0; }}
-body {{ background: transparent; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; align-items: center; justify-content: center; height: 100%; }}
-.popout-btn {{
-    width: 100%;
-    height: 38px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 6px 12px;
-    background: linear-gradient(135deg, rgba(0, 242, 254, 0.22) 0%, rgba(79, 70, 229, 0.32) 100%);
-    color: #FFFFFF;
-    border: 1.5px solid rgba(0, 242, 254, 0.7);
-    border-radius: 9px;
-    font-size: 12px;
-    font-weight: 800;
-    cursor: pointer;
-    box-shadow: 0 0 14px rgba(0, 242, 254, 0.25);
-    transition: all 0.2s ease;
-    letter-spacing: 0.02em;
-    outline: none;
-}}
-.popout-btn:hover {{
-    background: linear-gradient(135deg, rgba(0, 242, 254, 0.42) 0%, rgba(79, 70, 229, 0.52) 100%);
-    border-color: #00F2FE;
-    box-shadow: 0 0 20px rgba(0, 242, 254, 0.55);
-    transform: translateY(-1px);
-}}
-.popout-btn:active {{
-    transform: translateY(1px);
-}}
-</style>
-</head>
-<body>
-<button class="popout-btn" id="btnPopout" title="Mở mạng lưới Synapse Academic độc lập toàn màn hình 100vh trong cửa sổ mới">
-    <span>🌐</span> <span>MÀN HÌNH PHỤ (CỬA SỔ MỚI ↗)</span>
-</button>
-<script>
-var b64Data = "{b64_standalone}";
-document.getElementById('btnPopout').addEventListener('click', function() {{
-    try {{
-        var binary = atob(b64Data);
-        var bytes = new Uint8Array(binary.length);
-        for (var i = 0; i < binary.length; i++) {{
-            bytes[i] = binary.charCodeAt(i);
-        }}
-        var blob = new Blob([bytes], {{ type: 'text/html;charset=utf-8' }});
-        var blobUrl = URL.createObjectURL(blob);
-        var newWin = window.open(blobUrl, '_blank');
-        if (!newWin || newWin.closed || typeof newWin.closed === 'undefined') {{
-            var fallbackWin = window.open('', '_blank');
-            if (fallbackWin) {{
-                var rawStr = new TextDecoder("utf-8").decode(bytes);
-                fallbackWin.document.open();
-                fallbackWin.document.write(rawStr);
-                fallbackWin.document.close();
-            }} else {{
-                alert('Vui lòng cho phép Pop-up trên trình duyệt để mở Màn hình phụ Synapse Academic!');
-            }}
-        }}
-    }} catch (err) {{
-        console.error("Open viewport error:", err);
-    }}
-}});
-</script>
-</body>
-</html>"""
-        with col_g2:
-            can_popout = has_feature_access(cur_auth, "synapse_standalone_popout", IS_CLOUD_ENV)
-            if can_popout:
-                components.html(popout_btn_html, height=44)
-            else:
-                st.button("🔒 MÀN HÌNH PHỤ (CẦN QUYỀN)", disabled=True, use_container_width=True, help="Yêu cầu quyền Researcher/Admin để mở màn hình phụ 100vh độc lập.")
-        with col_g3:
-            can_export_html = has_feature_access(cur_auth, "synapse_export_html", IS_CLOUD_ENV)
-            if can_export_html:
-                st.download_button(
-                    "📥 Tải tệp HTML",
-                    data=active_network_html,
-                    file_name="so_do_mang_luoi_kim_cuong.html",
-                    mime="text/html",
-                    use_container_width=True,
-                    key="btn_dl_active_net_html"
-                )
-            else:
-                st.button("🔒 Tải tệp HTML", disabled=True, use_container_width=True, help="Yêu cầu quyền Researcher/Admin để tải HTML mạng lưới.")
+        with st.expander("⚙️ Tùy chỉnh công cụ, Màn hình phụ & Xuất tệp HTML mạng lưới (Thu gọn / Xổ ra)", expanded=False):
+            col_g1, col_g2, col_g3 = st.columns([2.2, 1.4, 0.9], gap="small")
+            with col_g1:
+                st.markdown("""
+                <div style="display:flex; align-items:center; gap:8px; height:38px; padding:0 12px; background:rgba(var(--glow-rgb), 0.04); border:1px solid var(--border-subtle); border-radius:9px; font-size:11.5px; color:var(--text-secondary);">
+                    <span>💡</span> <span>Bấm biểu tượng <b>📖</b> trên thanh Dock bên trái để xem bảng quy ước màu & 4 loại liên kết. Hover vào bài báo để kích hoạt tia sáng laser liên kết tức thì.</span>
+                </div>
+                """, unsafe_allow_html=True)
+            with col_g2:
+                can_popout = has_feature_access(cur_auth, "synapse_standalone_popout", IS_CLOUD_ENV)
+                if can_popout:
+                    components.html(popout_btn_html, height=44)
+                else:
+                    st.button("🔒 MÀN HÌNH PHỤ (CẦN QUYỀN)", disabled=True, use_container_width=True, help="Yêu cầu quyền Researcher/Admin để mở màn hình phụ 100vh độc lập.")
+            with col_g3:
+                can_export_html = has_feature_access(cur_auth, "synapse_export_html", IS_CLOUD_ENV)
+                if can_export_html:
+                    st.download_button(
+                        "📥 Tải tệp HTML",
+                        data=active_network_html,
+                        file_name="so_do_mang_luoi_kim_cuong.html",
+                        mime="text/html",
+                        use_container_width=True,
+                        key="btn_dl_active_net_html"
+                    )
+                else:
+                    st.button("🔒 Tải tệp HTML", disabled=True, use_container_width=True, help="Yêu cầu quyền Researcher/Admin để tải HTML mạng lưới.")
 
         # Hiển thị sơ đồ tương tác chuẩn quốc tế (HUD Deck cao 1580px bao gồm bảng dữ liệu 3x)
         components.html(active_network_html, height=1580, scrolling=True)

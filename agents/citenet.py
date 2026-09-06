@@ -1777,6 +1777,11 @@ class CiteNetAgent:
 
         <!-- GRAPH CANVAS -->
         <div class="synapse-graph-container" style="position:relative;">
+            <!-- NÚT MỞ LẠI MENU KHI Ở CHẾ ĐỘ TẬP TRUNG BẢN ĐỒ (FOCUS MODE) -->
+            <button id="floatingRestoreBtn" type="button" onclick="toggleFocusMode()" style="display:none; position:absolute; top:12px; left:12px; z-index:99999; background:rgba(4,9,20,0.92); border:1.5px solid var(--theme-accent); color:var(--theme-accent); font-weight:800; font-size:11px; padding:6px 14px; border-radius:10px; cursor:pointer; box-shadow:0 0 20px rgba(var(--theme-glow-rgb),0.5); backdrop-filter:blur(20px);">
+                👁️ MỞ LẠI MENU ĐIỀU KHIỂN
+            </button>
+
             <div class="graph-overlay-header">
                 <div class="graph-title">Global Citation Knowledge Network</div>
                 <div class="graph-subtitle">Project: {short_project_name}</div>
@@ -1810,6 +1815,9 @@ class CiteNetAgent:
 
             <!-- TOP RIGHT MINI CONTROLS (TÌM KIẾM, LỌC TẦNG KẾT HỢP & BỐ CỤC) -->
             <div class="graph-top-tools">
+                <!-- Nút Focus Mode / Thu gọn Menu để tập trung bản đồ -->
+                <button type="button" class="hud-mini-btn desktop-only-btn" id="focusModeBtn" onclick="toggleFocusMode()" title="Thu gọn thanh tiêu đề & bảng dưới để tập trung 100% diện tích vào bản đồ trích dẫn">👁️ Tập trung bản đồ</button>
+
                 <!-- Nút Menu toàn diện dành riêng cho phiên bản di động -->
                 <button type="button" class="hud-mini-btn mobile-only-btn" onclick="toggleMobileMenuDrawer()" title="Mở danh mục điều khiển phiên bản di động" style="background:var(--theme-accent); color:#040914; font-weight:800;">📱 Menu</button>
 
@@ -4640,6 +4648,52 @@ class CiteNetAgent:
             }}
         }}, 250);
     }});
+
+    // CHẾ ĐỘ THU GỌN TOÀN BỘ MENU ĐỂ TẬP TRUNG BẢN ĐỒ (FOCUS MODE)
+    var isFocusModeOn = false;
+    function toggleFocusMode() {{
+        isFocusModeOn = !isFocusModeOn;
+        var header = document.querySelector('.synapse-header-bar');
+        var bottomDeck = document.querySelector('.synapse-bottom-deck');
+        var dock = document.querySelector('.synapse-vertical-dock');
+        var restoreBtn = document.getElementById('floatingRestoreBtn');
+        var focusBtn = document.getElementById('focusModeBtn');
+        var middleDeck = document.querySelector('.synapse-middle-deck');
+        
+        if (isFocusModeOn) {{
+            if (header) header.style.display = 'none';
+            if (bottomDeck) bottomDeck.style.display = 'none';
+            if (dock) dock.style.display = 'none';
+            if (restoreBtn) restoreBtn.style.display = 'block';
+            if (focusBtn) {{
+                focusBtn.innerHTML = '👁️ Hiện Menu';
+                focusBtn.classList.add('active');
+            }}
+            if (middleDeck) {{
+                middleDeck.style.height = '100vh';
+                middleDeck.style.maxHeight = '100vh';
+            }}
+        }} else {{
+            if (header) header.style.display = 'flex';
+            if (bottomDeck) bottomDeck.style.display = 'grid';
+            if (dock) dock.style.display = 'flex';
+            if (restoreBtn) restoreBtn.style.display = 'none';
+            if (focusBtn) {{
+                focusBtn.innerHTML = '👁️ Tập trung bản đồ';
+                focusBtn.classList.remove('active');
+            }}
+            if (middleDeck) {{
+                middleDeck.style.height = '';
+                middleDeck.style.maxHeight = '';
+            }}
+        }}
+        setTimeout(function() {{
+            if (network) {{
+                network.redraw();
+                network.fit({{ animation: {{ duration: 350, easingFunction: 'easeInOutQuad' }} }});
+            }}
+        }}, 150);
+    }}
 
     // Auto-select primary seed on initial load & switch to force layout & Enable Draggable
     setTimeout(function() {{
