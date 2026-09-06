@@ -649,6 +649,41 @@ def generate_theme_css(theme_id: str) -> str:
         background: {c["badge_rose_bg"]};
     }}
 
+    /* Nút điều hướng nhanh đa sắc màu tương phản cao (High-Contrast Quick Navigation Cards) */
+    .quick-nav-card {{
+        padding: 14px 16px;
+        border-radius: 12px;
+        color: #FFFFFF !important;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.22);
+        transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        min-height: 98px;
+    }}
+    .quick-nav-card:hover {{
+        transform: translateY(-2px);
+        box-shadow: 0 8px 22px rgba(0,0,0,0.35);
+    }}
+    .qnav-net {{
+        background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%) !important;
+        border: 1.5px solid #38BDF8 !important;
+    }}
+    .qnav-apa {{
+        background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+        border: 1.5px solid #34D399 !important;
+    }}
+    .qnav-cars {{
+        background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%) !important;
+        border: 1.5px solid #A78BFA !important;
+    }}
+    .qnav-pack {{
+        background: linear-gradient(135deg, #D97706 0%, #B45309 100%) !important;
+        border: 1.5px solid #FBBF24 !important;
+    }}
+
     .status-text-title {{
         font-size: 12px;
         font-weight: 700;
@@ -940,6 +975,56 @@ def generate_theme_css(theme_id: str) -> str:
     .evidence-card:hover {{
         border-color: {c["border_hover"]};
         transform: translateY(-1px);
+    }}
+
+    /* Thẻ Điều Hướng Nhanh (Quick Navigation Cards) - Rực rỡ, Đổ màu nền, Chữ siêu tương phản */
+    .quick-nav-card {{
+        border-radius: 12px;
+        padding: 14px 16px;
+        margin-bottom: 8px;
+        color: #FFFFFF !important;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+        transition: all 0.2s ease;
+        border: 1px solid rgba(255, 255, 255, 0.22);
+    }}
+    .quick-nav-card:hover {{
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.28);
+    }}
+    .quick-nav-card .qnav-title {{
+        font-size: 14px;
+        font-weight: 800;
+        color: #FFFFFF !important;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        letter-spacing: -0.01em;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+    }}
+    .quick-nav-card .qnav-desc {{
+        font-size: 11.5px;
+        color: rgba(255, 255, 255, 0.92) !important;
+        line-height: 1.4;
+        margin: 0;
+        font-weight: 500;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    }}
+    .quick-nav-card.qnav-net {{
+        background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%);
+        border-left: 5px solid #38BDF8;
+    }}
+    .quick-nav-card.qnav-apa {{
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        border-left: 5px solid #34D399;
+    }}
+    .quick-nav-card.qnav-cars {{
+        background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+        border-left: 5px solid #A78BFA;
+    }}
+    .quick-nav-card.qnav-pack {{
+        background: linear-gradient(135deg, #D97706 0%, #B45309 100%);
+        border-left: 5px solid #FBBF24;
     }}
 
     /* Thẻ Số Liệu (Metric Cards) */

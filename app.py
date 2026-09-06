@@ -668,14 +668,74 @@ def run_academic_pipeline(dois: List[str], g1_lim: int, g2_lim: int, target_synt
                 "apa7_refs_md": apa7_refs_md,
                 "zip_bytes": zip_bytes
             }
-            st.session_state.show_completion_popup = False
-            st.session_state["workspace_nav"] = "02. Mạng lưới trích dẫn khoa học"
-            st.toast("🎉 Đã phân tích DOI xong! Đang chuyển sang Sơ đồ mạng lưới trích dẫn khoa học...", icon="🧬")
+            st.session_state.show_completion_popup = True
             st.balloons()
             st.rerun()
     except Exception as err:
         st.error(f"❌ Có lỗi xảy ra trong quá trình xử lý: {err}")
         st.info("💡 Gợi ý: Kiểm tra kết nối mạng Internet hoặc sử dụng chế độ Trí tuệ Nhân tạo Nội bộ (Local Engine).")
+
+# HỘP THOẠI POPUP THÔNG BÁO HOÀN TẤT
+if hasattr(st, "dialog"):
+    @st.dialog("🎉 ĐÃ HOÀN TẤT PHÂN TÍCH HỌC THUẬT & SOẠN THẢO CHUẨN APA 7!")
+    def show_completion_modal(results):
+        c_stats = results["citenet"]["stats"]
+        s_stats = results["synthdesk"]["grounding_stats"]
+        i_metrics = results["introwri"]["audit_report_dict"]["metrics"]
+        
+        st.markdown(f"""
+        <div style="background:var(--bg-surface); border:1px solid var(--badge-green-border); border-radius:14px; padding:18px; margin-bottom:14px;">
+            <h3 style="color:var(--badge-green-text); font-size:16.5px; margin:0 0 6px 0;">✓ Quá trình quét và phân tích dữ liệu đã hoàn thành 100%!</h3>
+            <p style="color:var(--text-secondary); font-size:13px; margin:0; line-height:1.55;">
+                Hệ thống đã xây dựng mạng lưới trích dẫn, bóc tách bằng chứng chuẩn <b>APA 7</b> và hoàn thiện bản thảo Mở đầu song ngữ theo mô hình <b>John Swales CARS</b>.
+            </p>
+        </div>
+        <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; margin-bottom:16px;">
+            <div style="background:var(--bg-surface-elevated); padding:12px; border-radius:10px; border:1px solid var(--border-subtle);">
+                <div style="font-size:11px; color:var(--text-muted); font-weight:700;">TỔNG SỐ BÀI BÁO</div>
+                <div style="font-size:19px; font-weight:800; color:var(--primary-accent);">{c_stats['total_papers']} bài ({c_stats['gen0_count']} bài gốc)</div>
+            </div>
+            <div style="background:var(--bg-surface-elevated); padding:12px; border-radius:10px; border:1px solid var(--border-subtle);">
+                <div style="font-size:11px; color:var(--text-muted); font-weight:700;">LIÊN KẾT TRÍCH DẪN</div>
+                <div style="font-size:19px; font-weight:800; color:var(--badge-green-text);">{c_stats['total_links']} mối liên kết</div>
+            </div>
+            <div style="background:var(--bg-surface-elevated); padding:12px; border-radius:10px; border:1px solid var(--border-subtle);">
+                <div style="font-size:11px; color:var(--text-muted); font-weight:700;">ĐỘ CHÍNH XÁC NGUỒN</div>
+                <div style="font-size:19px; font-weight:800; color:var(--badge-blue-text);">{s_stats['coverage_percent']}% (≥96%)</div>
+            </div>
+            <div style="background:var(--bg-surface-elevated); padding:12px; border-radius:10px; border:1px solid var(--border-subtle);">
+                <div style="font-size:11px; color:var(--text-muted); font-weight:700;">BẢN THẢO SONG NGỮ</div>
+                <div style="font-size:19px; font-weight:800; color:var(--badge-rose-text);">{i_metrics['total_word_count']} từ ({i_metrics['verified_grounded_claims']} dẫn chứng)</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        col_p1, col_p2, col_p3 = st.columns([1.1, 1.6, 0.9])
+        with col_p1:
+            st.download_button(
+                "📦 Tải về (.ZIP)",
+                data=results["zip_bytes"],
+                file_name="ho_so_nghien_cuu_bao_chi_ai_apa7.zip",
+                mime="application/zip",
+                type="secondary",
+                use_container_width=True
+            )
+        with col_p2:
+            if st.button("🌐 XEM MẠNG LƯỚI TRÍCH DẪN ➔", type="primary", use_container_width=True, key="btn_modal_goto_m2"):
+                st.session_state.show_completion_popup = False
+                st.session_state["workspace_nav"] = "02. Mạng lưới trích dẫn khoa học"
+                st.rerun()
+        with col_p3:
+            if st.button("✕ Đóng", use_container_width=True, key="btn_modal_close"):
+                st.session_state.show_completion_popup = False
+                st.rerun()
+
+# Hiển thị Popup khi hoàn thành
+if st.session_state.get("show_completion_popup") and st.session_state.pipeline_results:
+    if hasattr(st, "dialog"):
+        show_completion_modal(st.session_state.pipeline_results)
+    else:
+        st.success("🎉 ĐÃ HOÀN TẤT KIỂM TRA DOI & PHÂN TÍCH HỌC THUẬT! Bạn có thể chuyển sang Menu 2 để khám phá sơ đồ mạng lưới.")
 
 # Tham số mặc định
 gen1_limit = 20
@@ -935,33 +995,64 @@ if "01." in workspace_nav:
 
     # Hiển thị bảng điều hướng nhanh khi đã có kết quả phân tích
     if st.session_state.pipeline_results:
-        st.markdown("<div style='height: 18px;'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
         st.markdown("""
-        <div style="background:var(--bg-surface-elevated); border:2px solid var(--badge-green-border); border-radius:14px; padding:18px 22px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <div style="color:var(--badge-green-text); font-weight:800; font-size:16px;">
-                    ✓ DỮ LIỆU ĐÃ PHÂN TÍCH XONG & SẴN SÀNG KHÁM PHÁ!
+        <div style="background:var(--bg-surface-elevated); border:2px solid var(--badge-green-border); border-radius:14px; padding:18px 22px; margin-bottom:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <div style="color:var(--badge-green-text); font-weight:800; font-size:16px; display:flex; align-items:center; gap:8px;">
+                    <span>✓</span> DỮ LIỆU ĐÃ PHÂN TÍCH XONG & SẴN SÀNG KHÁM PHÁ!
                 </div>
-                <span class="status-chip green">Hoàn tất 100%</span>
+                <span class="status-chip green" style="font-weight:700;">Hoàn tất 100%</span>
             </div>
-            <p style="color:var(--text-secondary); font-size:13px; margin:0 0 14px 0; line-height:1.5;">
-                Bạn có thể bấm vào các nút bên dưới hoặc chọn trực tiếp trong menu bên trái để xem sơ đồ mạng lưới, bảng bằng chứng APA 7 hoặc bản thảo mở đầu song ngữ:
+            <p style="color:var(--text-secondary); font-size:13px; margin:0; line-height:1.5;">
+                Bạn có thể bấm vào các thẻ điều hướng nhanh bên dưới (tương đương với chọn ở thanh Menu trái) để chuyển thẳng đến màn hình tương ứng ngay lập tức:
             </p>
         </div>
         """, unsafe_allow_html=True)
         
-        qnav1, qnav2, qnav3 = st.columns(3)
+        qnav1, qnav2, qnav3, qnav4 = st.columns(4)
         with qnav1:
-            if st.button("🌐 1. Xem Sơ đồ Mạng lưới Trích dẫn", type="primary", use_container_width=True, key="btn_qnav_m2"):
+            st.markdown("""
+            <div class="quick-nav-card qnav-net">
+                <div class="qnav-title">🌐 02. Mạng Lưới Trích Dẫn</div>
+                <div class="qnav-desc">Khám phá sơ đồ phả hệ học thuật, node trích dẫn & phân loại Open Access</div>
+            </div>
+            """, unsafe_allow_html=True)
+            if st.button("➔ Xem Mạng Lưới Trích Dẫn", type="primary", use_container_width=True, key="btn_qnav_m2"):
                 st.session_state["workspace_nav"] = "02. Mạng lưới trích dẫn khoa học"
                 st.rerun()
+                
         with qnav2:
-            if st.button("📊 2. Xem Bảng Tổng Hợp APA 7", use_container_width=True, key="btn_qnav_m3"):
+            st.markdown("""
+            <div class="quick-nav-card qnav-apa">
+                <div class="qnav-title">📊 03. Bảng Tổng Hợp APA 7</div>
+                <div class="qnav-desc">Bóc tách bằng chứng phương pháp, mẫu trích đoạn & chuẩn hóa trích dẫn APA 7</div>
+            </div>
+            """, unsafe_allow_html=True)
+            if st.button("➔ Xem Bảng APA 7", use_container_width=True, key="btn_qnav_m3"):
                 st.session_state["workspace_nav"] = "03. Bảng tổng hợp phương pháp (APA 7)"
                 st.rerun()
+                
         with qnav3:
-            if st.button("✍️ 3. Xem Bản Thảo Mở Đầu Song Ngữ", use_container_width=True, key="btn_qnav_m5"):
+            st.markdown("""
+            <div class="quick-nav-card qnav-cars">
+                <div class="qnav-title">✍️ 05. Soạn Thảo CARS</div>
+                <div class="qnav-desc">Bản thảo Mở đầu song ngữ chuẩn John Swales CARS & mô phỏng phản biện học thuật</div>
+            </div>
+            """, unsafe_allow_html=True)
+            if st.button("➔ Xem Bản Thảo CARS", use_container_width=True, key="btn_qnav_m5"):
                 st.session_state["workspace_nav"] = "05. Soạn thảo CARS & Phản biện mô phỏng"
+                st.rerun()
+                
+        with qnav4:
+            st.markdown("""
+            <div class="quick-nav-card qnav-pack">
+                <div class="qnav-title">📦 06. Tải Hồ Sơ Nghiên Cứu</div>
+                <div class="qnav-desc">Xuất trọn gói 5 định dạng học thuật (.ZIP, .CSV, .BIB, .DOCX, .HTML tương tác)</div>
+            </div>
+            """, unsafe_allow_html=True)
+            if st.button("➔ Đến Trang Tải Về", use_container_width=True, key="btn_qnav_m6"):
+                st.session_state["workspace_nav"] = "06. Tải về hồ sơ nghiên cứu (.ZIP)"
                 st.rerun()
 
 # -----------------------------------------------------------------------------
