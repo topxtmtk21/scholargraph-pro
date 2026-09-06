@@ -1280,29 +1280,79 @@ elif "02." in workspace_nav:
                 - **Tương tác Đột phá:** Bấm nút **🧬 Truy Vết** trên thanh công cụ đồ thị rồi nhấp vào bất kỳ bài báo nào để **phát sáng toàn bộ chuỗi phả hệ cội nguồn** và làm mờ các bài không liên quan!
                 """)
         with col_g2:
-            st.markdown(f"""
-            <a href="{standalone_data_uri}" target="_blank" style="
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 8px;
-                padding: 7px 12px;
-                background: linear-gradient(135deg, rgba(0, 242, 254, 0.20) 0%, rgba(79, 70, 229, 0.28) 100%);
-                color: #FFFFFF;
-                border: 1.5px solid rgba(0, 242, 254, 0.65);
-                border-radius: 10px;
-                font-size: 12.5px;
-                font-weight: 800;
-                text-decoration: none;
-                box-shadow: 0 0 16px rgba(0, 242, 254, 0.25);
-                transition: all 0.2s ease;
-                letter-spacing: 0.02em;
-                height: 38px;
-                box-sizing: border-box;
-            " onmouseover="this.style.borderColor='#00F2FE'; this.style.boxShadow='0 0 22px rgba(0,242,254,0.5)';" onmouseout="this.style.borderColor='rgba(0,242,254,0.65)'; this.style.boxShadow='0 0 16px rgba(0,242,254,0.25)';">
-                <span>🌐</span> <span>MÀN HÌNH PHỤ (CỬA SỔ MỚI ↗)</span>
-            </a>
-            """, unsafe_allow_html=True)
+            popout_btn_html = f"""<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+* {{ box-sizing: border-box; margin: 0; padding: 0; }}
+body {{ background: transparent; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; align-items: center; justify-content: center; height: 100%; }}
+.popout-btn {{
+    width: 100%;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: linear-gradient(135deg, rgba(0, 242, 254, 0.22) 0%, rgba(79, 70, 229, 0.32) 100%);
+    color: #FFFFFF;
+    border: 1.5px solid rgba(0, 242, 254, 0.7);
+    border-radius: 9px;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 0 14px rgba(0, 242, 254, 0.25);
+    transition: all 0.2s ease;
+    letter-spacing: 0.02em;
+    outline: none;
+}}
+.popout-btn:hover {{
+    background: linear-gradient(135deg, rgba(0, 242, 254, 0.42) 0%, rgba(79, 70, 229, 0.52) 100%);
+    border-color: #00F2FE;
+    box-shadow: 0 0 20px rgba(0, 242, 254, 0.55);
+    transform: translateY(-1px);
+}}
+.popout-btn:active {{
+    transform: translateY(1px);
+}}
+</style>
+</head>
+<body>
+<button class="popout-btn" id="btnPopout" title="Mở mạng lưới Synapse Academic độc lập toàn màn hình 100vh trong cửa sổ mới">
+    <span>🌐</span> <span>MÀN HÌNH PHỤ (CỬA SỔ MỚI ↗)</span>
+</button>
+<script>
+var b64Data = "{b64_standalone}";
+document.getElementById('btnPopout').addEventListener('click', function() {{
+    try {{
+        var binary = atob(b64Data);
+        var bytes = new Uint8Array(binary.length);
+        for (var i = 0; i < binary.length; i++) {{
+            bytes[i] = binary.charCodeAt(i);
+        }}
+        var blob = new Blob([bytes], {{ type: 'text/html;charset=utf-8' }});
+        var blobUrl = URL.createObjectURL(blob);
+        var newWin = window.open(blobUrl, '_blank');
+        if (!newWin || newWin.closed || typeof newWin.closed === 'undefined') {{
+            var fallbackWin = window.open('', '_blank');
+            if (fallbackWin) {{
+                var rawStr = new TextDecoder("utf-8").decode(bytes);
+                fallbackWin.document.open();
+                fallbackWin.document.write(rawStr);
+                fallbackWin.document.close();
+            }} else {{
+                alert('Vui lòng cho phép Pop-up trên trình duyệt để mở Màn hình phụ Synapse Academic!');
+            }}
+        }}
+    }} catch (err) {{
+        console.error("Open viewport error:", err);
+    }}
+}});
+</script>
+</body>
+</html>"""
+            components.html(popout_btn_html, height=44)
         with col_g3:
             st.download_button(
                 "📥 Tải tệp HTML",

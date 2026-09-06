@@ -985,6 +985,7 @@ class CiteNetAgent:
             <div class="dock-btn-group">
                 <button class="dock-icon-btn active" id="dockBtnTrace" onclick="toggleLineageMode()" title="🧬 Bật/Tắt Truy Vết Phả Hệ">🧬</button>
                 <button class="dock-icon-btn" onclick="cycleThemes()" title="🎨 Chuyển đổi 5 Mẫu Theme Kính Dạ Quang">🎨</button>
+                <button class="dock-icon-btn" onclick="openDedicatedViewport()" title="🌐 Mở Màn hình phụ (Cửa sổ mới ↗)">↗️</button>
                 <button class="dock-icon-btn" onclick="fitView()" title="🎯 Căn giữa toàn cảnh">🎯</button>
             </div>
         </nav>
@@ -1022,6 +1023,7 @@ class CiteNetAgent:
                 <button class="hud-mini-btn" id="timeplayBtn" onclick="toggleTimelinePlayback()" title="Tua Lịch Sử">⏯️ Tua</button>
                 <button class="hud-mini-btn" onclick="zoomIn()" title="Phóng to">🔍+</button>
                 <button class="hud-mini-btn" onclick="zoomOut()" title="Thu nhỏ">🔍-</button>
+                <button class="hud-mini-btn" onclick="openDedicatedViewport()" title="Mở Màn hình phụ (Cửa sổ mới ↗)">🌐 Cửa Sổ Mới ↗</button>
                 <button class="hud-mini-btn" onclick="toggleFullScreen()" title="Toàn màn hình">⛶</button>
             </div>
 
@@ -1345,6 +1347,30 @@ class CiteNetAgent:
             if (elem.requestFullscreen) elem.requestFullscreen();
         }} else {{
             if (document.exitFullscreen) document.exitFullscreen();
+        }}
+    }}
+
+    // Open Standalone Dedicated Viewport in New Tab/Window
+    function openDedicatedViewport() {{
+        try {{
+            var rawHtml = document.documentElement.outerHTML;
+            var customHtml = rawHtml.replace('height: 860px', 'height: 100vh')
+                                    .replace('display: grid', 'display: none !important');
+            var blob = new Blob([customHtml], {{ type: 'text/html;charset=utf-8' }});
+            var blobUrl = URL.createObjectURL(blob);
+            var win = window.open(blobUrl, '_blank');
+            if (!win || win.closed || typeof win.closed === 'undefined') {{
+                var fallbackWin = window.open('', '_blank');
+                if (fallbackWin) {{
+                    fallbackWin.document.open();
+                    fallbackWin.document.write(customHtml);
+                    fallbackWin.document.close();
+                }} else {{
+                    alert('Vui lòng cho phép Pop-up trên trình duyệt để mở Màn hình phụ Synapse Academic!');
+                }}
+            }}
+        }} catch(e) {{
+            console.error('Open viewport error:', e);
         }}
     }}
 
