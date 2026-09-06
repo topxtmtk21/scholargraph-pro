@@ -1,23 +1,37 @@
-# 📚 Tủ Sách Kỹ Năng Kỹ Thuật (Engineering & Design Skills)
-### ScholarGraph Pro & Advanced Agentic Software Architecture
+# 📚 Tủ Sách Kỹ Năng Kỹ Thuật Công Nghệ Phần Mềm & Thiết Kế UI/UX
+### Enterprise Resilient Software Architecture & Modern HUD Design System
 
-Thư mục này chứa các cẩm nang kỹ thuật (**Skills**) được đúc kết từ quá trình nghiên cứu, thiết kế và phát triển thực chiến trên hệ thống **ScholarGraph Pro**. Các nguyên tắc này được chuẩn hóa để có thể áp dụng cho bất kỳ dự án phần mềm phức tạp nào.
-
----
-
-## 📂 Danh Mục Các Kỹ Năng Đã Được Chuẩn Hóa
-
-### 1. 🌌 [Futuristic Sci-Fi Glassmorphism HUD Design System](file:///.agents/skills/futuristic-hud-design-system/SKILL.md)
-- **Mô tả**: Toàn bộ quy chuẩn thiết kế giao diện công nghệ tương lai (Quantum HUD / Synapse Deck), hệ màu neon dạ quang, thẻ kính mờ, độ tương phản **WCAG AAA/AA**, giải quyết triệt để lỗi phân tích cú pháp Streamlit Markdown, cơ chế mở Màn hình phụ đa cửa sổ bằng chuẩn **W3C Blob URL**, và **Ma trận thích ứng đa màn hình 4 cấp độ (Mobile, Tablet, Desktop, Ultra-Wide 4K)** kèm **Giao thức cảm ứng chạm Single-Tap Protocol** và **Quy chuẩn vùng chạm Fitts 44px**.
-- **Đường dẫn**: `.agents/skills/futuristic-hud-design-system/SKILL.md`
-
-### 2. 🛡️ [Zero-Regression Engineering & Resilient Architecture](file:///.agents/skills/zero-regression-engineering/SKILL.md)
-- **Mô tả**: Bộ nguyên tắc kỹ thuật lập trình bền vững: Bảo tồn tuyệt đối cấu trúc ổn định, tái cấu trúc không xâm lấn (Additive Refactoring), **Chiến lược khóa phiên bản an toàn (Git Tagging & Branching Isolation)**, kiến trúc 3 tầng dự phòng (Multi-tier Fallback: Live API $\to$ Local Cache $\to$ Heuristic Fallback), bảo mật phân quyền RBAC và quy trình kiểm thử tự động 100% không hồi quy lỗi.
-- **Đường dẫn**: `.agents/skills/zero-regression-engineering/SKILL.md`
+Thư mục này chứa bộ cẩm nang kỹ thuật thực chiến (**Engineering & Design Skills**) được đúc kết từ quá trình nghiên cứu, thiết kế và phát triển các hệ thống phần mềm phức tạp. Bộ nguyên tắc này mang tính khái quát cao, được chuẩn hóa để có thể áp dụng cho **bất kỳ dự án phần mềm nào** (Web App, Mobile App, Desktop App, Data Dashboard, SaaS Platform, AI Copilot).
 
 ---
 
-## 🚀 Cách Áp Dụng Cho Các Dự Án Mới
-1. **Dự án Web App / Streamlit / Next.js**: Sao chép thư mục `.agents/skills/` sang thư mục gốc của dự án mới.
-2. **Tuân thủ quy trình kiểm thử**: Tạo file `test_system_upgrades_pro.py` và `test_themes_contrast.py` tương ứng để tự động hóa việc rà soát trước mỗi lần phát hành.
-3. **Phát triển liên tục (Continuous Delivery)**: Mọi tính năng mới đều tuân thủ nguyên tắc *Tỉ mỉ - Bảo tồn - Kiểm thử toàn diện*.
+## 📂 Danh Mục Các Cẩm Nang Kỹ Thuật Chuẩn Hóa
+
+### 1. 🛡️ [Zero-Regression Software Engineering & Resilient Architecture](file:///.agents/skills/zero-regression-engineering/SKILL.md)
+- **Mục tiêu**: Đảm bảo quá trình nâng cấp, tối ưu hóa và mở rộng hệ thống **không bao giờ làm hỏng, cắt xén hay suy giảm các tính năng đã hoạt động ổn định trước đó**.
+- **Các nguyên tắc cốt lõi**:
+  - **Quy tắc Bổ sung không xâm lấn (Additive-Only Changes)**: Sử dụng tham số tùy chọn với giá trị mặc định, bảo toàn 100% chữ ký hàm cũ và trường dữ liệu cũ.
+  - **Chiến lược Khóa phiên bản phòng thủ (Version Shielding)**: Branching, Tagging, và lập Release Notes snapshot trước mỗi giai đoạn nâng cấp lớn.
+  - **Kiến trúc Đa tầng dự phòng 3 lớp (Multi-Tier Fallback)**: Live API $\to$ Local Smart Cache $\to$ Heuristic Static Parsing.
+  - **An toàn chuỗi nội suy đa ngôn ngữ (Cross-Language Escaping)**: Kỹ thuật xử lý thoát ký `{`, `}` trong Python f-string, chống bẫy Streamlit Markdown Indented Code Block, và chuẩn W3C Blob URL khi mở cửa sổ mới.
+  - **Hệ thống Kiểm thử tự động 5 trụ cột (5-Pillar Test Suite)**: Unit/Syntax $\to$ Core Business $\to$ UI/Contrast (WCAG AAA/AA) $\to$ E2E Integration $\to$ Multi-Device Viewport.
+  - **Checklist vàng trước khi Commit**: Rà soát 6 bước nghiêm ngặt.
+
+### 2. 🌌 [Modern Futuristic UI/UX & Glassmorphism HUD Design System](file:///.agents/skills/futuristic-hud-design-system/SKILL.md)
+- **Mục tiêu**: Xây dựng trải nghiệm giao diện người dùng đỉnh cao, hiện đại (Futuristic HUD / Aero Glassmorphism) đạt chuẩn công thái học và tương thích $100\%$ mọi màn hình.
+- **Các nguyên tắc cốt lõi**:
+  - **Triết lý Quantum HUD & Aero Glassmorphism**: Nền không gian sâu kết hợp kính mờ phản quang và luồng hạt năng lượng $60\text{ FPS}$.
+  - **Độ tương phản quốc tế WCAG AAA/AA**: Kế thừa đồng bộ qua hệ biến CSS Tokens, chống chìm màu trên nền tối.
+  - **Nguyên tắc Không che khuất vùng quan sát (Zero-Occlusion Layout)**: Định vị Smart Inspector tại góc an toàn (Safe Anchors), khay chú thích dạng Slide-Out Drawer.
+  - **Quy luật Tỷ lệ trực quan (Data-Driven Visual Scale)**: Tính toán kích thước đối tượng theo hàm Logarit số liệu thực tế (Price's Law).
+  - **Ma trận Đa màn hình (Mobile, Tablet, Desktop, Ultra-Wide 4K)**: Bố cục thích ứng tự nhiên, tự động căn khớp khung nhìn khi xoay ngang/dọc thiết bị.
+  - **Giao thức Chuyển hóa cảm ứng (Touch-First & Single-Tap Protocol)**: Chuyển toàn bộ tương tác Hover thành Single-Tap, đảm bảo kích thước chạm tối thiểu $\ge 44\text{px}$ (Fitts's Law).
+  - **Chống tràn trang ngang & Cuộn quán tính mượt mà**: Chặn tràn viewport, kích hoạt momentum touch scrolling và bảo vệ Safe Area Insets.
+  - **Bộ tìm kiếm đa tiêu chí thời gian thực (Real-Time Multi-Facet Search)**: Tìm kiếm linh hoạt theo ID, tác giả, năm, từ khóa, tạp chí kèm hiệu ứng làm mờ và focus mượt mà.
+
+---
+
+## 🚀 Cách Áp Dụng Cho Dự Án Mới
+1. **Sao chép thư mục `.agents/skills/`** vào thư mục gốc của dự án mới.
+2. **Thiết lập bộ Test Suites tương ứng** (`test_system_core.py`, `test_ui_contrast.py`, `test_viewport.py`).
+3. **Áp dụng Bộ Checklist Vàng** trước mỗi lần phát hành mã nguồn.

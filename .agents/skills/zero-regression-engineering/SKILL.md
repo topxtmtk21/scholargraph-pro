@@ -1,92 +1,109 @@
 ---
 name: zero-regression-engineering
-description: Bộ quy tắc kỹ thuật công nghệ phần mềm bền vững (Zero-Regression Engineering) cho các dự án phức tạp: bảo tồn tuyệt đối cấu trúc ổn định, tái cấu trúc không phá vỡ (Non-destructive Refactoring), thiết kế đa tầng dự phòng (Multi-tier Fallback), kiểm thử tự động 100%, chiến lược khóa phiên bản an toàn và phát triển đa thiết bị vững chắc.
+description: Cẩm nang toàn diện về kỹ thuật công nghệ phần mềm bền vững (Zero-Regression Engineering) áp dụng cho mọi dự án phức tạp: bảo tồn tuyệt đối tính năng, kiến trúc không xâm lấn (Non-Destructive Additions), thiết kế đa tầng dự phòng (Multi-Tier Fallback), an toàn chuỗi nội suy đa ngôn ngữ, và quy chuẩn kiểm thử tự động 100% không hồi quy lỗi.
 ---
 
-# 🛡️ Zero-Regression Engineering & Resilient Architecture Skill
+# 🛡️ Zero-Regression Software Engineering & Resilient Architecture Handbook
 
-Cẩm nang phương pháp luận kỹ thuật phần mềm dành cho các hệ thống quy mô lớn và phức tạp, đảm bảo mọi lần nâng cấp tính năng mới **không bao giờ làm hỏng, thay đổi hay cắt bỏ các tính năng đã hoạt động ổn định trước đó**.
-
----
-
-## 🏛️ 1. Nguyên Tắc Cốt Lõi: Tỉ Mỉ, Bảo Tồn & Không Phá Hỏng
-
-1. **Nguyên Tắc Bổ Sung Không Xâm Lấn (Additive & Non-Destructive Principle)**:
-   - Khi thêm tính năng mới, luôn thiết kế dưới dạng tham số mở rộng với giá trị mặc định giữ nguyên hành vi cũ (`standalone: bool = False`, `fallback: bool = True`).
-   - Tuyệt đối không xóa bỏ các trường dữ liệu, thuộc tính hoặc hàm tiện ích mà các mô đun khác đang phụ thuộc.
-2. **Khả Năng Tương Thích Ngược Tuyệt Đối (100% Backward Compatibility)**:
-   - Nếu thay đổi cấu trúc dữ liệu trả về, luôn duy trì các key cũ song song với các key mới (Ví dụ: `gen0_count`, `gen1_count` vẫn được giữ nguyên bên cạnh `r1_count`, `f1_count`).
-3. **Quy Trình Kiểm Tra Bắt Buộc Trước Khi Commit (Pre-Flight Verification)**:
-   - Không chỉ kiểm tra tính năng mới chạy được, mà phải chạy lại **100% các bộ kiểm thử tự động của toàn bộ hệ thống**.
+Cẩm nang phương pháp luận kỹ thuật phần mềm chuẩn doanh nghiệp, đúc kết các nguyên tắc tối thượng nhằm đảm bảo quá trình phát triển, nâng cấp và mở rộng hệ thống **không bao giờ làm hỏng, cắt xén hay suy giảm bất kỳ tính năng nào đã hoạt động ổn định trước đó**, áp dụng cho mọi ngôn ngữ lập trình (Python, TypeScript, JavaScript, Rust, Go) và mọi nền tảng (Web App, Mobile Web, Desktop, Cloud Microservices).
 
 ---
 
-## 🔒 2. Chiến Lược Khóa Phiên Bản An Toàn (Safe Version Locking & Cross-Platform Expansion)
+## 🏛️ 1. Nguyên Tắc Vàng Bảo Toàn Tính Năng (The Law of Non-Destructive Additions)
 
-Khi chuyển giao giữa các giai đoạn lớn (Ví dụ: từ Bản Local Ổn Định sang Bản Online Mobile / Tablet):
-1. **Khóa Mốc Phát Hành & Tạo Phân Nhánh Dự Phòng (Tagging & Branching)**:
-   - Gắn thẻ Git Tag cố định (Ví dụ: `v3.5.0-local-stable`).
-   - Tạo phân nhánh bảo vệ độc lập (`backup-local-stable`) để có thể rollback tức thì trong 1 giây nếu phát sinh lỗi không mong muốn.
-2. **Lập Bản Báo Cáo Phát Hành (Release Notes Snapshot)**:
-   - Lưu trữ danh sách tính năng đã hoàn thiện, danh sách file kiểm thử, và mã băm commit vào file tài liệu `LOCAL_RELEASE_NOTES_vX.X.X.md`.
-3. **Nguyên Tắc Phát Triển Đa Màn Hình (Cross-Platform Isolation)**:
-   - Sử dụng CSS Media Queries và các điều kiện nhận diện luồng mà không sửa đổi logic xử lý cốt lõi của backend nghiệp vụ.
+Trong kỹ thuật phần mềm phức tạp, việc bổ sung tính năng mới thường tiềm ẩn nguy cơ "gãy vỡ vô hình" (Silent Regression). Để triệt tiêu rủi ro này, mọi kỹ sư phải tuân thủ 4 quy tắc sắt:
+
+### A. Quy Tắc Bổ Sung Không Xâm Lấn (Additive-Only Changes)
+- Khi mở rộng một hàm, lớp hoặc API, **luôn sử dụng tham số tùy chọn kèm giá trị mặc định** bảo toàn hành vi cũ:
+  ```python
+  # ✅ ĐÚNG: Giữ nguyên hành vi cũ nếu không truyền tham số mới
+  def render_graph_view(nodes, edges, standalone_mode: bool = False, speed_factor: float = 1.0, **kwargs):
+      ...
+  
+  # ❌ SAI: Thay đổi bắt buộc thứ tự hoặc xóa bỏ tham số cũ làm gãy code ở nơi khác
+  def render_graph_view(nodes, edges, new_config_object):
+      ...
+  ```
+- **Không bao giờ xóa bỏ các trường dữ liệu (Fields/Keys)** trong các cấu trúc JSON hoặc bảng cơ sở dữ liệu. Nếu cần đổi tên, hãy duy trì trường cũ song song với trường mới (Dual-Key Compatibility).
+
+### B. Quy Tắc Bọc Lớp Trừu Tượng (The Decorator/Wrapper Pattern)
+- Thay vì sửa đổi trực tiếp vào khối mã nguồn cốt lõi đang chạy mượt mà, hãy xây dựng một lớp bọc (Wrapper) bên ngoài để mở rộng hành vi mà không can thiệp vào logic bên trong.
+
+### C. Nguyên Tắc Khóa Phiên Bản Phòng Thủ (Version Shielding & Branch Guarding)
+- Trước khi bắt đầu một giai đoạn nâng cấp lớn (ví dụ: chuyển từ Local sang Cloud/Mobile):
+  1. Gắn thẻ Git Tag cố định (ví dụ: `v3.5.0-local-stable`).
+  2. Tạo phân nhánh bảo vệ (`backup-local-stable`) để có thể rollback tức thì trong 1 giây nếu phát sinh sự cố.
+  3. Lập biên bản phát hành (Release Notes Snapshot) ghi nhận danh sách tính năng và kết quả kiểm thử.
 
 ---
 
-## ⚙️ 3. Mô Hình Thiết Kế Đa Tầng Dự Phòng (Multi-Tier Fallback Resilience)
+## ⚙️ 2. Kiến Trúc Đa Tầng Dự Phòng (Multi-Tier Fallback Architecture)
 
-Trong các ứng dụng dựa trên AI, API bên thứ ba hoặc dữ liệu mạng (như OpenAlex, LLM API, PDF Parser), sự cố mạng hoặc rate-limit là điều không thể tránh khỏi. Hệ thống phải luôn có 3 tầng bảo vệ:
+Một phần mềm chất lượng cao không bao giờ được phép "treo cứng" hoặc "màn hình trắng" khi một dịch vụ bên ngoài (AI API, Mạng, Dữ liệu đám mây) gặp sự cố. Bắt buộc phải triển khai mô hình 3 tầng phòng thủ:
 
 ```mermaid
 graph TD
-    A[Yêu cầu xử lý từ Người Dùng] --> B{Tầng 1: Live Cloud / AI API}
-    B -- Thành công --> E[Trả về kết quả chuẩn xác]
-    B -- Thất bại / Hết Quota --> C{Tầng 2: Smart Local Cache / SQLite}
-    C -- Có dữ liệu cache --> E
-    C -- Không có cache --> D{Tầng 3: Heuristic Rule-Based Fallback}
-    D -- Bóc tách mẫu chuẩn học thuật --> E
-    D -- Thất bại hoàn toàn --> F[Thông báo thân thiện & Hướng dẫn phục hồi]
+    A[Yêu Cầu Nghiệp Vụ Từ Client] --> B{Tầng 1: Live Cloud / AI API}
+    B -- Thành công --> E[Trả Về Kết Quả Chuẩn Xác]
+    B -- Lỗi Mạng / Timeout / Hết Quota --> C{Tầng 2: Local Database / Cache}
+    C -- Có Cache Hợp Lệ --> E
+    C -- Không Có Cache --> D{Tầng 3: Heuristic Static Fallback}
+    D -- Phân tích cú pháp tĩnh / Mẫu dữ liệu chuẩn --> E
+    D -- Thất bại hoàn toàn --> F[Thông Báo Thân Thiện & Nút Thử Lại]
 ```
 
-1. **Tầng 1 (Live AI/API)**: Gọi trực tiếp API với cơ chế Retry có backoff theo cấp số nhân.
-2. **Tầng 2 (Smart Local Cache)**: Tự động lưu cache kết quả vào SQLite/Local DB để nạp lại tức thì trong $0.1\text{s}$ mà không cần tốn quota API.
-3. **Tầng 3 (Heuristic Deterministic Fallback)**: Nếu AI không phản hồi, dùng các biểu thức chính quy (Regex) và thuật toán phân tích cú pháp tĩnh để trích xuất dữ liệu cốt lõi, không để người dùng gặp màn hình trắng.
+1. **Tầng 1 (Live AI/API)**: Gọi API trực tuyến với cơ chế Retry có backoff theo cấp số nhân (Exponential Backoff).
+2. **Tầng 2 (Smart Local Cache / Database)**: Tự động lưu trữ bản snapshot vào SQLite/IndexedDB/Redis. Nếu API lỗi, nạp lại kết quả cache trong $0.1\text{s}$.
+3. **Tầng 3 (Heuristic Deterministic Fallback)**: Dùng các thuật toán bóc tách tĩnh, biểu thức chính quy (Regex) và mẫu quy chuẩn để sinh dữ liệu dự phòng có cấu trúc hợp lệ.
 
 ---
 
-## 🧪 4. Quy Chuẩn Xây Dựng Bộ Test Suites Toàn Diện
+## 🔒 3. An Toàn Chuỗi Nội Suy Đa Ngôn Ngữ (Cross-Language Escaping Safety)
 
-Mỗi dự án cần duy trì tối thiểu 5 bộ test tự động độc lập:
+Khi một ngôn ngữ backend (Python, Node.js) sinh ra mã cho một ngôn ngữ khác (HTML, JavaScript, CSS, LaTeX):
 
-| Bộ Test | Mục Đích | Chỉ Số Đạt Yêu Cầu |
+### 🚨 Cạm Bẫy Nguy Hiểm: Xung Đột Ký Tự Đặc Biệt
+- **Trong Python f-strings (`f"""..."""`)**:
+  - Dấu ngoặc nhọn `{` và `}` trong CSS (`@media { ... }`) hoặc JavaScript (`function() { ... }`) **bắt buộc phải thoát ký thành `{{` và `}}`**.
+  - Không chèn chuỗi chứa ký tự `{...}` chưa thoát (ví dụ: cú pháp LaTeX `\text{Citations}`) trực tiếp vào f-string vì Python sẽ cố phân tích thành biến và gây lỗi `NameError`.
+- **Trong Streamlit Markdown (`st.markdown`)**:
+  - Tuyệt đối không để thụt lề 4 dấu cách (4 spaces) sau một dòng trống trong chuỗi HTML vì bộ phân tích cú pháp Markdown sẽ hiểu nhầm là Code Block (`<pre><code>`) và hiển thị HTML thô ra màn hình.
+- **Trong Mở Cửa Sổ Trình Duyệt Mới (`window.open`)**:
+  - Không sử dụng `data:text/html;base64` cho điều hướng cấp cao (bị trình duyệt chặn bảo mật). Luôn dùng **W3C Blob URL** (`URL.createObjectURL(new Blob(...))`).
+
+---
+
+## 🧪 4. Quy Chuẩn Kiểm Thử Tự Động Toàn Diện (The 5-Pillar Test Suite)
+
+Mọi dự án phần mềm chuyên nghiệp bắt buộc phải xây dựng hệ thống kiểm thử tự động gồm 5 trụ cột:
+
+| Trụ Cột Kiểm Thử | Mục Tiêu Kiểm Định | Tiêu Chuẩn Vượt Qua (Passing Criteria) |
 | :--- | :--- | :--- |
-| `test_system_upgrades_pro.py` | Kiểm tra tất cả các mô đun nghiệp vụ cốt lõi (Export, PDF Mining, Burst, Matrix, Slide PPTX, Cache) | 100% Passed (8/8 Modules) |
-| `test_themes_contrast.py` | Kiểm định độ tương phản màu sắc của toàn bộ các theme theo tiêu chuẩn quốc tế **WCAG AAA/AA** | Contrast Ratio $\ge 7:1$ (Text thường) & $\ge 4.5:1$ (Text lớn) |
-| `test_pipeline.py` | Kiểm tra luồng xử lý đầu-cuối (End-to-End Pipeline) từ DOI đầu vào tới tài liệu đầu ra | 100% Passed |
-| `test_auth_commercial.py` | Kiểm thử bảo mật: Đăng nhập Super Admin, Đổi pass lần đầu, Chặn email trái phép, Reset pass qua Token, Audit Logs | 100% Security Rules Enforced |
-| `test_standalone_viewport.py` | Kiểm tra chế độ hiển thị độc lập đa màn hình ($100\text{vh}$, ẩn bottom deck, Blob URL) | 100% Passed |
+| **1. Unit & Syntax Test** | Biên dịch bytecode, kiểm tra cú pháp toàn bộ tệp mã nguồn | `python -m py_compile` 100% không có lỗi |
+| **2. Core Business Test** | Kiểm tra toàn bộ các hàm nghiệp vụ, trích xuất dữ liệu, xuất file (PDF, Excel, LaTeX, Slide PPTX) | 100% Modules Passed |
+| **3. UI & Contrast Test** | Kiểm tra độ tương phản màu sắc toàn bộ giao diện theo chuẩn quốc tế **WCAG AAA/AA** | Contrast Ratio $\ge 7:1$ (Normal text), $\ge 4.5:1$ (Large text) |
+| **4. Integration & E2E Test** | Kiểm tra luồng dữ liệu đầu-cuối từ Input đầu vào tới Output đầu ra | Luồng chạy trơn tru với cả dữ liệu đầy đủ lẫn dữ liệu khiếm khuyết |
+| **5. Cross-Device Viewport Test**| Kiểm tra tính toàn vẹn giao diện trên Mobile ($360\text{px}$), Tablet ($768\text{px}$), Desktop ($1440\text{px}$) và Ultra-Wide | Không vỡ layout, không tràn ngang, fit $100\text{vh}$ |
 
 ---
 
 ## 🔐 5. Tiêu Chuẩn Bảo Mật & Phân Quyền Doanh Nghiệp (Enterprise RBAC)
 
-1. **Phân Quyền Vai Trò (Role-Based Access Control - RBAC)**:
-   - `super_admin`: Toàn quyền quản trị, thêm bớt tài khoản, xem toàn bộ Audit Logs.
-   - `researcher` / `guest`: Chỉ truy cập vào không gian nghiên cứu và tài liệu của mình.
+1. **Phân Quyền Theo Vai Trò (Role-Based Access Control - RBAC)**:
+   - Tách biệt rõ ràng quyền hạn giữa Quản trị viên (`super_admin`), Chuyên viên (`researcher`), và Khách (`guest`).
 2. **Cơ Chế Bắt Buộc Đổi Mật Khẩu Lần Đầu (`must_change_password`)**:
-   - Mọi tài khoản mới tạo với mật khẩu tạm bắt buộc phải đổi mật khẩu ngay trong lần đăng nhập đầu tiên trước khi được phép vào ứng dụng.
-3. **Nhật Ký Kiểm Toán Bất Biến (Immutable Audit Logs)**:
-   - Mọi thao tác: Đăng nhập, Đổi mật khẩu, Yêu cầu Token khôi phục, Thêm người dùng đều được ghi lại vào bảng `audit_logs` với `timestamp`, `email`, `action_type`, `details` để truy vết khi có sự cố.
+   - Tài khoản cấp mới với mật khẩu tạm phải bị chặn truy cập nghiệp vụ cho đến khi hoàn tất đổi mật khẩu an toàn.
+3. **Nhật Ký Kiểm Toán Bất Biến (Immutable Audit Logging)**:
+   - Ghi nhận mọi hành vi trọng yếu (Đăng nhập, Thay đổi cấu hình, Xuất dữ liệu, Phục hồi mật khẩu) kèm thời gian thực và định danh người dùng.
 
 ---
 
-## 🛠️ 6. Checklist Vàng Cho Kỹ Sư Khi Phát Triển Tính Năng Mới
+## 🛠️ 6. Checklist Vàng Cho Kỹ Sư Phần Mềm (Pre-Commit Golden Checklist)
 
-- [ ] **Bước 1**: Đọc kỹ yêu cầu và khảo sát toàn bộ các file liên quan trước khi chỉnh sửa.
-- [ ] **Bước 2**: Xác định các hàm/biến sẽ bị ảnh hưởng, đảm bảo không thay đổi chữ ký hàm cũ trừ khi có giá trị mặc định.
-- [ ] **Bước 3**: Viết mã mới tỉ mỉ, xử lý đầy đủ các trường hợp ngoại lệ (`try...except`).
-- [ ] **Bước 4**: Kiểm tra cú pháp bytecode: `python -m py_compile <file_names>`.
-- [ ] **Bước 5**: Chạy toàn bộ 100% các file test script hiện có.
-- [ ] **Bước 6**: Viết thêm test script kiểm thử riêng cho tính năng mới vừa tạo.
-- [ ] **Bước 7**: Cập nhật tài liệu kỹ thuật / Walkthrough và commit Git với thông điệp chuẩn hóa.
+Trước khi xác nhận hoàn thành bất kỳ nhiệm vụ nào:
+- [ ] **1. Rà soát tương thích ngược**: Không sửa/xóa chữ ký hàm cũ, không xóa trường dữ liệu cũ.
+- [ ] **2. Kiểm tra chuỗi thoát ký**: Đảm bảo toàn bộ dấu `{`, `}` trong mã nhúng đã được thoát ký chính xác.
+- [ ] **3. Kiểm tra cú pháp toàn diện**: Chạy trình biên dịch bytecode cho 100% file mã nguồn.
+- [ ] **4. Chạy lại 100% bộ Test Suites**: Đảm bảo tất cả các bài kiểm thử cũ và mới đều đạt điểm xanh (All Passed).
+- [ ] **5. Kiểm tra trải nghiệm thực tế**: Thử nghiệm trên màn hình nhỏ (Mobile) và màn hình lớn (Desktop).
+- [ ] **6. Cập nhật tài liệu kỹ thuật**: Ghi chú rõ các thay đổi và gắn nhãn commit chuẩn mực.
