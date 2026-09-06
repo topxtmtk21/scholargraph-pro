@@ -1,0 +1,33 @@
+# Python Cache & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.env
+.env
+venv/
+.venv/
+env/
+
+# Streamlit Local Secrets (DO NOT COMMIT)
+.streamlit/secrets.toml
+
+# Local User Downloads & Cache
+output/
+artifacts/
+temp/
+scratch/
+downloaded_papers/
+*.zip
+*.pptx
+*.docx
+plan_extracted.txt
+Plan_11.docx
+
+# Local SQLite databases
+data/*.db
+data/temp_*.json
+
+# OS Specific
+.DS_Store
+Thumbs.db
+Desktop.ini
