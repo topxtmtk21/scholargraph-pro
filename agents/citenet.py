@@ -1397,8 +1397,79 @@ class CiteNetAgent:
             background: rgba(var(--theme-glow-rgb), 0.12);
         }}
 
+        /* PAGINATION CONTROLS IN RELATED PAPERS TABLE */
+        .pagination-bar {{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 5px 10px;
+            background: rgba(0, 0, 0, 0.35);
+            border-top: 1px solid rgba(var(--theme-glow-rgb), 0.18);
+            border-radius: 0 0 10px 10px;
+            font-size: 11px;
+            color: var(--theme-text-dim);
+        }}
+        .pagination-btn {{
+            background: var(--theme-panel-bg);
+            border: 1px solid var(--theme-panel-border);
+            color: var(--theme-text-main);
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 10.5px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }}
+        .pagination-btn:hover:not(:disabled) {{
+            border-color: var(--theme-accent);
+            color: #FFFFFF;
+            box-shadow: 0 0 10px rgba(var(--theme-glow-rgb), 0.3);
+        }}
+        .pagination-btn:disabled {{
+            opacity: 0.35;
+            cursor: not-allowed;
+        }}
+
+        /* MOBILE ACTION DRAWER MODAL */
+        .mobile-only-btn {{
+            display: none;
+        }}
+        #mobileActionDrawer {{
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(4, 9, 20, 0.88);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 999999;
+            align-items: flex-end;
+            justify-content: center;
+        }}
+        .mobile-drawer-sheet {{
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            background: var(--theme-panel-bg);
+            border-top: 2px solid var(--theme-accent);
+            border-radius: 20px 20px 0 0;
+            padding: 16px 18px 24px 18px;
+            box-shadow: 0 -8px 32px rgba(0,0,0,0.8), 0 0 20px rgba(var(--theme-glow-rgb), 0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }}
+
         /* RESPONSIVE ON MOBILE & TABLET */
         @media (max-width: 900px) {{
+            .mobile-only-btn {{
+                display: inline-flex;
+            }}
+            .desktop-only-btn {{
+                display: none !important;
+            }}
             .synapse-bottom-deck {{
                 grid-template-columns: 1fr;
                 height: auto;
@@ -1424,11 +1495,11 @@ class CiteNetAgent:
                 font-size: 13px;
             }}
             .graph-top-tools {{
-                max-width: calc(100% - 20px);
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
+                max-width: calc(100% - 16px);
                 padding: 3px 6px;
                 gap: 4px;
+                right: 8px;
+                top: 8px;
             }}
             .hud-hover-inspector, .edge-epistemic-inspector {{
                 left: 10px !important;
@@ -1440,14 +1511,100 @@ class CiteNetAgent:
             }}
         }}
 
-        @media (max-width: 600px) {{
-            #synapse-hud-deck {{
-                padding: 6px;
-                gap: 6px;
+        .mobile-only-btn {{
+            display: none !important;
+        }}
+        @media (max-width: 900px) {{
+            .mobile-only-btn {{
+                display: inline-flex !important;
             }}
-            .synapse-middle-deck {{
-                gap: 6px;
+            .desktop-only-btn {{
+                display: none !important;
             }}
+        }}
+        /* MOBILE ACTION DRAWER MODAL */
+        .mobile-action-modal {{
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 999999;
+            align-items: flex-end;
+            justify-content: center;
+        }}
+        .mobile-action-content {{
+            background: #0F172A;
+            border: 1.5px solid var(--theme-accent);
+            border-bottom: none;
+            border-radius: 20px 20px 0 0;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 16px;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-sizing: border-box;
+        }}
+        .mobile-section-title {{
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--theme-accent);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 4px;
+            margin-top: 4px;
+        }}
+        /* TABLE PAGINATION BAR */
+        .table-pagination-bar {{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: rgba(0, 0, 0, 0.35);
+            border-top: 1px solid var(--theme-panel-border);
+            border-radius: 0 0 10px 10px;
+            font-size: 11px;
+            flex-wrap: wrap;
+            gap: 6px;
+        }}
+        .pagination-btns-group {{
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }}
+        .page-btn {{
+            background: var(--theme-panel-bg);
+            border: 1px solid var(--theme-panel-border);
+            color: var(--theme-text-main);
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }}
+        .page-btn:hover {{
+            border-color: var(--theme-accent);
+            color: #FFFFFF;
+        }}
+        .page-btn.active {{
+            background: var(--theme-accent);
+            border-color: var(--theme-accent);
+            color: #040914;
+            font-weight: 800;
+        }}
+        .page-btn:disabled {{
+            opacity: 0.35;
+            cursor: not-allowed;
+            border-color: rgba(255,255,255,0.1);
         }}
     </style>
 </head>
@@ -1653,16 +1810,19 @@ class CiteNetAgent:
 
             <!-- TOP RIGHT MINI CONTROLS (TÌM KIẾM, LỌC TẦNG KẾT HỢP & BỐ CỤC) -->
             <div class="graph-top-tools">
+                <!-- Nút Menu toàn diện dành riêng cho phiên bản di động -->
+                <button type="button" class="hud-mini-btn mobile-only-btn" onclick="toggleMobileMenuDrawer()" title="Mở danh mục điều khiển phiên bản di động" style="background:var(--theme-accent); color:#040914; font-weight:800;">📱 Menu</button>
+
                 <input type="text" id="nodeSearchInput" placeholder="🔍 Tìm DOI, tác giả, năm..." oninput="searchAndFocusNode(this.value)" style="background:rgba(0,0,0,0.45); border:1px solid var(--theme-panel-border); color:#FFFFFF; border-radius:8px; padding:4px 9px; font-size:11px; outline:none; width:135px;" title="Tìm kiếm thông minh theo DOI, Tác giả viết tắt/đầy đủ, Năm (ví dụ: 2024, >2020), Tên bài báo, Từ khóa...">
                 
-                <!-- BỘ LỌC TẦNG BẰNG TÍNH NĂNG CHECKBOX LINH HOẠT & NHANH -->
-                <button type="button" id="layerFilterToggleBtn" class="hud-mini-btn active" onclick="toggleLayerFilterPopover()" title="Chọn hiển thị từng tầng theo ý muốn bằng Checkbox (F0 / R1-R3 / F1-F3 / Độc lập)">📑 Chọn Tầng (Check) ▾</button>
+                <!-- BỘ LỌC TẦNG BẰNG TÍNH NĂNG CHECKBOX LINH HOẠT & NHANH (DESKTOP) -->
+                <button type="button" id="layerFilterToggleBtn" class="hud-mini-btn active desktop-only-btn" onclick="toggleLayerFilterPopover()" title="Chọn hiển thị từng tầng theo ý muốn bằng hộp kiểm (F0 / R1-R3 / F1-F3 / Độc lập)">📑 Chọn tầng (Check) ▾</button>
 
                 <!-- POPOVER CHỌN TẦNG CHECKBOX THÔNG MINH (2 CỘT GỌN GÀNG, NGĂN NẮP) -->
                 <div id="layerFilterPopover" onclick="event.stopPropagation();" style="display:none; position:absolute; top:46px; right:8px; z-index:99999; background:rgba(15, 23, 42, 0.98); border:1.5px solid var(--theme-accent); border-radius:12px; padding:9px 12px; box-shadow:0 12px 36px rgba(0,0,0,0.8), 0 0 15px rgba(var(--theme-glow-rgb),0.25); width:320px; max-width:92vw; backdrop-filter:blur(16px); text-align:left;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:4px;">
                         <div style="display:flex; align-items:center; gap:6px;">
-                            <span style="font-size:11px; font-weight:800; color:var(--theme-accent); text-transform:uppercase;">📑 Lọc Phân Tầng</span>
+                            <span style="font-size:11px; font-weight:800; color:var(--theme-accent); text-transform:uppercase;">📑 Lọc phân tầng</span>
                             <span id="layerFilterCountBadge" style="font-size:9.5px; background:rgba(56,189,248,0.2); color:#38BDF8; padding:1px 5px; border-radius:4px; font-weight:700;">{len(vis_nodes)}/{len(vis_nodes)} bài</span>
                         </div>
                         <button type="button" onclick="toggleLayerFilterPopover()" style="background:transparent; border:none; color:var(--theme-text-dim); font-size:13px; cursor:pointer; padding:0 3px; line-height:1;" title="Đóng menu">✕</button>
@@ -1679,14 +1839,14 @@ class CiteNetAgent:
                     <!-- Ghim bài gốc F0 -->
                     <label style="display:flex; align-items:center; gap:6px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); border-radius:6px; padding:3px 7px; margin-bottom:6px; color:#F8FAFC; cursor:pointer; font-size:10px; font-weight:700;">
                         <input type="checkbox" id="chk_pin_f0" checked onchange="applyGraphFilters()" style="accent-color:var(--theme-accent); cursor:pointer;">
-                        <span>🔒 Ghim bài gốc F0 (Anchor Pinning)</span>
+                        <span>🔒 Ghim bài gốc F0 (Anchor pinning)</span>
                     </label>
 
                     <!-- 2 Cột Đối Xứng: Chiều Kế Thừa & Chiều Cội Nguồn -->
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
                         <!-- Cột Trái: Kế Thừa -->
                         <div style="display:flex; flex-direction:column; gap:3px; background:rgba(0,0,0,0.3); padding:5px; border-radius:6px; border:1px solid rgba(56,189,248,0.15);">
-                            <div style="font-size:8.5px; font-weight:800; color:#38BDF8; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px; border-bottom:1px solid rgba(56,189,248,0.2); padding-bottom:2px;">🚀 Chiều Kế Thừa</div>
+                            <div style="font-size:8.5px; font-weight:800; color:#38BDF8; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px; border-bottom:1px solid rgba(56,189,248,0.2); padding-bottom:2px;">🚀 Chiều kế thừa</div>
                             
                             <label style="display:flex; align-items:center; gap:4px; color:#FDE047; cursor:pointer; font-size:9.5px; padding:1px 3px; border-radius:4px;">
                                 <input type="checkbox" id="chk_layer_f0" checked onchange="applyGraphFilters()" style="accent-color:#FDE047; cursor:pointer;">
@@ -1708,7 +1868,7 @@ class CiteNetAgent:
 
                         <!-- Cột Phải: Cội Nguồn & Khác -->
                         <div style="display:flex; flex-direction:column; gap:3px; background:rgba(0,0,0,0.3); padding:5px; border-radius:6px; border:1px solid rgba(192,132,252,0.15);">
-                            <div style="font-size:8.5px; font-weight:800; color:#C084FC; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px; border-bottom:1px solid rgba(192,132,252,0.2); padding-bottom:2px;">🏛️ Chiều Cội Nguồn</div>
+                            <div style="font-size:8.5px; font-weight:800; color:#C084FC; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px; border-bottom:1px solid rgba(192,132,252,0.2); padding-bottom:2px;">🏛️ Chiều cội nguồn</div>
                             
                             <label style="display:flex; align-items:center; gap:4px; color:#A78BFA; cursor:pointer; font-size:9.5px; padding:1px 3px; border-radius:4px;">
                                 <input type="checkbox" id="chk_layer_r1" checked onchange="applyGraphFilters()" style="accent-color:#A78BFA; cursor:pointer;">
@@ -1730,18 +1890,18 @@ class CiteNetAgent:
                     </div>
                 </div>
 
-                <!-- BỘ LỌC MŨI TÊN KẾT NỐI -->
-                <select id="edgeFilter" onchange="applyGraphFilters()" style="background:var(--theme-panel-bg); border:1px solid var(--theme-panel-border); color:var(--theme-text-main); border-radius:8px; padding:4px 6px; font-size:11px; font-weight:600; outline:none; cursor:pointer;" title="Lọc loại liên kết mũi tên">
+                <!-- BỘ LỌC MŨI TÊN KẾT NỐI (DESKTOP) -->
+                <select id="edgeFilter" class="desktop-only-btn" onchange="applyGraphFilters()" style="background:var(--theme-panel-bg); border:1px solid var(--theme-panel-border); color:var(--theme-text-main); border-radius:8px; padding:4px 6px; font-size:11px; font-weight:600; outline:none; cursor:pointer;" title="Lọc loại liên kết mũi tên">
                     <option value="all">⚡ Tất cả mũi tên</option>
-                    <option value="direct">🔷 Kế thừa 1 chiều</option>
-                    <option value="mutual">🔶 Đối thoại 2 chiều</option>
+                    <option value="direct">🔷 Kế thừa một chiều</option>
+                    <option value="mutual">🔶 Đối thoại hai chiều</option>
                     <option value="cross_bridge">🔮 Bắc cầu xuyên tầng</option>
                     <option value="intra_layer">🟢 Cùng phân tầng</option>
                 </select>
 
-                <!-- BỘ CHỌN 10 BỐ CỤC HỌC THUẬT -->
-                <select id="layoutSelector" onchange="switchLayoutMode(this.value)" style="background:var(--theme-panel-bg); border:1px solid var(--theme-panel-border); color:var(--theme-accent); border-radius:8px; padding:4px 6px; font-size:11px; font-weight:700; outline:none; cursor:pointer;" title="Chọn 1 trong 10 Chế độ Bố Cục Học Thuật">
-                    <option value="force" selected>1. 🕸️ Force-Directed Quantum (Mặc Định)</option>
+                <!-- BỘ CHỌN 10 BỐ CỤC HỌC THUẬT (DESKTOP) -->
+                <select id="layoutSelector" class="desktop-only-btn" onchange="switchLayoutMode(this.value)" style="background:var(--theme-panel-bg); border:1px solid var(--theme-panel-border); color:var(--theme-accent); border-radius:8px; padding:4px 6px; font-size:11px; font-weight:700; outline:none; cursor:pointer;" title="Chọn 1 trong 10 chế độ bố cục học thuật">
+                    <option value="force" selected>1. 🕸️ Force-Directed Quantum (Mặc định)</option>
                     <option value="timeline">2. ⏳ Linear Timeline (HistCite)</option>
                     <option value="radar">3. 📡 Concentric Radar Timeline</option>
                     <option value="fishbone">4. 🐟 Ishikawa Fishbone Diagram</option>
@@ -1753,24 +1913,109 @@ class CiteNetAgent:
                     <option value="fanchart">10. 🪭 Ancestry Fan Chart</option>
                 </select>
 
-                <!-- THANH TRƯỢT ĐIỀU TỐC PHOTON, MŨI TÊN NHÂN QUẢ & TIA SÁNG HOVER -->
-                <div class="speed-control-cluster" title="Điều chỉnh tốc độ di chuyển Mũi tên Nhân quả, Hạt Photon & Tia sáng kết nối (0x: Đứng yên -> 3x: Nhanh tối đa)">
+                <!-- THANH TRƯỢT ĐIỀU TỐC PHOTON, MŨI TÊN NHÂN QUẢ & TIA SÁNG HOVER (DESKTOP) -->
+                <div class="speed-control-cluster desktop-only-btn" title="Điều chỉnh tốc độ di chuyển mũi tên nhân quả, hạt photon & tia sáng kết nối (0x: Đứng yên -> 3x: Nhanh tối đa)">
                     <span style="font-size:10.5px; font-weight:700; color:var(--theme-accent);">⚡ Tốc độ:</span>
                     <input type="range" id="photonSpeedSlider" class="speed-slider-input" min="0" max="3" step="0.2" value="1.0" oninput="setPhotonSpeed(this.value)">
                     <span id="photonSpeedVal" style="font-size:10.5px; font-family:'JetBrains Mono', monospace; font-weight:700; color:#FDE047; min-width:24px;">1.0x</span>
                 </div>
 
-                <button class="hud-mini-btn active" id="labelModeBtn" onclick="cycleLabelMode()" title="Chuyển chế độ nhãn (Gọn / Đầy Đủ / Ẩn)">🏷️ Nhãn: Gọn</button>
-                <button class="hud-mini-btn active" id="arrowMotionBtn" onclick="toggleArrowMotion()" title="Bật/Tắt Mũi tên Nhân quả Chuyển động (Causal Directional Flow)">🏹 Mũi Tên Động</button>
-                <button class="hud-mini-btn active" id="particlesBtn" onclick="toggleParticles()" title="Bật/Tắt Dòng Hạt Photon di chuyển">✨ Hạt Photon</button>
-                <button class="hud-mini-btn active" id="laserBtn" onclick="toggleLaserBeam()" title="Bật/Tắt Tia Laser Neon & Đường kết nối khi chọn/hover">⚡ Tia Laser</button>
-                <button class="hud-mini-btn active" id="pulseBtn" onclick="togglePulseGlow()" title="Bật/Tắt Hào Quang Nhịp Thở Node">💓 Nhịp Thở</button>
-                <button class="hud-mini-btn active" id="lineageBtn" onclick="toggleLineageMode()" title="Bật/Tắt Chế độ Truy Vết Phả Hệ">🧬 Truy Vết</button>
-                <button class="hud-mini-btn" id="timeplayBtn" onclick="toggleTimelinePlayback()" title="Tua Lịch Sử Phát Triển Theo Năm">⏯️ Tua Năm</button>
+                <button class="hud-mini-btn active desktop-only-btn" id="labelModeBtn" onclick="cycleLabelMode()" title="Chuyển chế độ nhãn (Gọn / Đầy đủ / Ẩn)">🏷️ Nhãn: Gọn</button>
+                <button class="hud-mini-btn active desktop-only-btn" id="arrowMotionBtn" onclick="toggleArrowMotion()" title="Bật/Tắt mũi tên nhân quả chuyển động (Causal Directional Flow)">🏹 Mũi tên động</button>
+                <button class="hud-mini-btn active desktop-only-btn" id="particlesBtn" onclick="toggleParticles()" title="Bật/Tắt dòng hạt photon di chuyển">✨ Hạt photon</button>
+                <button class="hud-mini-btn active desktop-only-btn" id="laserBtn" onclick="toggleLaserBeam()" title="Bật/Tắt tia laser neon & đường kết nối khi chọn/hover">⚡ Tia laser</button>
+                <button class="hud-mini-btn active desktop-only-btn" id="pulseBtn" onclick="togglePulseGlow()" title="Bật/Tắt hào quang nhịp thở node">💓 Nhịp thở</button>
+                <button class="hud-mini-btn active desktop-only-btn" id="lineageBtn" onclick="toggleLineageMode()" title="Bật/Tắt chế độ truy vết phả hệ">🧬 Truy vết</button>
+                <button class="hud-mini-btn desktop-only-btn" id="timeplayBtn" onclick="toggleTimelinePlayback()" title="Tua lịch sử phát triển theo năm">⏯️ Tua năm</button>
                 <button class="hud-mini-btn" onclick="zoomIn()" title="Phóng to">🔍+</button>
                 <button class="hud-mini-btn" onclick="zoomOut()" title="Thu nhỏ">🔍-</button>
-                <button class="hud-mini-btn" onclick="openDedicatedViewport()" title="Mở Màn hình phụ độc lập (Cửa sổ mới ↗)">🌐 Cửa Sổ Mới ↗</button>
-                <button class="hud-mini-btn" onclick="toggleFullScreen()" title="Toàn màn hình">⛶</button>
+                <button class="hud-mini-btn desktop-only-btn" onclick="openDedicatedViewport()" title="Mở màn hình phụ độc lập (Cửa sổ mới ↗)">🌐 Cửa sổ mới ↗</button>
+                <button class="hud-mini-btn desktop-only-btn" onclick="toggleFullScreen()" title="Toàn màn hình">⛶</button>
+            </div>
+
+            <!-- MODAL BẢNG ĐIỀU KHIỂN ĐẦY ĐỦ CHO PHIÊN BẢN DI ĐỘNG (MOBILE ACTION DRAWER) -->
+            <div id="mobileActionDrawer" class="mobile-action-modal" onclick="if(event.target === this) toggleMobileMenuDrawer();">
+                <div class="mobile-action-content">
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.15); padding-bottom:8px;">
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <span style="font-size:16px;">📱</span>
+                            <span style="font-size:13px; font-weight:800; color:var(--theme-accent); text-transform:uppercase;">Danh mục điều khiển di động</span>
+                        </div>
+                        <button type="button" onclick="toggleMobileMenuDrawer()" style="background:transparent; border:none; color:#FFFFFF; font-size:16px; cursor:pointer; padding:2px 8px;">✕</button>
+                    </div>
+
+                    <!-- 1. BỐ CỤC HỌC THUẬT -->
+                    <div class="mobile-section-title">📐 10 Chế độ bố cục học thuật</div>
+                    <select id="mobileLayoutSelector" onchange="switchLayoutMode(this.value); syncMobileControls();" style="width:100%; background:#1E293B; border:1px solid var(--theme-accent); color:var(--theme-accent); border-radius:8px; padding:7px 10px; font-size:12px; font-weight:700; outline:none;">
+                        <option value="force">1. 🕸️ Force-Directed Quantum (Mặc định)</option>
+                        <option value="timeline">2. ⏳ Linear Timeline (HistCite)</option>
+                        <option value="radar">3. 📡 Concentric Radar Timeline</option>
+                        <option value="fishbone">4. 🐟 Ishikawa Fishbone Diagram</option>
+                        <option value="dendrogram">5. 🌿 Dendrogram Branching Tree</option>
+                        <option value="hierarchical">6. 🌳 CiteSpace DAG Tree</option>
+                        <option value="matrix">7. ▦ Clustered Topic Matrix</option>
+                        <option value="quartile">8. 📊 Scopus Quartile Lanes</option>
+                        <option value="diamond">9. 💎 Dual-Diamond Horizon</option>
+                        <option value="fanchart">10. 🪭 Ancestry Fan Chart</option>
+                    </select>
+
+                    <!-- 2. GIAO DIỆN & MÀU SẮC -->
+                    <div class="mobile-section-title">🎨 10 Mẫu giao diện & độ tương phản</div>
+                    <select id="mobileThemeSelector" onchange="changeThemeDirectly(this.value); syncMobileControls();" style="width:100%; background:#1E293B; border:1px solid var(--theme-panel-border); color:#FFFFFF; border-radius:8px; padding:7px 10px; font-size:12px; font-weight:600; outline:none;">
+                        <option value="theme-synapse-cyan">1. Synapse Cyan</option>
+                        <option value="theme-emerald-matrix">2. Matrix Cyber Green</option>
+                        <option value="theme-monochrome-classic">3. Monochrome Đen-Trắng</option>
+                        <option value="theme-nebula-violet">4. Nebula Violet</option>
+                        <option value="theme-solar-amber">5. Solar Amber</option>
+                        <option value="theme-deep-ocean">6. Deep Ocean</option>
+                        <option value="theme-crimson-ruby">7. Crimson Ruby</option>
+                        <option value="theme-nordic-frost">8. Nordic Frost</option>
+                        <option value="theme-vintage-parchment">9. Vintage Parchment</option>
+                        <option value="theme-neon-gold">10. Neon Gold</option>
+                    </select>
+
+                    <!-- 3. TỐC ĐỘ DI CHUYỂN -->
+                    <div class="mobile-section-title">⚡ Tốc độ hạt photon & mũi tên nhân quả</div>
+                    <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1);">
+                        <span style="font-size:12px; color:var(--theme-text-main);">Tốc độ hiện tại:</span>
+                        <input type="range" id="mobilePhotonSpeedSlider" min="0" max="3" step="0.2" value="1.0" oninput="setPhotonSpeed(this.value); syncMobileControls();" style="flex:1; margin:0 12px; accent-color:var(--theme-accent);">
+                        <span id="mobilePhotonSpeedVal" style="font-size:12px; font-family:'JetBrains Mono', monospace; font-weight:800; color:#FDE047;">1.0x</span>
+                    </div>
+
+                    <!-- 4. LỌC PHÂN TẦNG (CHECKBOX) -->
+                    <div class="mobile-section-title">📑 Lọc phân tầng tri thức</div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
+                        <div style="background:rgba(0,0,0,0.3); padding:8px; border-radius:8px; border:1px solid rgba(56,189,248,0.2);">
+                            <div style="font-size:9.5px; font-weight:800; color:#38BDF8; margin-bottom:4px;">🚀 CHIỀU KẾ THỪA</div>
+                            <label style="display:flex; align-items:center; gap:4px; font-size:10px; color:#FDE047; margin-bottom:3px;"><input type="checkbox" id="m_chk_f0" checked onchange="syncMobileCheckbox('chk_layer_f0', this.checked)">★ F0: Bài gốc</label>
+                            <label style="display:flex; align-items:center; gap:4px; font-size:10px; color:#38BDF8; margin-bottom:3px;"><input type="checkbox" id="m_chk_f1" checked onchange="syncMobileCheckbox('chk_layer_f1', this.checked)">🚀 F1: Trực tiếp</label>
+                            <label style="display:flex; align-items:center; gap:4px; font-size:10px; color:#60A5FA; margin-bottom:3px;"><input type="checkbox" id="m_chk_f2" checked onchange="syncMobileCheckbox('chk_layer_f2', this.checked)">🚀 F2: Thế hệ 2</label>
+                            <label style="display:flex; align-items:center; gap:4px; font-size:10px; color:#93C5FD;"><input type="checkbox" id="m_chk_f3" checked onchange="syncMobileCheckbox('chk_layer_f3', this.checked)">🚀 F3: Mở rộng</label>
+                        </div>
+                        <div style="background:rgba(0,0,0,0.3); padding:8px; border-radius:8px; border:1px solid rgba(192,132,252,0.2);">
+                            <div style="font-size:9.5px; font-weight:800; color:#C084FC; margin-bottom:4px;">🏛️ CHIỀU CỘI NGUỒN</div>
+                            <label style="display:flex; align-items:center; gap:4px; font-size:10px; color:#A78BFA; margin-bottom:3px;"><input type="checkbox" id="m_chk_r1" checked onchange="syncMobileCheckbox('chk_layer_r1', this.checked)">🏛️ R1: Nền tảng 1</label>
+                            <label style="display:flex; align-items:center; gap:4px; color:#C084FC; margin-bottom:3px;"><input type="checkbox" id="m_chk_r2" checked onchange="syncMobileCheckbox('chk_layer_r2', this.checked)">🏛️ R2: Cội nguồn 2</label>
+                            <label style="display:flex; align-items:center; gap:4px; color:#E879F9; margin-bottom:3px;"><input type="checkbox" id="m_chk_r3" checked onchange="syncMobileCheckbox('chk_layer_r3', this.checked)">🏛️ R3: Kinh điển 3</label>
+                            <label style="display:flex; align-items:center; gap:4px; color:#94A3B8;"><input type="checkbox" id="m_chk_iso" checked onchange="syncMobileCheckbox('chk_layer_isolated', this.checked)">⚡ Bài độc lập</label>
+                        </div>
+                    </div>
+
+                    <!-- 5. BẬT / TẮT HIỆU ỨNG ĐỒNG BỘ -->
+                    <div class="mobile-section-title">✨ Hiệu ứng động học & tương tác</div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
+                        <button type="button" class="page-btn active" onclick="toggleArrowMotion()">🏹 Mũi tên động</button>
+                        <button type="button" class="page-btn active" onclick="toggleParticles()">✨ Hạt photon</button>
+                        <button type="button" class="page-btn active" onclick="toggleLaserBeam()">⚡ Tia laser</button>
+                        <button type="button" class="page-btn active" onclick="togglePulseGlow()">💓 Nhịp thở</button>
+                        <button type="button" class="page-btn" onclick="cycleLabelMode()">🏷️ Đổi nhãn</button>
+                        <button type="button" class="page-btn" onclick="toggleLineageMode()">🧬 Truy vết phả hệ</button>
+                        <button type="button" class="page-btn" onclick="fitView(); toggleMobileMenuDrawer();">🎯 Căn giữa màn hình</button>
+                        <button type="button" class="page-btn" onclick="toggleLegendDrawer(); toggleMobileMenuDrawer();">📖 Xem hướng dẫn</button>
+                    </div>
+
+                    <button type="button" onclick="toggleMobileMenuDrawer()" style="margin-top:8px; background:var(--theme-accent); color:#040914; border:none; border-radius:10px; padding:10px; font-size:13px; font-weight:800; cursor:pointer;">✓ Hoàn tất & Quay lại đồ thị</button>
+                </div>
             </div>
 
             <!-- TIMELINE PLAYBACK BAR (NỔI KHI BẬT) -->
@@ -1795,34 +2040,36 @@ class CiteNetAgent:
 
     <!-- 3. BOTTOM EXPANDABLE PANELS DECK -->
     <div class="synapse-bottom-deck">
-        <!-- PANEL 1: RELATED PAPERS MATRIX -->
+        <!-- PANEL 1: RELATED PAPERS MATRIX (PHÂN TRANG 20 KẾT QUẢ/TRANG) -->
         <div class="hud-panel-card">
             <div class="panel-card-header">
-                <span>📑 Related Papers Matrix ({len(vis_nodes)} works)</span>
-                <span style="font-size:10.5px; color:var(--theme-text-dim); text-transform:none;">Bấm dòng để focus ↗</span>
+                <span>📑 Ma trận bài báo liên quan ({len(vis_nodes)} công trình)</span>
+                <span style="font-size:10.5px; color:var(--theme-text-dim); text-transform:none;">Bấm dòng để xem chi tiết ↗</span>
             </div>
-            <div class="panel-card-body" id="relatedPapersTableContainer">
+            <div class="panel-card-body" id="relatedPapersTableContainer" style="display:flex; flex-direction:column; justify-content:space-between;">
                 <table class="related-table">
                     <thead>
                         <tr>
-                            <th>Author & Work</th>
-                            <th>Year</th>
-                            <th>Journal / Venue</th>
-                            <th>Cites</th>
-                            <th>AI Relevance</th>
+                            <th>Tác giả & Tên bài báo</th>
+                            <th>Năm</th>
+                            <th>Tạp chí / Nguồn</th>
+                            <th>Trích dẫn</th>
+                            <th>Độ tương đồng</th>
                         </tr>
                     </thead>
                     <tbody id="relatedPapersTbody">
                         <!-- Rendered by JS -->
                     </tbody>
                 </table>
+                <!-- BĂNG ĐIỀU KHIỂN PHÂN TRANG (20 KẾT QUẢ / TRANG) -->
+                <div id="tablePaginationContainer" class="table-pagination-bar"></div>
             </div>
         </div>
 
         <!-- PANEL 2: SELECTED PAPER DETAILS & CO-CITATION -->
         <div class="hud-panel-card">
             <div class="panel-card-header">
-                <span>📄 Selected Paper Details & Co-Citation Path</span>
+                <span>📄 Chi tiết bài báo đã chọn và đường dẫn đồng trích dẫn</span>
                 <div id="selectedPaperActionBtns" style="display:flex; gap:6px;">
                     <!-- Action Links Rendered by JS -->
                 </div>
@@ -1831,14 +2078,14 @@ class CiteNetAgent:
                 <div class="details-grid">
                     <!-- LEFT PANE: TITLE & ABSTRACT -->
                     <div class="detail-abstract-pane">
-                        <div id="selTitle" style="font-size:12.5px; font-weight:700; color:#FFFFFF; line-height:1.4;">Vui lòng chọn 1 bài báo trên đồ thị hoặc bảng bên trái</div>
+                        <div id="selTitle" style="font-size:12.5px; font-weight:700; color:#FFFFFF; line-height:1.4;">Vui lòng chọn một bài báo trên đồ thị hoặc bảng bên trái</div>
                         <div id="selMeta" style="font-size:11px; color:var(--theme-text-dim);"></div>
                         <div id="selAbstract" style="font-size:11px; color:var(--theme-text-main); line-height:1.55; max-height:85px; overflow-y:auto; background:rgba(0,0,0,0.2); padding:6px 8px; border-radius:6px; border:1px solid rgba(255,255,255,0.05);"></div>
                     </div>
 
                     <!-- RIGHT PANE: CO-CITATION PATH & LINEAGE -->
                     <div class="detail-cocitation-pane">
-                        <div style="font-size:10.5px; font-weight:800; color:var(--theme-accent); text-transform:uppercase; letter-spacing:0.04em;">🧬 AI Co-Citation Path:</div>
+                        <div style="font-size:10.5px; font-weight:800; color:var(--theme-accent); text-transform:uppercase; letter-spacing:0.04em;">🧬 Đường dẫn đồng trích dẫn:</div>
                         <div id="selLineageList" style="display:flex; flex-direction:column; gap:4px; overflow-y:auto; max-height:110px;">
                             <div style="color:var(--theme-text-dim); font-size:10.5px; font-style:italic;">Chưa chọn bài báo.</div>
                         </div>
@@ -2059,26 +2306,41 @@ class CiteNetAgent:
     setInterval(updateClock, 1000);
     updateClock();
 
-    // Populate Related Papers Table
-    function renderRelatedPapersTable() {{
+    // Phân trang danh sách bài báo liên quan (20 kết quả / trang)
+    var currentTablePage = 1;
+    var tablePageSize = 20;
+
+    function renderRelatedPapersTable(targetPage) {{
+        if (targetPage) currentTablePage = targetPage;
         var tbody = document.getElementById('relatedPapersTbody');
+        var pagContainer = document.getElementById('tablePaginationContainer');
         if (!tbody) return;
-        var html = '';
+
+        var totalItems = rawNodes.length;
+        var totalPages = Math.ceil(totalItems / tablePageSize) || 1;
+        if (currentTablePage > totalPages) currentTablePage = totalPages;
+        if (currentTablePage < 1) currentTablePage = 1;
+
+        var startIdx = (currentTablePage - 1) * tablePageSize;
+        var endIdx = Math.min(startIdx + tablePageSize, totalItems);
+        var pageNodes = rawNodes.slice(startIdx, endIdx);
+
         var maxCites = 1;
         rawNodes.forEach(function(n) {{ if ((n.citations || 0) > maxCites) maxCites = n.citations; }});
 
-        rawNodes.forEach(function(n, idx) {{
+        var html = '';
+        pageNodes.forEach(function(n, idx) {{
             var p = metaDict[n.id] || {{}};
             var relPct = Math.min(99, Math.max(30, Math.round(35 + Math.log((n.citations || 1) + 1) / Math.log(maxCites + 2) * 60)));
             if (p.level === 0 || p.layer === 'seed') relPct = 99;
             
             var cleanT = (p.title || '').replace(/"/g, '');
-            var shortT = cleanT.length > 32 ? cleanT.substring(0, 32) + '...' : cleanT;
+            var shortT = cleanT.length > 36 ? cleanT.substring(0, 36) + '...' : cleanT;
             var shortV = (p.venue || 'Journal').length > 20 ? (p.venue || 'Journal').substring(0, 20) + '...' : (p.venue || 'Journal');
 
             html += '<tr class="related-row" id="rel_row_' + n.id + '" onclick="selectPaperFromTable(\\'' + n.id + '\\')">' +
-                '<td><b>' + p.first_author + '</b>: <span style="color:var(--theme-text-dim);">' + shortT + '</span></td>' +
-                '<td style="color:#FDE047;">' + p.year + '</td>' +
+                '<td><b>' + (p.first_author || 'Author') + '</b>: <span style="color:var(--theme-text-dim);">' + shortT + '</span></td>' +
+                '<td style="color:#FDE047;">' + (p.year || 'n.d.') + '</td>' +
                 '<td style="color:var(--theme-accent);">' + shortV + '</td>' +
                 '<td><b>' + (p.citation_count || 0) + '</b></td>' +
                 '<td>' +
@@ -2088,11 +2350,84 @@ class CiteNetAgent:
             '</tr>';
         }});
         tbody.innerHTML = html;
+
+        // Render Thanh phân trang (Pagination Bar)
+        if (pagContainer) {{
+            if (totalPages <= 1) {{
+                pagContainer.innerHTML = '<span style="color:var(--theme-text-dim);">Tổng cộng ' + totalItems + ' công trình</span><span style="color:var(--theme-accent); font-weight:700;">Trang 1 / 1</span>';
+            }} else {{
+                var pagHtml = '<div style="color:var(--theme-text-dim); font-size:10.5px;">Tổng cộng <b>' + totalItems + '</b> công trình (20 bài/trang)</div>';
+                pagHtml += '<div class="pagination-btns-group">';
+                pagHtml += '<button type="button" class="page-btn" onclick="renderRelatedPapersTable(1)" ' + (currentTablePage === 1 ? 'disabled' : '') + ' title="Trang đầu">⏮️</button>';
+                pagHtml += '<button type="button" class="page-btn" onclick="renderRelatedPapersTable(' + (currentTablePage - 1) + ')" ' + (currentTablePage === 1 ? 'disabled' : '') + ' title="Trang trước">◀</button>';
+                
+                for (var pIdx = 1; pIdx <= totalPages; pIdx++) {{
+                    if (pIdx === 1 || pIdx === totalPages || Math.abs(pIdx - currentTablePage) <= 1) {{
+                        pagHtml += '<button type="button" class="page-btn ' + (pIdx === currentTablePage ? 'active' : '') + '" onclick="renderRelatedPapersTable(' + pIdx + ')">' + pIdx + '</button>';
+                    }} else if (Math.abs(pIdx - currentTablePage) === 2) {{
+                        pagHtml += '<span style="color:var(--theme-text-dim); padding:0 2px;">...</span>';
+                    }}
+                }}
+
+                pagHtml += '<button type="button" class="page-btn" onclick="renderRelatedPapersTable(' + (currentTablePage + 1) + ')" ' + (currentTablePage === totalPages ? 'disabled' : '') + ' title="Trang sau">▶</button>';
+                pagHtml += '<button type="button" class="page-btn" onclick="renderRelatedPapersTable(' + totalPages + ')" ' + (currentTablePage === totalPages ? 'disabled' : '') + ' title="Trang cuối">⏭️</button>';
+                pagHtml += '</div>';
+                pagContainer.innerHTML = pagHtml;
+            }}
+        }}
+
+        if (hoveredNodeId) {{
+            var activeRow = document.getElementById('rel_row_' + hoveredNodeId);
+            if (activeRow) activeRow.classList.add('selected');
+        }}
     }}
-    renderRelatedPapersTable();
+    renderRelatedPapersTable(1);
+
+    // Bật/Tắt Mobile Action Drawer & Đồng bộ hóa
+    var isMobileDrawerOpen = false;
+    function toggleMobileMenuDrawer() {{
+        isMobileDrawerOpen = !isMobileDrawerOpen;
+        var drawer = document.getElementById('mobileActionDrawer');
+        if (drawer) {{
+            drawer.style.display = isMobileDrawerOpen ? 'flex' : 'none';
+        }}
+        if (isMobileDrawerOpen) syncMobileControls();
+    }}
+
+    function syncMobileControls() {{
+        var mLayout = document.getElementById('mobileLayoutSelector');
+        var dLayout = document.getElementById('layoutSelector');
+        if (mLayout && dLayout) mLayout.value = currentLayoutMode;
+
+        var mTheme = document.getElementById('mobileThemeSelector');
+        var dTheme = document.getElementById('themeSelector');
+        if (mTheme && dTheme) mTheme.value = dTheme.value;
+
+        var mSpeed = document.getElementById('mobilePhotonSpeedSlider');
+        var mSpeedVal = document.getElementById('mobilePhotonSpeedVal');
+        if (mSpeed) mSpeed.value = photonSpeedFactor;
+        if (mSpeedVal) mSpeedVal.innerText = (photonSpeedFactor === 0 ? '0x' : photonSpeedFactor.toFixed(1) + 'x');
+    }}
+
+    function syncMobileCheckbox(targetId, isChecked) {{
+        var chk = document.getElementById(targetId);
+        if (chk) {{
+            chk.checked = isChecked;
+            applyGraphFilters();
+        }}
+    }}
 
     // Select Paper from Table or Canvas or Dedicated View Cards
     function selectPaperFromTable(nodeId) {{
+        // Tự động chuyển đến đúng trang chứa bài báo nếu đang ở trang khác
+        var itemIdx = rawNodes.findIndex(function(n) {{ return n.id === nodeId; }});
+        if (itemIdx !== -1) {{
+            var targetPage = Math.floor(itemIdx / tablePageSize) + 1;
+            if (targetPage !== currentTablePage) {{
+                renderRelatedPapersTable(targetPage);
+            }}
+        }}
+
         var allRows = document.querySelectorAll('.related-row');
         allRows.forEach(function(r) {{ r.classList.remove('selected'); }});
         var activeRow = document.getElementById('rel_row_' + nodeId);

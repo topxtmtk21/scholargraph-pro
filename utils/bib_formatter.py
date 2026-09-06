@@ -359,16 +359,22 @@ def papers_to_dataframe(papers: List[Dict[str, Any]]) -> pd.DataFrame:
     records = []
     for p in papers:
         is_oa = p.get("is_oa", False) or bool(p.get("pdf_url"))
+        raw_doi = (p.get("doi") or "").strip()
+        doi_clean = raw_doi.replace("https://doi.org/", "").replace("http://dx.doi.org/", "").strip()
+        doi_hyperlink = f"https://doi.org/{doi_clean}" if doi_clean else (p.get("landing_url") or "")
+        pdf_direct_link = p.get("pdf_url") or (doi_hyperlink if is_oa else "")
+
         records.append({
             "Mã trích dẫn": p.get("citation_key", ""),
             "Trích dẫn chuẩn APA 7": format_apa7_reference(p),
             "Quyền truy cập": "🔓 Miễn phí (Open Access)" if is_oa else "🔒 Cần quyền (Paywall)",
-            "Tệp PDF": "Có sẵn (Miễn phí)" if p.get("pdf_url") else ("Truy cập mở" if is_oa else "Không"),
             "Tiêu đề bài báo": p.get("title", ""),
             "Tác giả chính": p.get("first_author", ""),
             "Năm": p.get("year", ""),
             "Tạp chí": p.get("venue", ""),
-            "Mã DOI": p.get("doi", ""),
+            "Mã DOI": doi_clean,
+            "Liên kết DOI (Truy cập)": doi_hyperlink,
+            "Liên kết PDF (Tải trực tiếp)": pdf_direct_link,
             "Lượt trích dẫn": p.get("citation_count", 0),
             "Thế hệ": f"Gen-{p.get('generation', 0)}",
             "Phân loại": p.get("study_type", "Nghiên cứu thực nghiệm"),

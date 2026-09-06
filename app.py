@@ -875,126 +875,123 @@ if "01." in workspace_nav:
     </div>
     """, unsafe_allow_html=True)
 
-    intro_tab1, intro_tab2, intro_tab3 = st.tabs([
-        "🌟 Giới thiệu & Không gian nghiên cứu",
-        "🚀 Hướng dẫn khởi tạo dự án",
-        "💡 Mẹo dành cho người mới bắt đầu"
+    # -------------------------------------------------------------------------
+    # BỘ TAB ĐIỀU HƯỚNG GỌN GÀNG: 6 PHƯƠNG THỨC NẠP DỮ LIỆU & CẤU HÌNH ĐỀ TÀI
+    # -------------------------------------------------------------------------
+    tab_doi, tab_suggestions, tab_files, tab_search, tab_config, tab_guide = st.tabs([
+        "✍️ Nhập mã DOI thủ công",
+        "📰 20 Cụm đề tài gợi ý",
+        "📁 Tải lên tệp (.BIB, .RIS, .PDF)",
+        "🔍 Tìm kiếm OpenAlex",
+        "⚙️ Cấu hình phân tầng",
+        "📖 Hướng dẫn & Giới thiệu"
     ])
 
-    with intro_tab1:
-        st.markdown(f"""
-        <div class="tab-content-card">
-            <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
-                {get_svg_icon("sparkles", color="var(--primary-accent)", size=18)}
-                <h3 style="margin:0; font-size:16px; color:var(--primary-accent);">Tổng quan ứng dụng & Giá trị học thuật cốt lõi</h3>
-            </div>
-            <p style="color:var(--text-secondary); font-size:13.5px; line-height:1.65; margin-bottom:12px;">
-                Hệ thống hỗ trợ nhà nghiên cứu giải quyết bài toán phân mảnh tài liệu học thuật trong kỷ nguyên AI. Bằng cách kết nối mạng lưới trích dẫn 2 chiều của OpenAlex, ứng dụng tự động phân định ranh giới phương pháp luận và phát hiện thực nghiệm của các tạp chí đầu ngành (*Digital Journalism, Journalism Studies, New Media & Society*).
-            </p>
-            <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px;">
-                <div style="background:var(--bg-surface-elevated); border:1px solid var(--border-subtle); border-radius:10px; padding:10px 12px;">
-                    <div style="color:var(--badge-green-text); font-weight:700; font-size:12.5px; margin-bottom:3px;">✓ Thẩm định Scopus Q1/Q2</div>
-                    <div style="color:var(--text-muted); font-size:11.5px;">Tự động phân hạng và ưu tiên các bài báo bình duyệt quốc tế có chỉ số trích dẫn cao.</div>
-                </div>
-                <div style="background:var(--bg-surface-elevated); border:1px solid var(--border-subtle); border-radius:10px; padding:10px 12px;">
-                    <div style="color:var(--primary-accent); font-weight:700; font-size:12.5px; margin-bottom:3px;">✓ Chuẩn hóa APA 7 & CARS</div>
-                    <div style="color:var(--text-muted); font-size:11.5px;">Tài liệu tham khảo, bảng biểu và bản thảo mở đầu được chuẩn hóa xuất bản ngay.</div>
-                </div>
-                <div style="background:var(--bg-surface-elevated); border:1px solid var(--border-subtle); border-radius:10px; padding:10px 12px;">
-                    <div style="color:var(--badge-rose-text); font-weight:700; font-size:12.5px; margin-bottom:3px;">✓ Đa dạng định dạng xuất</div>
-                    <div style="color:var(--text-muted); font-size:11.5px;">Hỗ trợ xuất tức thì ra file Word (.docx), Excel (.xlsx), PDF, CSV, RIS và BibTeX.</div>
-                </div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-    with intro_tab2:
-        st.markdown(f"""
-        <div class="tab-content-card">
-            <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
-                {get_svg_icon("compass", color="#34D399", size=20)}
-                <h3 style="margin:0; font-size:16.5px; color:#34D399;">Quy trình 4 bước nghiên cứu & Xuất bản phẩm</h3>
-            </div>
-            <div style="display:flex; flex-direction:column; gap:8px; color:#94A3B8; font-size:13px; line-height:1.6;">
-                <div><b>1. Nhập mã DOI bài báo gốc:</b> Dán mã định danh DOI của bài báo bạn quan tâm hoặc chọn nhanh cụm chủ đề mẫu bên dưới.</div>
-                <div><b>2. Khám phá sơ đồ mạng lưới Kim Cương 2 chiều:</b> Tương tác với sơ đồ tri thức 2 chiều (Nền tảng cội nguồn R1-R3 ↔ Bài báo gốc F0 ↔ Kế thừa tương lai F1-F3) và tách màn hình phụ để làm việc.</div>
-                <div><b>3. Bóc tách ma trận bằng chứng:</b> Xem xét phương pháp thu thập mẫu, phát hiện cốt lõi và các ranh giới đạo đức chưa có lời giải.</div>
-                <div><b>4. Nhận bản thảo mở đầu song ngữ & Tải file:</b> Đọc bản thảo chuẩn Swales CARS (English & Tiếng Việt) và tải trọn gói tài liệu nghiên cứu.</div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-    with intro_tab3:
-        st.markdown(f"""
-        <div class="tab-content-card">
-            <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
-                {get_svg_icon("sparkles", color="#FBBF24", size=20)}
-                <h3 style="margin:0; font-size:16.5px; color:#FBBF24;">Mẹo tối ưu hóa trích dẫn & Quản lý tài liệu</h3>
-            </div>
-            <div style="color:#94A3B8; font-size:13px; line-height:1.65;">
-                • <b>Định dạng mã DOI:</b> Mã DOI thường có cấu trúc <code>10.xxxx/...</code> (ví dụ: <code>10.1177/1464884918757072</code>).<br/>
-                • <b>Phân biệt quyền truy cập:</b> Biểu tượng 🔓 <b>[Bản PDF miễn phí]</b> cho biết tài liệu Open Access có thể tải trực tiếp; biểu tượng 🔒 <b>[Cần quyền truy cập]</b> yêu cầu mở link DOI qua thư viện đại học.<br/>
-                • <b>Nạp vào Zotero / Mendeley:</b> Tải tệp <code>refs.ris</code> để nhập toàn bộ thư mục bài báo vào phần mềm quản lý trích dẫn chỉ trong 1 giây.
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-    st.markdown("<div style='height: 4px;'></div>", unsafe_allow_html=True)
-
-    st.markdown("<div style='height: 4px;'></div>", unsafe_allow_html=True)
-
-    # 4 PHƯƠNG THỨC THU THẬP & NẠP DỮ LIỆU ĐỀ TÀI
-    ingest_tab1, ingest_tab2, ingest_tab3, ingest_tab4 = st.tabs([
-        "✍️ Nhập mã DOI trực tiếp",
-        "📑 Nạp tệp .BIB / .RIS (Zotero/Mendeley)",
-        "📁 Kéo thả tệp PDF từ máy tính",
-        "🔎 Tìm kiếm theo từ khóa / Tên đề tài"
-    ])
-
-    with ingest_tab1:
+    # 1. TAB NHẬP DOI THỦ CÔNG
+    with tab_doi:
         doi_raw_input = st.text_area(
-            "Nhập danh sách mã DOI bài báo gốc (mỗi mã trên 1 dòng hoặc cách nhau bằng dấu phẩy):",
+            "Nhập danh sách mã DOI bài báo gốc (mỗi mã trên một dòng hoặc cách nhau bằng dấu phẩy):",
             value=st.session_state.doi_input_val,
-            height=90,
+            height=85,
             help="Ví dụ: 10.1177/1464884918757072, 10.1080/17512786.2017.1320773"
         )
         st.session_state.doi_input_val = doi_raw_input
 
-    with ingest_tab2:
-        st.markdown("<div style='font-size:13px; color:#94A3B8; margin-bottom:8px;'>Tải lên tệp trích dẫn xuất từ Zotero, Mendeley, EndNote hoặc Google Scholar (.bib hoặc .ris):</div>", unsafe_allow_html=True)
-        uploaded_bib_file = st.file_uploader("Chọn tệp .bib hoặc .ris", type=["bib", "ris"], label_visibility="collapsed")
-        if uploaded_bib_file:
-            content_str = uploaded_bib_file.read().decode("utf-8", errors="ignore")
-            if uploaded_bib_file.name.endswith(".bib"):
-                entries = parse_bibtex_string(content_str)
-            else:
-                entries = parse_ris_string(content_str)
-                
-            found_dois = [e["doi"] for e in entries if e.get("doi")]
-            if found_dois:
-                st.success(f"✓ Đã bóc tách thành công {len(found_dois)} mã DOI từ tệp `{uploaded_bib_file.name}`!")
-                if st.button("📥 Nạp danh sách DOI này vào dự án", use_container_width=True):
-                    st.session_state.doi_input_val = ", ".join(found_dois)
-                    st.rerun()
-            else:
-                st.warning("⚠️ Không tìm thấy trường DOI trong tệp. Đang trích xuất theo tiêu đề...")
+    # 2. TAB 20 CỤM ĐỀ TÀI GỢI Ý (BÁO CHÍ & TÒA SOẠN AI 2024-2026)
+    with tab_suggestions:
+        st.markdown("<div style='font-size:12.5px; color:var(--text-secondary); margin-bottom:8px;'>Chọn một trong 20 cụm đề tài mũi nhọn được lập chỉ mục Scopus Q1 hoặc lấy danh sách DOI mới nhất:</div>", unsafe_allow_html=True)
+        c_grp, c_sel, c_btn1, c_btn2 = st.columns([3.2, 4.2, 2.2, 2.4])
 
-    with ingest_tab3:
-        st.markdown("<div style='font-size:13px; color:#94A3B8; margin-bottom:8px;'>Tải lên tệp PDF bài báo nghiên cứu để trích xuất tự động mã DOI từ trang đầu:</div>", unsafe_allow_html=True)
-        uploaded_pdf = st.file_uploader("Chọn tệp PDF bài báo", type=["pdf"], label_visibility="collapsed")
-        if uploaded_pdf:
-            pdf_doi = extract_doi_from_pdf(uploaded_pdf.read())
-            if pdf_doi:
-                st.success(f"✓ Đã tìm thấy mã DOI trong tệp PDF: `{pdf_doi}`")
-                if st.button(f"📥 Nạp DOI {pdf_doi} vào dự án", use_container_width=True):
-                    st.session_state.doi_input_val = pdf_doi
-                    st.rerun()
-            else:
-                st.warning("⚠️ Không tìm thấy chuỗi DOI tự động trong 2 trang đầu của tệp PDF này. Vui lòng nhập thủ công.")
+        with c_grp:
+            group_choice = st.selectbox(
+                "Chọn nhóm chủ đề:",
+                options=["group_a", "group_b"],
+                format_func=lambda x: "📰 Nhóm A: Báo chí & Tòa soạn số (10 đề tài)" if x == "group_a" else "🤖 Nhóm B: AI & Trách nhiệm đạo đức (10 đề tài)",
+                label_visibility="collapsed",
+                key="topic_group_selector_menu01"
+            )
 
-    with ingest_tab4:
-        st.markdown("<div style='font-size:13px; color:#94A3B8; margin-bottom:8px;'>Tìm kiếm bài báo uy tín trực tiếp trên OpenAlex theo từ khóa hoặc tên đề tài:</div>", unsafe_allow_html=True)
-        kw_col1, kw_col2 = st.columns([3, 1])
+        active_group_data = JOURNALISM_TOPIC_SUGGESTIONS[group_choice]
+        topic_list = active_group_data["topics"]
+
+        with c_sel:
+            selected_topic_id = st.selectbox(
+                "Chọn đề tài chuyên sâu:",
+                options=[t["id"] for t in topic_list],
+                format_func=lambda tid: next((f"{t['title']}" for t in topic_list if t["id"] == tid), tid),
+                label_visibility="collapsed",
+                key="topic_item_selector_menu01"
+            )
+
+        cur_topic = next((t for t in topic_list if t["id"] == selected_topic_id), topic_list[0])
+
+        with c_btn1:
+            if st.button("📥 Nạp chuẩn (1-Click)", use_container_width=True, help="Nạp bộ mã DOI chuẩn Scopus Q1 đã được thẩm định"):
+                st.session_state.doi_input_val = ", ".join(cur_topic["default_dois"])
+                st.toast(f"✓ Đã nạp {len(cur_topic['default_dois'])} DOI chuẩn của '{cur_topic['title']}'!")
+                st.rerun()
+
+        with c_btn2:
+            if st.button("🔄 Lấy DOI động mới", use_container_width=True, help="Truy vấn trực tiếp OpenAlex API lấy các công trình xuất bản mới nhất 2024-2026"):
+                with st.spinner("Đang kết nối OpenAlex API..."):
+                    res = fetch_dynamic_journalism_dois(
+                        search_query=cur_topic["search_query"],
+                        limit=3,
+                        min_year=2023,
+                        email=email_val,
+                        fallback_dois=cur_topic["default_dois"]
+                    )
+                    if res.get("dois"):
+                        st.session_state.doi_input_val = ", ".join(res["dois"])
+                        st.toast(f"⚡ {res.get('message', 'Đã cập nhật DOI động thành công!')}")
+                        st.rerun()
+                    else:
+                        st.warning("Không tìm thấy DOI động, đang dùng bộ nạp chuẩn.")
+
+        st.markdown(f"""
+        <div style="display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-top:6px; font-size:12px; color:var(--text-secondary);">
+            <span style="background:rgba(56, 189, 248, 0.12); color:#38BDF8; padding:2px 8px; border-radius:4px; font-weight:600;">Lĩnh vực: {cur_topic['field']}</span>
+            <span style="background:rgba(52, 211, 153, 0.12); color:#34D399; padding:2px 8px; border-radius:4px; font-weight:600;">Tạp chí: {cur_topic['venue']}</span>
+            <span style="background:rgba(244, 114, 182, 0.12); color:#F472B6; padding:2px 8px; border-radius:4px; font-weight:600;">Năm: {cur_topic['year_range']}</span>
+            <span style="color:var(--text-muted); font-size:11.5px;">• {cur_topic['desc']}</span>
+        </div>
+        """, unsafe_allow_html=True)
+
+    # 3. TAB TẢI LÊN TỆP (.BIB, .RIS, .PDF)
+    with tab_files:
+        c_up1, c_up2 = st.columns(2, gap="medium")
+        with c_up1:
+            st.markdown("<div style='font-size:12.5px; font-weight:700; color:var(--text-primary); margin-bottom:4px;'>📑 Nạp tệp .BIB / .RIS (Zotero / Mendeley):</div>", unsafe_allow_html=True)
+            uploaded_bib_file = st.file_uploader("Chọn tệp .bib hoặc .ris", type=["bib", "ris"], label_visibility="collapsed", key="file_up_bib")
+            if uploaded_bib_file:
+                content_str = uploaded_bib_file.read().decode("utf-8", errors="ignore")
+                entries = parse_bibtex_string(content_str) if uploaded_bib_file.name.endswith(".bib") else parse_ris_string(content_str)
+                found_dois = [e["doi"] for e in entries if e.get("doi")]
+                if found_dois:
+                    st.success(f"✓ Đã bóc tách {len(found_dois)} mã DOI!")
+                    if st.button("📥 Nạp danh sách DOI này vào dự án", use_container_width=True, key="btn_apply_bib"):
+                        st.session_state.doi_input_val = ", ".join(found_dois)
+                        st.rerun()
+                else:
+                    st.warning("⚠️ Không tìm thấy trường DOI trong tệp.")
+
+        with c_up2:
+            st.markdown("<div style='font-size:12.5px; font-weight:700; color:var(--text-primary); margin-bottom:4px;'>📁 Tự động bóc tách DOI từ trang đầu tệp PDF:</div>", unsafe_allow_html=True)
+            uploaded_pdf = st.file_uploader("Chọn tệp PDF bài báo", type=["pdf"], label_visibility="collapsed", key="file_up_pdf")
+            if uploaded_pdf:
+                pdf_doi = extract_doi_from_pdf(uploaded_pdf.read())
+                if pdf_doi:
+                    st.success(f"✓ Đã tìm thấy DOI: `{pdf_doi}`")
+                    if st.button(f"📥 Nạp DOI {pdf_doi} vào dự án", use_container_width=True, key="btn_apply_pdf"):
+                        st.session_state.doi_input_val = pdf_doi
+                        st.rerun()
+                else:
+                    st.warning("⚠️ Không tìm thấy chuỗi DOI tự động trong 2 trang đầu của tệp PDF này.")
+
+    # 4. TAB TÌM KIẾM OPENALEX
+    with tab_search:
+        st.markdown("<div style='font-size:12.5px; color:var(--text-secondary); margin-bottom:6px;'>Tìm kiếm bài báo uy tín trực tiếp trên OpenAlex theo từ khóa hoặc tên đề tài:</div>", unsafe_allow_html=True)
+        kw_col1, kw_col2 = st.columns([3.5, 1])
         with kw_col1:
             search_query = st.text_input("Nhập từ khóa nghiên cứu:", value="Automated Journalism Newsroom AI", label_visibility="collapsed")
         with kw_col2:
@@ -1022,21 +1019,18 @@ if "01." in workspace_nav:
                     st.session_state.doi_input_val = ", ".join(selected_search_dois)
                     st.rerun()
 
-    detected_dois = parse_doi_list(st.session_state.doi_input_val)
-    doi_count = len(detected_dois)
-
-    # CẤU HÌNH MẠNG LƯỚI TRI THỨC KIM CƯƠNG 2 CHIỀU (EXPANDER)
-    with st.expander("💎 Cấu hình Mạng lưới Tri thức Kim Cương 2 Chiều (R1-R3 ↔ F0 ↔ F1-F3)", expanded=False):
+    # 5. TAB CẤU HÌNH PHÂN TẦNG & MẠNG LƯỚI
+    with tab_config:
         cfg_c1, cfg_c2, cfg_c3 = st.columns(3)
         with cfg_c1:
             cfg_backward = st.slider(
-                "🏛️ Số bài Nền tảng cội nguồn (Backward R1-R3):",
+                "🏛️ Số bài nền tảng cội nguồn (Backward R1-R3):",
                 min_value=5, max_value=40, value=backward_limit_default, step=5,
                 help="Các công trình nền móng lý thuyết mà bài báo gốc tham chiếu đến"
             )
         with cfg_c2:
             cfg_forward = st.slider(
-                "🚀 Số bài Kế thừa & Phát triển (Forward F1-F3):",
+                "🚀 Số bài kế thừa & phát triển (Forward F1-F3):",
                 min_value=10, max_value=60, value=forward_limit_default, step=5,
                 help="Các nghiên cứu xuất bản sau này trích dẫn lại bài báo gốc"
             )
@@ -1046,6 +1040,30 @@ if "01." in workspace_nav:
                 [2, 1, 3], index=0,
                 format_func=lambda x: f"{x} thế hệ ({'R1-R2 ↔ F0 ↔ F1-F2 (Chuẩn quốc tế)' if x==2 else ('R1 ↔ F0 ↔ F1 (Nhanh)' if x==1 else 'R1-R3 ↔ F0 ↔ F1-F3 (Chuyên sâu)')})"
             )
+    
+    # 6. TAB HƯỚNG DẪN & GIỚI THIỆU
+    with tab_guide:
+        st.markdown(f"""
+        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px;">
+            <div style="background:var(--bg-surface-elevated); border:1px solid var(--border-subtle); border-radius:10px; padding:12px;">
+                <div style="color:var(--primary-accent); font-weight:700; font-size:12.5px; margin-bottom:4px;">✓ Thẩm định Scopus Q1/Q2</div>
+                <div style="color:var(--text-secondary); font-size:12px; line-height:1.5;">Tự động phân hạng và ưu tiên các bài báo bình duyệt quốc tế có chỉ số trích dẫn cao.</div>
+            </div>
+            <div style="background:var(--bg-surface-elevated); border:1px solid var(--border-subtle); border-radius:10px; padding:12px;">
+                <div style="color:var(--badge-green-text); font-weight:700; font-size:12.5px; margin-bottom:4px;">✓ Chuẩn hóa APA 7 & CARS</div>
+                <div style="color:var(--text-secondary); font-size:12px; line-height:1.5;">Tài liệu tham khảo, bảng biểu và bản thảo mở đầu được chuẩn hóa xuất bản ngay.</div>
+            </div>
+            <div style="background:var(--bg-surface-elevated); border:1px solid var(--border-subtle); border-radius:10px; padding:12px;">
+                <div style="color:var(--badge-rose-text); font-weight:700; font-size:12.5px; margin-bottom:4px;">✓ Đa dạng định dạng xuất</div>
+                <div style="color:var(--text-secondary); font-size:12px; line-height:1.5;">Hỗ trợ xuất tức thì ra file Word (.docx), Excel (.xlsx), PDF, CSV, RIS và BibTeX.</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
+
+    detected_dois = parse_doi_list(st.session_state.doi_input_val)
+    doi_count = len(detected_dois)
 
     # HÀNG ĐIỀU KHIỂN CÂN XỨNG: ĐỒNG BỘ CHIỀU CAO VÀ MÀU SẮC
     col_status, col_btn = st.columns([1, 1], gap="medium")
@@ -1098,78 +1116,6 @@ if "01." in workspace_nav:
                 st.session_state.pipeline_results["zip_bytes"] = create_research_bundle_zip(cached_pipe.get("artifacts", {}))
                 st.toast("⚡ Đã nạp dữ liệu tức thì từ Cache cục bộ thành công!")
                 st.rerun()
-
-    st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
-
-    # CỤM ĐỀ TÀI GỢI Ý THỜI SỰ 2024-2026 (COMPACT SMART HUB - 20 ĐỀ TÀI CHUYÊN SÂU)
-    st.markdown("""
-    <div style="background:var(--bg-surface-elevated, #1E293B); border:1px solid rgba(56, 189, 248, 0.25); border-radius:12px; padding:12px 16px; margin-bottom:12px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-            <div style="color:#38BDF8; font-weight:800; font-size:13.5px; display:flex; align-items:center; gap:8px;">
-                <span>⚡</span> CỤM 20 ĐỀ TÀI BÁO CHÍ & TÒA SOẠN AI (DỮ LIỆU ĐỘNG 2024–2026)
-            </div>
-            <span class="custom-badge badge-blue" style="font-size:11px; padding:2px 8px;">Scopus Q1 • Real-time OpenAlex</span>
-        </div>
-    """, unsafe_allow_html=True)
-
-    c_grp, c_sel, c_btn1, c_btn2 = st.columns([3.2, 4.2, 2.2, 2.4])
-
-    with c_grp:
-        group_choice = st.selectbox(
-            "Chọn nhóm chủ đề:",
-            options=["group_a", "group_b"],
-            format_func=lambda x: "📰 Nhóm A: Báo chí & Tòa soạn Số (10 Đề tài)" if x == "group_a" else "🤖 Nhóm B: AI & Trách nhiệm Đạo đức (10 Đề tài)",
-            label_visibility="collapsed",
-            key="topic_group_selector_menu01"
-        )
-
-    active_group_data = JOURNALISM_TOPIC_SUGGESTIONS[group_choice]
-    topic_list = active_group_data["topics"]
-
-    with c_sel:
-        selected_topic_id = st.selectbox(
-            "Chọn đề tài chuyên sâu:",
-            options=[t["id"] for t in topic_list],
-            format_func=lambda tid: next((f"{t['title']}" for t in topic_list if t["id"] == tid), tid),
-            label_visibility="collapsed",
-            key="topic_item_selector_menu01"
-        )
-
-    cur_topic = next((t for t in topic_list if t["id"] == selected_topic_id), topic_list[0])
-
-    with c_btn1:
-        if st.button("📥 Nạp Chuẩn (1-Click)", use_container_width=True, help="Nạp bộ mã DOI chuẩn Scopus Q1 đã được thẩm định học thuật"):
-            st.session_state.doi_input_val = ", ".join(cur_topic["default_dois"])
-            st.toast(f"✓ Đã nạp {len(cur_topic['default_dois'])} DOI chuẩn của '{cur_topic['title']}'!")
-            st.rerun()
-
-    with c_btn2:
-        if st.button("🔄 Lấy DOI Động Mới", use_container_width=True, help="Truy vấn trực tiếp OpenAlex API lấy các công trình xuất bản mới nhất 2024-2026"):
-            with st.spinner("Đang kết nối OpenAlex API..."):
-                res = fetch_dynamic_journalism_dois(
-                    search_query=cur_topic["search_query"],
-                    limit=3,
-                    min_year=2023,
-                    email=email_val,
-                    fallback_dois=cur_topic["default_dois"]
-                )
-                if res.get("dois"):
-                    st.session_state.doi_input_val = ", ".join(res["dois"])
-                    st.toast(f"⚡ {res.get('message', 'Đã cập nhật DOI động thành công!')}")
-                    st.rerun()
-                else:
-                    st.warning("Không tìm thấy DOI động, đang dùng bộ nạp chuẩn.")
-
-    # Mini Info Chip tóm tắt 1 dòng siêu gọn
-    st.markdown(f"""
-        <div style="display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-top:4px; font-size:12px; color:var(--text-secondary, #94A3B8);">
-            <span style="background:rgba(56, 189, 248, 0.12); color:#38BDF8; padding:2px 8px; border-radius:4px; font-weight:600;">Lĩnh vực: {cur_topic['field']}</span>
-            <span style="background:rgba(52, 211, 153, 0.12); color:#34D399; padding:2px 8px; border-radius:4px; font-weight:600;">Tạp chí: {cur_topic['venue']}</span>
-            <span style="background:rgba(244, 114, 182, 0.12); color:#F472B6; padding:2px 8px; border-radius:4px; font-weight:600;">Năm: {cur_topic['year_range']}</span>
-            <span style="color:#94A3B8; font-size:11.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:400px;">• {cur_topic['desc']}</span>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
 
     if start_btn:
         run_academic_pipeline(
@@ -1452,16 +1398,125 @@ document.getElementById('btnPopout').addEventListener('click', function() {{
         # Gom nhóm liệt kê phân loại quyền truy cập, Phân tích khoảng trống & Tra cứu chi tiết
         st.markdown("### 📊 Gom nhóm danh mục, Bản đồ khoảng trống & Quyền truy cập tài liệu:")
         
-        tab_diamond_layers, tab_oa_group, tab_paywall_group, tab_timeline, tab_burst, tab_heatmap, tab_compare, tab_single_lookup = st.tabs([
+        tab_topo_guide, tab_diamond_layers, tab_oa_group, tab_paywall_group, tab_timeline, tab_burst, tab_heatmap, tab_single_lookup = st.tabs([
+            "📖 Hướng dẫn thuật ngữ & Phân loại liên kết",
             f"💎 Phân tầng Kim Cương (R: {backward_count_val} • F: {forward_count_val})",
-            f"🔓 Nhóm bản full PDF miễn phí (OA: {len(oa_papers)} bài)",
-            f"🔒 Nhóm bản trả phí / Cần quyền (Paywall: {len(paywall_papers)} bài)",
+            f"🔓 Nhóm bản full PDF miễn phí ({len(oa_papers)} bài)",
+            f"🔒 Nhóm bản trả phí / Cần quyền ({len(paywall_papers)} bài)",
             "📈 Dòng thời gian phát triển (Timeline)",
             "🚀 Điểm bùng nổ xu hướng (Burst Trends)",
             "🎯 Bản đồ khoảng trống nghiên cứu (Gap Heatmap)",
-            "⚔️ Đối chiếu so sánh 2 bài báo song song",
             "🔍 Tra cứu chi tiết & Tóm tắt song ngữ"
         ])
+
+        with tab_topo_guide:
+            st.markdown("""
+            <div style="background:var(--bg-surface-elevated); border:1.5px solid var(--primary-accent); border-radius:14px; padding:18px 22px; margin-bottom:14px;">
+                <div style="font-size:16px; font-weight:800; color:var(--primary-accent); margin-bottom:6px;">
+                    📚 HỆ THỐNG THUẬT NGỮ & PHÂN LOẠI TOPO LIÊN KẾT TRÍCH DẪN QUỐC TẾ
+                </div>
+                <div style="font-size:13px; color:var(--text-secondary); line-height:1.6;">
+                    Mô hình <b>Bidirectional Diamond Knowledge Graph</b> phân định 4 loại hình liên kết bản chất tri thức học thuật:
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            topo_c1, topo_c2 = st.columns(2, gap="medium")
+            with topo_c1:
+                st.markdown("""
+                <div style="background:rgba(52, 211, 153, 0.08); border:1px solid #10B981; border-radius:12px; padding:14px 16px; margin-bottom:12px;">
+                    <div style="font-size:13.5px; font-weight:800; color:#34D399; margin-bottom:4px;">
+                        🟢 1. CÙNG PHÂN TẦNG (INTRA-LAYER)
+                    </div>
+                    <div style="font-size:12.5px; color:var(--text-primary); line-height:1.55; margin-bottom:6px;">
+                        <b>Định nghĩa:</b> Liên kết trích dẫn giữa các công trình nghiên cứu thuộc cùng một thế hệ hoặc cùng một phân tầng tri thức (F1 ➔ F1, R1 ➔ R1).
+                    </div>
+                    <div style="font-size:12px; color:var(--text-secondary); line-height:1.5; background:rgba(0,0,0,0.25); padding:8px 10px; border-radius:8px;">
+                        💡 <b>Ý nghĩa & Ví dụ:</b> Các nhóm tác giả song hành kiểm chứng chéo mô hình, chia sẻ tập dữ liệu hoặc bổ trợ thực chứng cho nhau trong cùng bối cảnh lịch sử. Ví dụ: Hai bài báo cùng xuất bản năm 2024 khảo sát việc ứng dụng ChatGPT trong tòa soạn tin tức tại Châu Âu và Châu Á trích dẫn bổ sung cho nhau.
+                    </div>
+                </div>
+
+                <div style="background:rgba(192, 132, 252, 0.08); border:1px solid #A855F7; border-radius:12px; padding:14px 16px; margin-bottom:12px;">
+                    <div style="font-size:13.5px; font-weight:800; color:#C084FC; margin-bottom:4px;">
+                        🔮 2. BẮC CẦU XUYÊN TẦNG (CROSS-BRIDGE)
+                    </div>
+                    <div style="font-size:12.5px; color:var(--text-primary); line-height:1.55; margin-bottom:6px;">
+                        <b>Định nghĩa:</b> Liên kết nhảy cóc giữa các tầng cách xa nhau (ví dụ: F3 trực tiếp trích dẫn R1 hoặc R2 mà không qua các tầng trung gian F1/F0).
+                    </div>
+                    <div style="font-size:12px; color:var(--text-secondary); line-height:1.5; background:rgba(0,0,0,0.25); padding:8px 10px; border-radius:8px;">
+                        💡 <b>Ý nghĩa & Ví dụ:</b> Bước tiến nghiên cứu mới tái khám phá và neo trực tiếp vào nền tảng lý thuyết kinh điển ban đầu, tạo bước nhảy vọt tư duy hoặc phục hưng một trường phái tư tưởng. Ví dụ: Một bài báo năm 2025 về AI Agentic Journalism trích dẫn trực tiếp lý thuyết "Gatekeeping" năm 1950 của David Manning White.
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            with topo_c2:
+                st.markdown("""
+                <div style="background:rgba(245, 158, 11, 0.08); border:1px solid #F59E0B; border-radius:12px; padding:14px 16px; margin-bottom:12px;">
+                    <div style="font-size:13.5px; font-weight:800; color:#FDE047; margin-bottom:4px;">
+                        🔶 3. ĐỐI THOẠI HAI CHIỀU (RECIPROCAL / MUTUAL)
+                    </div>
+                    <div style="font-size:12.5px; color:var(--text-primary); line-height:1.55; margin-bottom:6px;">
+                        <b>Định nghĩa:</b> Liên kết trích dẫn song phương tương hỗ (A trích dẫn B và B trích dẫn A, A ↔ B).
+                    </div>
+                    <div style="font-size:12px; color:var(--text-secondary); line-height:1.5; background:rgba(0,0,0,0.25); padding:8px 10px; border-radius:8px;">
+                        💡 <b>Ý nghĩa & Ví dụ:</b> Hai trường phái hoặc hai nhóm nghiên cứu đang trực tiếp tranh luận, phản biện học thuật chuyên sâu hoặc đồng kiến tạo một lý thuyết mới. Ví dụ: Nhóm tác giả A đề xuất khung đạo đức tin tức AI; nhóm tác giả B phản biện và mở rộng; sau đó nhóm A tiếp thu và hoàn thiện mô hình.
+                    </div>
+                </div>
+
+                <div style="background:rgba(56, 189, 248, 0.08); border:1px solid #0284C7; border-radius:12px; padding:14px 16px; margin-bottom:12px;">
+                    <div style="font-size:13.5px; font-weight:800; color:#38BDF8; margin-bottom:4px;">
+                        🔷 4. KẾ THỪA MỘT CHIỀU (DIRECT CITATION)
+                    </div>
+                    <div style="font-size:12.5px; color:var(--text-primary); line-height:1.55; margin-bottom:6px;">
+                        <b>Định nghĩa:</b> Liên kết trích dẫn thông thường đơn hướng theo thời gian (A ➔ B).
+                    </div>
+                    <div style="font-size:12px; color:var(--text-secondary); line-height:1.5; background:rgba(0,0,0,0.25); padding:8px 10px; border-radius:8px;">
+                        💡 <b>Ý nghĩa & Ví dụ:</b> Công trình đích tiếp thu, kế thừa phương pháp, công cụ hoặc phát hiện thực nghiệm từ công trình nguồn để triển khai nghiên cứu phái sinh tiếp theo.
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            # BỘ LỌC GROUP THEO PHÂN LOẠI TOPO
+            st.markdown("##### 🔍 Lọc danh mục liên kết theo phân loại Topo:")
+            topo_filter_choice = st.selectbox(
+                "Chọn loại quan hệ trích dẫn:",
+                ["Tất cả liên kết", "Kế thừa một chiều (Direct)", "Đối thoại hai chiều (Mutual)", "Bắc cầu xuyên tầng (Cross-Bridge)", "Cùng phân tầng (Intra-Layer)"],
+                key="sb_topo_filter_screen2"
+            )
+
+            edge_list_data = st.session_state.pipeline_results.get("citenet", {}).get("edges", [])
+            nodes_data = st.session_state.pipeline_results.get("citenet", {}).get("nodes", {})
+            edge_set = set(edge_list_data)
+
+            filtered_edge_rows = []
+            for src, dst in edge_list_data:
+                s_node = nodes_data.get(src, {})
+                d_node = nodes_data.get(dst, {})
+                s_lvl = s_node.get("level", 0)
+                d_lvl = d_node.get("level", 0)
+
+                is_mutual = (dst, src) in edge_set and src != dst
+                is_cross = (s_lvl >= 2 and d_lvl <= -1) or (s_lvl <= -2 and d_lvl >= 1) or (s_lvl >= 1 and d_lvl <= -2) or (abs(s_lvl - d_lvl) >= 2 and s_lvl != 0 and d_lvl != 0)
+                is_intra = (s_lvl == d_lvl and s_lvl != 0)
+
+                cat_name = "Kế thừa một chiều"
+                if is_mutual: cat_name = "Đối thoại hai chiều"
+                elif is_cross: cat_name = "Bắc cầu xuyên tầng"
+                elif is_intra: cat_name = "Cùng phân tầng"
+
+                if topo_filter_choice == "Tất cả liên kết" or cat_name in topo_filter_choice:
+                    filtered_edge_rows.append({
+                        "Nguồn (Source)": f"[{s_node.get('year', '')}] {s_node.get('first_author', 'Tác giả')}: {s_node.get('title', '')[:40]}...",
+                        "Phân loại Topo": cat_name,
+                        "Đích (Target)": f"[{d_node.get('year', '')}] {d_node.get('first_author', 'Tác giả')}: {d_node.get('title', '')[:40]}...",
+                        "DOI Nguồn": f"https://doi.org/{s_node.get('doi', '')}" if s_node.get('doi') else "",
+                        "DOI Đích": f"https://doi.org/{d_node.get('doi', '')}" if d_node.get('doi') else ""
+                    })
+
+            if filtered_edge_rows:
+                st.dataframe(pd.DataFrame(filtered_edge_rows), use_container_width=True)
+            else:
+                st.info("Không có liên kết nào phù hợp với bộ lọc hiện tại.")
 
         with tab_diamond_layers:
             st.markdown(f"""
@@ -1482,6 +1537,8 @@ document.getElementById('btnPopout').addEventListener('click', function() {{
                 if backward_items:
                     for b_i, b_p in enumerate(backward_items[:12]):
                         lvl_tag = f"R{abs(b_p.get('level', 1))}"
+                        doi_str = b_p.get('doi', '')
+                        doi_link_html = f"<a href='https://doi.org/{doi_str}' target='_blank' style='color:#38BDF8; font-weight:700; text-decoration:none;'>DOI: {doi_str} ↗</a>" if doi_str else ""
                         st.markdown(f"""
                         <div class="apa-ref-card" style="border-left: 3px solid #7C3AED; margin-bottom: 8px;">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
@@ -1489,7 +1546,8 @@ document.getElementById('btnPopout').addEventListener('click', function() {{
                                 <span style="font-size:11.5px; color:#94A3B8;">{b_p.get('citation_count', 0)} trích dẫn</span>
                             </div>
                             <div style="font-size:12.5px; font-weight:700; color:#F8FAFC; margin-bottom:4px;">{b_p.get('title', '')}</div>
-                            <div style="font-size:11.5px; color:#94A3B8;">{b_p.get('authors', '')} ({b_p.get('year', '')}) • {b_p.get('venue', '')}</div>
+                            <div style="font-size:11.5px; color:#94A3B8; margin-bottom:4px;">{b_p.get('authors', '')} ({b_p.get('year', '')}) • {b_p.get('venue', '')}</div>
+                            <div style="font-size:11px;">{doi_link_html}</div>
                         </div>
                         """, unsafe_allow_html=True)
                 else:
@@ -1501,6 +1559,8 @@ document.getElementById('btnPopout').addEventListener('click', function() {{
                 if forward_items:
                     for f_i, f_p in enumerate(forward_items[:12]):
                         lvl_tag = f"F{f_p.get('level', 1)}"
+                        doi_str = f_p.get('doi', '')
+                        doi_link_html = f"<a href='https://doi.org/{doi_str}' target='_blank' style='color:#38BDF8; font-weight:700; text-decoration:none;'>DOI: {doi_str} ↗</a>" if doi_str else ""
                         st.markdown(f"""
                         <div class="apa-ref-card" style="border-left: 3px solid #0284C7; margin-bottom: 8px;">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
@@ -1508,7 +1568,8 @@ document.getElementById('btnPopout').addEventListener('click', function() {{
                                 <span style="font-size:11.5px; color:#94A3B8;">{f_p.get('citation_count', 0)} trích dẫn</span>
                             </div>
                             <div style="font-size:12.5px; font-weight:700; color:#F8FAFC; margin-bottom:4px;">{f_p.get('title', '')}</div>
-                            <div style="font-size:11.5px; color:#94A3B8;">{f_p.get('authors', '')} ({f_p.get('year', '')}) • {f_p.get('venue', '')}</div>
+                            <div style="font-size:11.5px; color:#94A3B8; margin-bottom:4px;">{f_p.get('authors', '')} ({f_p.get('year', '')}) • {f_p.get('venue', '')}</div>
+                            <div style="font-size:11px;">{doi_link_html}</div>
                         </div>
                         """, unsafe_allow_html=True)
                 else:
@@ -1521,10 +1582,48 @@ document.getElementById('btnPopout').addEventListener('click', function() {{
                     🔓 DANH MỤC CÁC BÀI BÁO CÓ BẢN FULL PDF MIỄN PHÍ ({len(oa_papers)} BÀI)
                 </div>
                 <div style="color: var(--text-secondary); font-size: 13px; line-height: 1.5;">
-                    Bạn có thể tải trực tiếp toàn văn PDF hoặc mở trang Open Access của nhà xuất bản mà không bị giới hạn bởi Paywall.
+                    Bạn có thể chọn từng bài hoặc chọn toàn bộ theo nhóm để tải gói nén ZIP hoặc mở liên kết bài báo trực tiếp.
                 </div>
             </div>
             """, unsafe_allow_html=True)
+
+            # BỘ CHỌN HÀNG LOẠT THEO NHÓM
+            oa_paper_labels = {}
+            for idx, p in enumerate(oa_papers, 1):
+                p_auth = p.get('first_author', 'Tác giả')
+                p_yr = p.get('year', 'n.d.')
+                p_title = p.get('title', 'Untitled')[:60]
+                p_lvl = p.get('level', 0)
+                p_tag = "F0" if p_lvl == 0 else (f"R{abs(p_lvl)}" if p_lvl < 0 else f"F{p_lvl}")
+                lbl = f"#{idx} [{p_tag}] [{p_yr}] {p_auth}: {p_title}..."
+                oa_paper_labels[lbl] = p
+
+            c_oa_filter1, c_oa_filter2 = st.columns([1.5, 2.5], gap="medium")
+            with c_oa_filter1:
+                oa_group_sel = st.selectbox(
+                    "Bộ lọc nhanh theo phân tầng:",
+                    ["✓ Tất cả tài liệu Open Access", "🔴 Chỉ bài gốc F0", "🏛️ Nhóm cội nguồn (R1-R3)", "🚀 Nhóm kế thừa (F1-F3)"],
+                    key="sb_oa_batch_filter"
+                )
+
+            with c_oa_filter2:
+                if oa_group_sel == "🔴 Chỉ bài gốc F0":
+                    default_oa_keys = [k for k, p in oa_paper_labels.items() if p.get('level', 0) == 0]
+                elif oa_group_sel == "🏛️ Nhóm cội nguồn (R1-R3)":
+                    default_oa_keys = [k for k, p in oa_paper_labels.items() if p.get('level', 0) < 0]
+                elif oa_group_sel == "🚀 Nhóm kế thừa (F1-F3)":
+                    default_oa_keys = [k for k, p in oa_paper_labels.items() if p.get('level', 0) > 0]
+                else:
+                    default_oa_keys = list(oa_paper_labels.keys())
+
+                selected_oa_keys = st.multiselect(
+                    "Chọn / Bỏ chọn bài báo để tải về:",
+                    options=list(oa_paper_labels.keys()),
+                    default=default_oa_keys,
+                    key="ms_oa_batch_keys"
+                )
+
+            st.markdown(f"Đã chọn **{len(selected_oa_keys)} / {len(oa_papers)}** bài báo Open Access.")
             
             oa_cols = st.columns(2, gap="medium")
             for idx, p in enumerate(oa_papers):
@@ -1535,17 +1634,23 @@ document.getElementById('btnPopout').addEventListener('click', function() {{
                 landing_u = p.get("landing_url") or doi_u
                 
                 with target_c:
+                    doi_anchor = f"<a href='https://doi.org/{doi_v}' target='_blank' style='color:#38BDF8; font-weight:700; text-decoration:none;'>https://doi.org/{doi_v} ↗</a>" if doi_v else "N/A"
                     st.markdown(f"""
-                    <div class="apa-ref-card" style="border-left: 3px solid #34D399;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <div class="apa-ref-card" style="border-left: 3px solid #34D399; margin-bottom:8px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
                             <span style="color:#38BDF8; font-weight:700; font-size:12px;">#{idx+1} • {p.get('scopus_tier', 'Scopus')}</span>
+                            <span class="custom-badge badge-green">🔓 Open Access</span>
+                        </div>
+                        <div style="font-size:12.5px; font-weight:700; color:#F8FAFC; margin-bottom:4px;">{p.get('title', '')}</div>
+                        <div style="font-size:11.5px; color:#94A3B8; margin-bottom:4px;">{p.get('authors', '')} ({p.get('year', '')}) • {p.get('venue', '')}</div>
+                        <div style="font-size:11px; margin-bottom:6px;">🔗 DOI chuẩn: {doi_anchor}</div>
                     </div>
                     """, unsafe_allow_html=True)
                     if pdf_u:
                         st.link_button(f"🔓 Tải Full PDF bài #{idx+1} ↗", url=pdf_u, type="primary", use_container_width=True)
                     elif doi_v:
                         st.link_button(f"🔗 Mở link DOI ({doi_v}) ↗", url=f"https://doi.org/{doi_v}", use_container_width=True)
-                    st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
+                    st.markdown("<div style='height: 4px;'></div>", unsafe_allow_html=True)
 
         with tab_paywall_group:
             st.markdown(f"""
@@ -2138,25 +2243,102 @@ elif "06." in workspace_nav:
         # TAB 1: GÓI HỒ SƠ & SLIDE POWERPOINT (.PPTX)
         # ---------------------------------------------------------------------
         with tab_pkg_export:
-            st.markdown("##### 📽️ Tải Slide Thuyết trình Báo cáo Khoa học (PowerPoint .PPTX):")
+            st.markdown("""
+            <div style="background:var(--bg-surface); border:1px solid var(--primary-accent); border-radius:12px; padding:16px 20px; margin-bottom:16px;">
+                <div style="color:var(--primary-accent); font-weight:700; font-size:15.5px; margin-bottom:4px;">
+                    📦 Trung tâm xuất bản hồ sơ khoa học đa định dạng
+                </div>
+                <div style="color:var(--text-secondary); font-size:13px; line-height:1.6;">
+                    Tải về toàn bộ ấn phẩm học thuật: Bảng dữ liệu Excel liên kết trực tiếp, bản thảo Word / Google Document chuẩn APA 7, Slide PowerPoint thuyết trình, và gói mã nguồn LaTeX Overleaf.
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            # 1. EXCEL EXPORT WITH ACTIVE HYPERLINKS
+            st.markdown("##### 📊 1. Bảng dữ liệu ma trận học thuật Excel (.XLSX):")
+            try:
+                df_all_papers = papers_to_dataframe(all_papers)
+                xlsx_bytes = dataframe_to_xlsx(df_all_papers, sheet_name="ScholarGraph Matrix")
+                st.download_button(
+                    label="📊 TẢI BẢNG MA TRẬN TÀI LIỆU EXCEL (.XLSX — TÍCH HỢP SẴN HYPERLINK TẢI PDF & DOI TRỰC TIẾP)",
+                    data=xlsx_bytes,
+                    file_name="Ma_tran_tai_lieu_ScholarGraph_Pro.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    type="primary",
+                    use_container_width=True,
+                    key="btn_dl_excel_matrix"
+                )
+                st.caption("✓ Tự động gán hyperlink trực tiếp cho 100% mã DOI và liên kết tải toàn văn tệp PDF mở.")
+            except Exception as xl_err:
+                st.error(f"Lỗi xuất bản Excel: {xl_err}")
+
+            st.markdown("<div style='height: 14px;'></div>", unsafe_allow_html=True)
+
+            # 2. WORD / GOOGLE DOCS (.DOCX) EXPORTS
+            st.markdown("##### 📝 2. Bản thảo Microsoft Word & Google Document (.DOCX):")
+            c_doc1, c_doc2 = st.columns(2)
+            with c_doc1:
+                try:
+                    intro_en_text = artifacts.get("introduction_draft_en.md", "")
+                    docx_en_bytes = markdown_to_docx(
+                        title="Academic Introduction Draft (Swales CARS Model)",
+                        markdown_text=intro_en_text,
+                        author="ScholarGraph Pro",
+                        subtitle="Standard APA 7th Edition Academic Manuscript"
+                    )
+                    st.download_button(
+                        label="📄 Tải bản thảo Mở đầu Tiếng Anh (Word / Google Docs .DOCX)",
+                        data=docx_en_bytes,
+                        file_name="Ban_thao_Mo_dau_CARS_EN.docx",
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                        use_container_width=True,
+                        key="btn_dl_docx_en"
+                    )
+                except Exception as doc_err1:
+                    st.error(f"Lỗi tạo tệp Word tiếng Anh: {doc_err1}")
+
+            with c_doc2:
+                try:
+                    intro_vi_text = artifacts.get("introduction_draft_vi.md", "")
+                    docx_vi_bytes = markdown_to_docx(
+                        title="Bản thảo mở đầu nghiên cứu báo chí học thuật",
+                        markdown_text=intro_vi_text,
+                        author="ScholarGraph Pro",
+                        subtitle="Mô hình John Swales CARS • Chuẩn trích dẫn APA 7"
+                    )
+                    st.download_button(
+                        label="📄 Tải bản dịch Mở đầu Tiếng Việt (Word / Google Docs .DOCX)",
+                        data=docx_vi_bytes,
+                        file_name="Ban_thao_Mo_dau_CARS_VI.docx",
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                        use_container_width=True,
+                        key="btn_dl_docx_vi"
+                    )
+                except Exception as doc_err2:
+                    st.error(f"Lỗi tạo tệp Word tiếng Việt: {doc_err2}")
+
+            st.markdown("<div style='height: 14px;'></div>", unsafe_allow_html=True)
+
+            # 3. POWERPOINT PRESENTATION (.PPTX)
+            st.markdown("##### 📽️ 3. Bộ Slide thuyết trình báo cáo khoa học (PowerPoint .PPTX):")
             try:
                 topic_kw = st.session_state.get("custom_keywords", "Nghiên cứu Báo chí AI & Tòa soạn Tự động hóa")
                 pptx_bytes = create_presentation_deck(st.session_state.pipeline_results, topic_title=topic_kw)
                 st.download_button(
-                    label="📽️ TẢI BỘ SLIDE THUYẾT TRÌNH BÁO CÁO KHOA HỌC (.PPTX - 12 SLIDE CHUẨN QUỐC TẾ)",
+                    label="📽️ TẢI BỘ SLIDE THUYẾT TRÌNH BÁO CÁO KHOA HỌC (.PPTX — 12 SLIDE CHUẨN QUỐC TẾ)",
                     data=pptx_bytes,
                     file_name="Bao_cao_Thuyet_trinh_ScholarGraph.pptx",
                     mime="application/vnd.openxmlformats-officedocument.presentationml.presentation",
-                    type="primary",
-                    use_container_width=True
+                    use_container_width=True,
+                    key="btn_dl_pptx_deck"
                 )
             except Exception as ex:
                 st.error(f"Lỗi tạo Slide PowerPoint: {ex}")
 
-            st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
+            st.markdown("<div style='height: 14px;'></div>", unsafe_allow_html=True)
             
-            # LATEX / OVERLEAF EXPORT SECTION
-            st.markdown("##### 📄 Xuất Bản Thảo Mã Nguồn LaTeX / Overleaf (.ZIP):")
+            # 4. LATEX / OVERLEAF EXPORT SECTION
+            st.markdown("##### 📄 4. Xuất bản thảo mã nguồn LaTeX / Overleaf (.ZIP):")
             c_ltx1, c_ltx2 = st.columns([1.5, 2.5], gap="medium")
             with c_ltx1:
                 ltx_tmpl_choice = st.selectbox(
@@ -2198,17 +2380,21 @@ elif "06." in workspace_nav:
                 except Exception as ltx_err:
                     st.error(f"Lỗi tạo gói LaTeX: {ltx_err}")
 
-            st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
+            st.markdown("<div style='height: 14px;'></div>", unsafe_allow_html=True)
+
+            # 5. FULL RESEARCH BUNDLE (.ZIP)
+            st.markdown("##### 📦 5. Trọn bộ hồ sơ nghiên cứu tích hợp (.ZIP):")
             st.download_button(
-                label="⬇️ TẢI TRỌN BỘ HỒ SƠ NGHIÊN CỨU (.ZIP - ĐẦY ĐỦ BẢN THẢO SONG NGỮ & APA 7)",
+                label="⬇️ TẢI TRỌN BỘ HỒ SƠ NGHIÊN CỨU (.ZIP — ĐẦY ĐỦ BẢN THẢO SONG NGỮ, BẢNG APA 7 & MA TRẬN DỮ LIỆU)",
                 data=zip_data,
                 file_name="ho_so_nghien_cuu_bao_chi_ai_apa7.zip",
                 mime="application/zip",
-                use_container_width=True
+                use_container_width=True,
+                key="btn_dl_full_bundle_zip"
             )
 
             st.markdown("<div style='height: 18px;'></div>", unsafe_allow_html=True)
-            st.markdown("##### 📥 Tải riêng lẻ từng tài liệu trong hồ sơ:")
+            st.markdown("##### 📥 6. Tải riêng lẻ từng tài liệu trong hồ sơ:")
             col_d1, col_d2 = st.columns(2)
             with col_d1:
                 st.download_button("🌐 1. Sơ đồ tương tác mạng lưới (network.html)", data=artifacts.get("network.html", ""), file_name="so_do_mang_luoi.html", mime="text/html", use_container_width=True)
