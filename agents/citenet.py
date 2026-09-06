@@ -858,9 +858,10 @@ class CiteNetAgent:
         .hud-hover-inspector {{
             position: absolute;
             top: 58px;
-            left: 16px;
+            left: 68px;
             z-index: 65;
             width: 330px;
+            max-width: calc(100% - 90px);
             background: var(--theme-panel-bg);
             backdrop-filter: blur(22px);
             -webkit-backdrop-filter: blur(22px);
@@ -868,7 +869,7 @@ class CiteNetAgent:
             border-radius: 12px;
             padding: 10px 14px;
             box-shadow: 0 0 24px rgba(var(--theme-glow-rgb), 0.35), 0 4px 20px rgba(0,0,0,0.5);
-            pointer-events: none;
+            pointer-events: auto;
             transition: opacity 0.2s ease, transform 0.2s ease;
             opacity: 0;
             transform: translateY(-4px);
@@ -903,24 +904,25 @@ class CiteNetAgent:
             padding-top: 4px;
         }}
 
-        /* EDGE EPISTEMIC INSPECTOR (CHO MŨI TÊN - ĐỔ BÓNG ĐỀU TOÀN KHUNG) */
+        /* EDGE EPISTEMIC INSPECTOR (CHO MŨI TÊN - VÙNG AN TOÀN TRÁI DƯỚI) */
         .edge-epistemic-inspector {{
             position: absolute;
-            top: 58px;
-            right: 16px;
+            bottom: 20px;
+            left: 68px;
             z-index: 65;
-            width: 330px;
-            background: rgba(26, 16, 6, 0.92);
+            width: 340px;
+            max-width: calc(100% - 90px);
+            background: rgba(26, 16, 6, 0.94);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
             border: 1.5px solid #F59E0B;
             border-radius: 12px;
             padding: 9px 13px;
             box-shadow: 0 0 24px rgba(245, 158, 11, 0.35), 0 4px 20px rgba(0,0,0,0.5);
-            pointer-events: none;
+            pointer-events: auto;
             transition: opacity 0.2s ease, transform 0.2s ease;
             opacity: 0;
-            transform: translateY(-4px);
+            transform: translateY(4px);
             font-family: 'Roboto', -apple-system, sans-serif;
             font-weight: 300;
             font-size: 10.5px;
@@ -1366,11 +1368,14 @@ class CiteNetAgent:
                 <div class="graph-subtitle">Project: {short_project_name}</div>
             </div>
 
-            <!-- SMART HUD HOVER INSPECTOR Ở VÙNG AN TOÀN TRÁI (CHO NODE) -->
+            <!-- SMART HUD HOVER INSPECTOR Ở VÙNG AN TOÀN TRÁI (CHO NODE - CÓ NÚT ĐÓNG) -->
             <div id="graphHoverInspector" class="hud-hover-inspector">
                 <div class="hover-inspector-header">
-                    <span id="hoverChipType" class="meta-chip" style="font-size:10px; padding:2px 8px; border-color:var(--theme-accent);">★ BÀI BÁO</span>
-                    <span id="hoverChipYear" class="meta-chip" style="font-size:10px; padding:2px 8px; color:#FDE047;">2024</span>
+                    <div style="display:flex; gap:6px; align-items:center;">
+                        <span id="hoverChipType" class="meta-chip" style="font-size:9.5px; padding:1px 7px; border-color:var(--theme-accent);">★ BÀI BÁO</span>
+                        <span id="hoverChipYear" class="meta-chip" style="font-size:9.5px; padding:1px 7px; color:#FDE047;">2024</span>
+                    </div>
+                    <button type="button" onclick="hideHoverInspector()" style="background:transparent; border:none; color:var(--theme-accent); font-size:12px; cursor:pointer; padding:0 3px; line-height:1;" title="Đóng bảng chi tiết">✕</button>
                 </div>
                 <div id="hoverInspectorTitle" class="hover-inspector-title">Paper Title</div>
                 <div id="hoverInspectorMeta" class="hover-inspector-meta">Author • Journal • Citations</div>
@@ -1378,80 +1383,93 @@ class CiteNetAgent:
                 <div id="hoverInspectorAbstract" style="font-size:10px; color:#94A3B8; margin-top:4px; line-height:1.35; display:none;"></div>
             </div>
 
-            <!-- EDGE EPISTEMIC INSPECTOR Ở VÙNG AN TOÀN PHẢI (CHO MŨI TÊN - ROBOTO LIGHT) -->
+            <!-- EDGE EPISTEMIC INSPECTOR Ở VÙNG AN TOÀN TRÁI DƯỚI (CHO MŨI TÊN - CÓ NÚT ĐÓNG) -->
             <div id="graphEdgeInspector" class="edge-epistemic-inspector">
-                <div id="edgeInspectorHeader">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
                     <span id="edgeTypeBadge" class="edge-inspector-tag">⚡ DÒNG TRUYỀN TRI THỨC</span>
+                    <button type="button" onclick="hideHoverInspector()" style="background:transparent; border:none; color:#FDE047; font-size:12px; cursor:pointer; padding:0 4px; line-height:1;" title="Đóng bảng giải thích liên kết">✕</button>
                 </div>
                 <div id="edgeEpistemicBody" style="margin-top:2px;">
-                    <!-- Nội dung học thuật độc đắc -->
+                    <!-- Nội dung học thuật độc đáo -->
                 </div>
             </div>
 
             <!-- TOP RIGHT MINI CONTROLS (TÌM KIẾM, LỌC TẦNG KẾT HỢP & BỐ CỤC) -->
             <div class="graph-top-tools">
-                <input type="text" id="nodeSearchInput" placeholder="🔍 Tìm DOI, tác giả, năm, từ khóa..." oninput="searchAndFocusNode(this.value)" style="background:rgba(0,0,0,0.45); border:1px solid var(--theme-panel-border); color:#FFFFFF; border-radius:8px; padding:4px 9px; font-size:11px; outline:none; width:145px;" title="Tìm kiếm thông minh theo DOI, Tác giả viết tắt/đầy đủ, Năm (ví dụ: 2024, >2020), Tên bài báo, Từ khóa...">
+                <input type="text" id="nodeSearchInput" placeholder="🔍 Tìm DOI, tác giả, năm..." oninput="searchAndFocusNode(this.value)" style="background:rgba(0,0,0,0.45); border:1px solid var(--theme-panel-border); color:#FFFFFF; border-radius:8px; padding:4px 9px; font-size:11px; outline:none; width:135px;" title="Tìm kiếm thông minh theo DOI, Tác giả viết tắt/đầy đủ, Năm (ví dụ: 2024, >2020), Tên bài báo, Từ khóa...">
                 
                 <!-- BỘ LỌC TẦNG BẰNG TÍNH NĂNG CHECKBOX LINH HOẠT & NHANH -->
                 <button type="button" id="layerFilterToggleBtn" class="hud-mini-btn active" onclick="toggleLayerFilterPopover()" title="Chọn hiển thị từng tầng theo ý muốn bằng Checkbox (F0 / R1-R3 / F1-F3 / Độc lập)">📑 Chọn Tầng (Check) ▾</button>
 
-                <!-- POPOVER CHỌN TẦNG CHECKBOX THÔNG MINH -->
-                <div id="layerFilterPopover" onclick="event.stopPropagation();" style="display:none; position:absolute; top:46px; right:8px; z-index:99999; background:rgba(15, 23, 42, 0.97); border:1.5px solid var(--theme-accent); border-radius:12px; padding:12px 16px; box-shadow:0 12px 36px rgba(0,0,0,0.75); min-width:280px; backdrop-filter:blur(16px); text-align:left;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:6px;">
-                        <span style="font-size:11.5px; font-weight:800; color:var(--theme-accent); text-transform:uppercase;">📑 Lọc Tầng (Checkbox)</span>
-                        <span id="layerFilterCountBadge" style="font-size:10px; background:rgba(56,189,248,0.2); color:#38BDF8; padding:2px 6px; border-radius:4px; font-weight:700;">{len(vis_nodes)}/{len(vis_nodes)} bài</span>
+                <!-- POPOVER CHỌN TẦNG CHECKBOX THÔNG MINH (2 CỘT GỌN GÀNG, NGĂN NẮP) -->
+                <div id="layerFilterPopover" onclick="event.stopPropagation();" style="display:none; position:absolute; top:46px; right:8px; z-index:99999; background:rgba(15, 23, 42, 0.98); border:1.5px solid var(--theme-accent); border-radius:12px; padding:9px 12px; box-shadow:0 12px 36px rgba(0,0,0,0.8), 0 0 15px rgba(var(--theme-glow-rgb),0.25); width:320px; max-width:92vw; backdrop-filter:blur(16px); text-align:left;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:4px;">
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <span style="font-size:11px; font-weight:800; color:var(--theme-accent); text-transform:uppercase;">📑 Lọc Phân Tầng</span>
+                            <span id="layerFilterCountBadge" style="font-size:9.5px; background:rgba(56,189,248,0.2); color:#38BDF8; padding:1px 5px; border-radius:4px; font-weight:700;">{len(vis_nodes)}/{len(vis_nodes)} bài</span>
+                        </div>
+                        <button type="button" onclick="toggleLayerFilterPopover()" style="background:transparent; border:none; color:var(--theme-text-dim); font-size:13px; cursor:pointer; padding:0 3px; line-height:1;" title="Đóng menu">✕</button>
                     </div>
                     
-                    <!-- Quick Preset Buttons -->
-                    <div style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:10px;">
-                        <button type="button" class="hud-mini-btn active" style="font-size:9.5px; padding:2px 6px;" onclick="setLayerPreset('all')">✓ Tất cả</button>
-                        <button type="button" class="hud-mini-btn" style="font-size:9.5px; padding:2px 6px;" onclick="setLayerPreset('f0_forward')">🚀 F0+Kế thừa</button>
-                        <button type="button" class="hud-mini-btn" style="font-size:9.5px; padding:2px 6px;" onclick="setLayerPreset('f0_backward')">🏛️ F0+Cội nguồn</button>
-                        <button type="button" class="hud-mini-btn" style="font-size:9.5px; padding:2px 6px;" onclick="setLayerPreset('f0_only')">★ Chỉ F0</button>
+                    <!-- Quick Preset Buttons (1 hàng 4 nút cân đối) -->
+                    <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:3px; margin-bottom:6px;">
+                        <button type="button" class="hud-mini-btn active" style="font-size:9px; padding:2px 2px; text-align:center; white-space:nowrap;" onclick="setLayerPreset('all')">✓ Tất cả</button>
+                        <button type="button" class="hud-mini-btn" style="font-size:9px; padding:2px 2px; text-align:center; white-space:nowrap;" onclick="setLayerPreset('f0_forward')">🚀 Kế thừa</button>
+                        <button type="button" class="hud-mini-btn" style="font-size:9px; padding:2px 2px; text-align:center; white-space:nowrap;" onclick="setLayerPreset('f0_backward')">🏛️ Cội nguồn</button>
+                        <button type="button" class="hud-mini-btn" style="font-size:9px; padding:2px 2px; text-align:center; white-space:nowrap;" onclick="setLayerPreset('f0_only')">★ Chỉ F0</button>
                     </div>
 
-                    <!-- Checkboxes list -->
-                    <div style="display:flex; flex-direction:column; gap:6px; font-size:11px; max-height:240px; overflow-y:auto; padding-right:4px;">
-                        <label style="display:flex; align-items:center; gap:8px; color:#F8FAFC; cursor:pointer; font-weight:700;">
-                            <input type="checkbox" id="chk_pin_f0" checked onchange="applyGraphFilters()" style="accent-color:var(--theme-accent); cursor:pointer;">
-                            <span>🔒 Ghim bài gốc F0 (Anchor Pinning)</span>
-                        </label>
-                        <div style="height:1px; background:rgba(255,255,255,0.1); margin:2px 0;"></div>
-                        <label style="display:flex; align-items:center; gap:8px; color:#FDE047; cursor:pointer;">
-                            <input type="checkbox" id="chk_layer_f0" checked onchange="applyGraphFilters()" style="accent-color:#FDE047; cursor:pointer;">
-                            <span>★ F0: Bài báo gốc tâm điểm</span>
-                        </label>
-                        <label style="display:flex; align-items:center; gap:8px; color:#38BDF8; cursor:pointer;">
-                            <input type="checkbox" id="chk_layer_f1" checked onchange="applyGraphFilters()" style="accent-color:#38BDF8; cursor:pointer;">
-                            <span>🚀 F1: Kế thừa trực tiếp</span>
-                        </label>
-                        <label style="display:flex; align-items:center; gap:8px; color:#60A5FA; cursor:pointer;">
-                            <input type="checkbox" id="chk_layer_f2" checked onchange="applyGraphFilters()" style="accent-color:#60A5FA; cursor:pointer;">
-                            <span>🚀 F2: Phát triển thế hệ 2</span>
-                        </label>
-                        <label style="display:flex; align-items:center; gap:8px; color:#93C5FD; cursor:pointer;">
-                            <input type="checkbox" id="chk_layer_f3" checked onchange="applyGraphFilters()" style="accent-color:#93C5FD; cursor:pointer;">
-                            <span>🚀 F3: Kế thừa mở rộng</span>
-                        </label>
-                        <label style="display:flex; align-items:center; gap:8px; color:#A78BFA; cursor:pointer;">
-                            <input type="checkbox" id="chk_layer_r1" checked onchange="applyGraphFilters()" style="accent-color:#A78BFA; cursor:pointer;">
-                            <span>🏛️ R1: Nền tảng trực tiếp</span>
-                        </label>
-                        <label style="display:flex; align-items:center; gap:8px; color:#C084FC; cursor:pointer;">
-                            <input type="checkbox" id="chk_layer_r2" checked onchange="applyGraphFilters()" style="accent-color:#C084FC; cursor:pointer;">
-                            <span>🏛️ R2: Cội nguồn thế hệ 2</span>
-                        </label>
-                        <label style="display:flex; align-items:center; gap:8px; color:#E879F9; cursor:pointer;">
-                            <input type="checkbox" id="chk_layer_r3" checked onchange="applyGraphFilters()" style="accent-color:#E879F9; cursor:pointer;">
-                            <span>🏛️ R3: Kinh điển sâu</span>
-                        </label>
-                        <label style="display:flex; align-items:center; gap:8px; color:#94A3B8; cursor:pointer;">
-                            <input type="checkbox" id="chk_layer_isolated" checked onchange="applyGraphFilters()" style="accent-color:#94A3B8; cursor:pointer;">
-                            <span>⚡ Bài độc lập (Không liên kết)</span>
-                        </label>
-                    </div>
-                    <div style="margin-top:8px; text-align:right;">
-                        <button type="button" class="hud-mini-btn" style="font-size:10px; padding:2px 8px;" onclick="toggleLayerFilterPopover()">Đóng ✕</button>
+                    <!-- Ghim bài gốc F0 -->
+                    <label style="display:flex; align-items:center; gap:6px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); border-radius:6px; padding:3px 7px; margin-bottom:6px; color:#F8FAFC; cursor:pointer; font-size:10px; font-weight:700;">
+                        <input type="checkbox" id="chk_pin_f0" checked onchange="applyGraphFilters()" style="accent-color:var(--theme-accent); cursor:pointer;">
+                        <span>🔒 Ghim bài gốc F0 (Anchor Pinning)</span>
+                    </label>
+
+                    <!-- 2 Cột Đối Xứng: Chiều Kế Thừa & Chiều Cội Nguồn -->
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
+                        <!-- Cột Trái: Kế Thừa -->
+                        <div style="display:flex; flex-direction:column; gap:3px; background:rgba(0,0,0,0.3); padding:5px; border-radius:6px; border:1px solid rgba(56,189,248,0.15);">
+                            <div style="font-size:8.5px; font-weight:800; color:#38BDF8; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px; border-bottom:1px solid rgba(56,189,248,0.2); padding-bottom:2px;">🚀 Chiều Kế Thừa</div>
+                            
+                            <label style="display:flex; align-items:center; gap:4px; color:#FDE047; cursor:pointer; font-size:9.5px; padding:1px 3px; border-radius:4px;">
+                                <input type="checkbox" id="chk_layer_f0" checked onchange="applyGraphFilters()" style="accent-color:#FDE047; cursor:pointer;">
+                                <span>★ F0: Bài gốc</span>
+                            </label>
+                            <label style="display:flex; align-items:center; gap:4px; color:#38BDF8; cursor:pointer; font-size:9.5px; padding:1px 3px; border-radius:4px;">
+                                <input type="checkbox" id="chk_layer_f1" checked onchange="applyGraphFilters()" style="accent-color:#38BDF8; cursor:pointer;">
+                                <span>🚀 F1: Trực tiếp</span>
+                            </label>
+                            <label style="display:flex; align-items:center; gap:4px; color:#60A5FA; cursor:pointer; font-size:9.5px; padding:1px 3px; border-radius:4px;">
+                                <input type="checkbox" id="chk_layer_f2" checked onchange="applyGraphFilters()" style="accent-color:#60A5FA; cursor:pointer;">
+                                <span>🚀 F2: Thế hệ 2</span>
+                            </label>
+                            <label style="display:flex; align-items:center; gap:4px; color:#93C5FD; cursor:pointer; font-size:9.5px; padding:1px 3px; border-radius:4px;">
+                                <input type="checkbox" id="chk_layer_f3" checked onchange="applyGraphFilters()" style="accent-color:#93C5FD; cursor:pointer;">
+                                <span>🚀 F3: Mở rộng</span>
+                            </label>
+                        </div>
+
+                        <!-- Cột Phải: Cội Nguồn & Khác -->
+                        <div style="display:flex; flex-direction:column; gap:3px; background:rgba(0,0,0,0.3); padding:5px; border-radius:6px; border:1px solid rgba(192,132,252,0.15);">
+                            <div style="font-size:8.5px; font-weight:800; color:#C084FC; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px; border-bottom:1px solid rgba(192,132,252,0.2); padding-bottom:2px;">🏛️ Chiều Cội Nguồn</div>
+                            
+                            <label style="display:flex; align-items:center; gap:4px; color:#A78BFA; cursor:pointer; font-size:9.5px; padding:1px 3px; border-radius:4px;">
+                                <input type="checkbox" id="chk_layer_r1" checked onchange="applyGraphFilters()" style="accent-color:#A78BFA; cursor:pointer;">
+                                <span>🏛️ R1: Nền tảng 1</span>
+                            </label>
+                            <label style="display:flex; align-items:center; gap:4px; color:#C084FC; cursor:pointer; font-size:9.5px; padding:1px 3px; border-radius:4px;">
+                                <input type="checkbox" id="chk_layer_r2" checked onchange="applyGraphFilters()" style="accent-color:#C084FC; cursor:pointer;">
+                                <span>🏛️ R2: Cội nguồn 2</span>
+                            </label>
+                            <label style="display:flex; align-items:center; gap:4px; color:#E879F9; cursor:pointer; font-size:9.5px; padding:1px 3px; border-radius:4px;">
+                                <input type="checkbox" id="chk_layer_r3" checked onchange="applyGraphFilters()" style="accent-color:#E879F9; cursor:pointer;">
+                                <span>🏛️ R3: Kinh điển 3</span>
+                            </label>
+                            <label style="display:flex; align-items:center; gap:4px; color:#94A3B8; cursor:pointer; font-size:9.5px; padding:1px 3px; border-radius:4px;">
+                                <input type="checkbox" id="chk_layer_isolated" checked onchange="applyGraphFilters()" style="accent-color:#94A3B8; cursor:pointer;">
+                                <span>⚡ Bài độc lập</span>
+                            </label>
+                        </div>
                     </div>
                 </div>
 
@@ -2719,9 +2737,14 @@ class CiteNetAgent:
 
     // Smart HUD Hover Inspector ở vùng an toàn (Góc trên canvas)
     function updateHoverInspectorNode(nid) {{
+        var pop = document.getElementById('layerFilterPopover');
+        if (pop && pop.style.display === 'block') return;
+
         var p = metaDict[nid];
         if (!p) return;
         var insp = document.getElementById('graphHoverInspector');
+        var edgeInsp = document.getElementById('graphEdgeInspector');
+        if (edgeInsp) edgeInsp.classList.remove('visible');
         if (!insp) return;
 
         var typeEl = document.getElementById('hoverChipType');
@@ -2835,6 +2858,9 @@ class CiteNetAgent:
     }}
 
     function updateHoverInspectorEdge(eid) {{
+        var pop = document.getElementById('layerFilterPopover');
+        if (pop && pop.style.display === 'block') return;
+
         var e = rawEdges.find(function(item) {{ return item.id === eid; }});
         if (!e) return;
         var sP = metaDict[e.from] || {{}};
@@ -2885,7 +2911,38 @@ class CiteNetAgent:
         var nodeInsp = document.getElementById('graphHoverInspector');
         var edgeInsp = document.getElementById('graphEdgeInspector');
         if (nodeInsp) nodeInsp.classList.remove('visible');
-        if (!edgeInsp) edgeInsp.classList.remove('visible');
+        if (edgeInsp) edgeInsp.classList.remove('visible');
+    }}
+
+    // Trợ năng Kéo Thả Tiện Lợi (Make Draggable Helper)
+    function makeElementDraggable(elm) {{
+        if (!elm) return;
+        var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+
+        elm.onmousedown = function(e) {{
+            if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'LABEL') return;
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            document.onmouseup = closeDragElement;
+            document.onmousemove = elementDrag;
+        }};
+
+        function elementDrag(e) {{
+            e.preventDefault();
+            pos1 = pos3 - e.clientX;
+            pos2 = pos4 - e.clientY;
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            elm.style.top = (elm.offsetTop - pos2) + "px";
+            elm.style.left = (elm.offsetLeft - pos1) + "px";
+            elm.style.bottom = 'auto';
+            elm.style.right = 'auto';
+        }}
+
+        function closeDragElement() {{
+            document.onmouseup = null;
+            document.onmousemove = null;
+        }}
     }}
 
     // Đăng ký sự kiện Hover chuẩn của Vis-Network
@@ -2904,6 +2961,30 @@ class CiteNetAgent:
     network.on('blurEdge', function(params) {{
         hoveredEdgeId = null;
         hideHoverInspector();
+    }});
+
+    // Global Click Outside & Escape listener
+    document.addEventListener('click', function(e) {{
+        var pop = document.getElementById('layerFilterPopover');
+        var btn = document.getElementById('layerFilterToggleBtn');
+        var dockBtn = document.getElementById('dockBtnLayers');
+        if (pop && pop.style.display === 'block') {{
+            if (!pop.contains(e.target) && e.target !== btn && e.target !== dockBtn && !btn.contains(e.target)) {{
+                pop.style.display = 'none';
+                if (btn) btn.classList.remove('active');
+            }}
+        }}
+    }});
+    document.addEventListener('keydown', function(e) {{
+        if (e.key === 'Escape') {{
+            var pop = document.getElementById('layerFilterPopover');
+            var btn = document.getElementById('layerFilterToggleBtn');
+            if (pop && pop.style.display === 'block') {{
+                pop.style.display = 'none';
+                if (btn) btn.classList.remove('active');
+            }}
+            hideHoverInspector();
+        }}
     }});
 
     // Particles & Pulsing Halos & Instant Active Laser Beam Stream (afterDrawing)
@@ -3065,12 +3146,15 @@ class CiteNetAgent:
         }}, 250);
     }});
 
-    // Auto-select primary seed on initial load & switch to timeline layout
+    // Auto-select primary seed on initial load & switch to timeline layout & Enable Draggable
     setTimeout(function() {{
         switchLayoutMode('timeline');
         if (rawNodes.length > 0) {{
             selectPaperFromTable(rawNodes[0].id);
         }}
+        makeElementDraggable(document.getElementById('graphHoverInspector'));
+        makeElementDraggable(document.getElementById('graphEdgeInspector'));
+        makeElementDraggable(document.getElementById('layerFilterPopover'));
     }}, 400);
 </script>
 </body>
