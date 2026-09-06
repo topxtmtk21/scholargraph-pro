@@ -432,7 +432,7 @@ class CiteNetAgent:
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Synapse Academic — Global Citation Network HUD</title>
     <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <style type="text/css">
         :root {{
             --theme-glow: #00F2FE;
@@ -771,7 +771,7 @@ class CiteNetAgent:
             height: 4px;
         }}
 
-        /* SMART HUD HOVER INSPECTOR (VÙNG AN TOÀN - KHÔNG CHE NODE) */
+        /* SMART HUD HOVER INSPECTOR (CHO NODE - GÓC TRÊN TRÁI) */
         .hud-hover-inspector {{
             position: absolute;
             top: 58px;
@@ -818,6 +818,49 @@ class CiteNetAgent:
             color: var(--theme-text-dim);
             border-top: 1px solid rgba(var(--theme-glow-rgb), 0.15);
             padding-top: 4px;
+        }}
+
+        /* EDGE EPISTEMIC INSPECTOR (CHO MŨI TÊN - GÓC TRÊN PHẢI VÙNG TRỐNG) */
+        .edge-epistemic-inspector {{
+            position: absolute;
+            top: 58px;
+            right: 16px;
+            z-index: 65;
+            width: 320px;
+            background: rgba(26, 16, 6, 0.90);
+            backdrop-filter: blur(22px);
+            -webkit-backdrop-filter: blur(22px);
+            border: 1.5px solid #F59E0B;
+            border-radius: 12px;
+            padding: 9px 13px;
+            box-shadow: 0 0 22px rgba(245, 158, 11, 0.35);
+            pointer-events: none;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            opacity: 0;
+            transform: translateY(-4px);
+            font-family: 'Roboto', -apple-system, sans-serif;
+            font-weight: 300;
+            font-size: 10.5px;
+            color: #FFFBEB;
+            line-height: 1.45;
+        }}
+        .edge-epistemic-inspector.visible {{
+            opacity: 1;
+            transform: translateY(0);
+        }}
+        .edge-inspector-tag {{
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 9.5px;
+            font-weight: 500;
+            color: #FDE047;
+            background: rgba(245, 158, 11, 0.18);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            padding: 2px 7px;
+            border-radius: 6px;
+            margin-bottom: 5px;
+            letter-spacing: 0.03em;
         }}
 
         /* SLIDE-OUT LEGEND DRAWER FROM SLIM DOCK */
@@ -1141,7 +1184,7 @@ class CiteNetAgent:
                 <div class="graph-subtitle">Project: {short_project_name}</div>
             </div>
 
-            <!-- SMART HUD HOVER INSPECTOR Ở VÙNG AN TOÀN (KHÔNG CHE NODE) -->
+            <!-- SMART HUD HOVER INSPECTOR Ở VÙNG AN TOÀN TRÁI (CHO NODE) -->
             <div id="graphHoverInspector" class="hud-hover-inspector">
                 <div class="hover-inspector-header">
                     <span id="hoverChipType" class="meta-chip" style="font-size:10px; padding:2px 8px; border-color:var(--theme-accent);">★ BÀI BÁO</span>
@@ -1150,6 +1193,16 @@ class CiteNetAgent:
                 <div id="hoverInspectorTitle" class="hover-inspector-title">Paper Title</div>
                 <div id="hoverInspectorMeta" class="hover-inspector-meta">Author • Journal • Citations</div>
                 <div id="hoverInspectorLinks" class="hover-inspector-links">↳ Đang liên kết: 3 tham chiếu • 5 kế thừa</div>
+            </div>
+
+            <!-- EDGE EPISTEMIC INSPECTOR Ở VÙNG AN TOÀN PHẢI (CHO MŨI TÊN - ROBOTO LIGHT) -->
+            <div id="graphEdgeInspector" class="edge-epistemic-inspector">
+                <div id="edgeInspectorHeader">
+                    <span id="edgeTypeBadge" class="edge-inspector-tag">⚡ DÒNG TRUYỀN TRI THỨC</span>
+                </div>
+                <div id="edgeEpistemicBody" style="margin-top:2px;">
+                    <!-- Nội dung học thuật độc đắc -->
+                </div>
             </div>
 
             <!-- TOP RIGHT MINI CONTROLS -->
@@ -1963,26 +2016,53 @@ class CiteNetAgent:
         if (!e) return;
         var sP = metaDict[e.from] || {{}};
         var dP = metaDict[e.to] || {{}};
-        var insp = document.getElementById('graphHoverInspector');
-        if (!insp) return;
+        var edgeInsp = document.getElementById('graphEdgeInspector');
+        var nodeInsp = document.getElementById('graphHoverInspector');
+        if (nodeInsp) nodeInsp.classList.remove('visible');
+        if (!edgeInsp) return;
 
-        var typeEl = document.getElementById('hoverChipType');
-        var yearEl = document.getElementById('hoverChipYear');
-        var titleEl = document.getElementById('hoverInspectorTitle');
-        var metaEl = document.getElementById('hoverInspectorMeta');
-        var linksEl = document.getElementById('hoverInspectorLinks');
+        var sYr = parseInt(sP.year || 2020, 10);
+        var dYr = parseInt(dP.year || 2020, 10);
+        var gap = Math.abs(sYr - dYr);
 
-        if (typeEl) typeEl.innerText = '⚡ MŨI TÊN TRÍCH DẪN';
-        if (yearEl) yearEl.innerText = (sP.year || '') + ' ➔ ' + (dP.year || '');
-        if (titleEl) titleEl.innerText = '[' + (sP.first_author || 'Paper') + '] kế thừa / tham chiếu [' + (dP.first_author || 'Paper') + ']';
-        if (metaEl) metaEl.innerText = (sP.venue || 'Venue') + ' ➔ ' + (dP.venue || 'Venue');
-        if (linksEl) linksEl.innerHTML = '✨ Luồng tri thức đang kích hoạt tia sáng laser liên tục';
-        insp.classList.add('visible');
+        var typeBadge = document.getElementById('edgeTypeBadge');
+        var bodyEl = document.getElementById('edgeEpistemicBody');
+
+        var eType = e.edge_type || 'direct';
+        var typeName = '🔷 Kế thừa 1 chiều trực tiếp';
+        var dynamicDesc = 'Công trình tiếp thu khung lý thuyết và mở rộng phương pháp nghiên cứu.';
+        
+        if (eType === 'mutual') {{
+            typeName = '🔶 Đối thoại học thuật 2 chiều (Reciprocal)';
+            dynamicDesc = 'Hai nhóm nghiên cứu trích dẫn chéo tương hỗ, hình thành trường phái tranh luận chuyên sâu.';
+        }} else if (eType === 'cross_bridge') {{
+            typeName = '🔮 Bắc cầu xuyên tầng cội nguồn (Cross-Bridge)';
+            dynamicDesc = 'Bước tiến mới neo trực tiếp vào nền tảng lý thuyết ban đầu mà không qua tầng trung gian.';
+        }} else if (eType === 'intra_layer') {{
+            typeName = '🟢 Đồng phát triển cùng phân tầng (Intra-Layer)';
+            dynamicDesc = 'Các công trình trong cùng thế hệ nghiên cứu bổ trợ dữ liệu thực chứng cho nhau.';
+        }}
+
+        if (typeBadge) typeBadge.innerText = typeName;
+        if (bodyEl) {{
+            bodyEl.innerHTML = 
+                '<div style="font-weight:400; color:#FDE047; margin-bottom:3px;">' +
+                    '[' + (sP.first_author || 'Paper A') + ' (' + (sP.year || 'n.d.') + ')] ➔ [' + (dP.first_author || 'Paper B') + ' (' + (dP.year || 'n.d.') + ')]' +
+                '</div>' +
+                '<div style="color:#E2E8F0; margin-bottom:4px; font-size:10px;">' + dynamicDesc + '</div>' +
+                '<div style="display:flex; justify-content:space-between; border-top:1px solid rgba(245,158,11,0.25); padding-top:4px; color:#A1A1AA; font-size:9.5px;">' +
+                    '<span>⏳ Độ trễ tiếp thu: <b>' + (gap === 0 ? 'Cùng năm' : gap + ' năm') + '</b></span>' +
+                    '<span>⚡ Trạng thái: <b>Laser Beam Stream Active</b></span>' +
+                '</div>';
+        }}
+        edgeInsp.classList.add('visible');
     }}
 
     function hideHoverInspector() {{
-        var insp = document.getElementById('graphHoverInspector');
-        if (insp) insp.classList.remove('visible');
+        var nodeInsp = document.getElementById('graphHoverInspector');
+        var edgeInsp = document.getElementById('graphEdgeInspector');
+        if (nodeInsp) nodeInsp.classList.remove('visible');
+        if (edgeInsp) edgeInsp.classList.remove('visible');
     }}
 
     // Đăng ký sự kiện Hover chuẩn của Vis-Network
