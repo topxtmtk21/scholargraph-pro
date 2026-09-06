@@ -14,8 +14,10 @@ Thư mục này chứa bộ cẩm nang kỹ thuật thực chiến (**Engineerin
   - **Chiến lược Khóa phiên bản phòng thủ (Version Shielding)**: Branching, Tagging, và lập Release Notes snapshot trước mỗi giai đoạn nâng cấp lớn.
   - **Kiến trúc Đa tầng dự phòng 3 lớp (Multi-Tier Fallback)**: Live API $\to$ Local Smart Cache $\to$ Heuristic Static Parsing.
   - **An toàn chuỗi nội suy đa ngôn ngữ (Cross-Language Escaping)**: Kỹ thuật xử lý thoát ký `{`, `}` trong Python f-string, chống bẫy Streamlit Markdown Indented Code Block, và chuẩn W3C Blob URL khi mở cửa sổ mới.
+  - **Ma trận Phân quyền đa tầng chi tiết (Granular RBAC Matrix)**: Phân định 4 cấp vai trò (`super_admin`, `admin`, `researcher`, `viewer`) và phân quyền chi tiết đến từng tính năng con của hệ thống (đặc biệt là phân hệ Mạng lưới trích dẫn khoa học).
+  - **Cô lập Môi trường kép (Cloud vs Local Dual-Mode Isolation)**: Bản Cloud bảo mật tối cao (loại bỏ nút bypass/1-click, triệt tiêu lộ email nhà phát triển, generic error handling); Bản Local duy trì 100% độ mượt mà, tự động Super Admin, không cản trở.
   - **Hệ thống Kiểm thử tự động 5 trụ cột (5-Pillar Test Suite)**: Unit/Syntax $\to$ Core Business $\to$ UI/Contrast (WCAG AAA/AA) $\to$ E2E Integration $\to$ Multi-Device Viewport.
-  - **Checklist vàng trước khi Commit**: Rà soát 6 bước nghiêm ngặt.
+  - **Checklist vàng trước khi Commit**: Rà soát 7 bước nghiêm ngặt.
 
 ### 2. 🌌 [Modern Futuristic UI/UX & Glassmorphism HUD Design System](file:///.agents/skills/futuristic-hud-design-system/SKILL.md)
 - **Mục tiêu**: Xây dựng trải nghiệm giao diện người dùng đỉnh cao, hiện đại (Futuristic HUD / Aero Glassmorphism) đạt chuẩn công thái học và tương thích $100\%$ mọi màn hình.

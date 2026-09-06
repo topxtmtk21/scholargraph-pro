@@ -87,23 +87,54 @@ Mọi dự án phần mềm chuyên nghiệp bắt buộc phải xây dựng h�
 
 ---
 
-## 🔐 5. Tiêu Chuẩn Bảo Mật & Phân Quyền Doanh Nghiệp (Enterprise RBAC)
+## 🔐 5. Tiêu Chuẩn Bảo Mật & Phân Quyền Doanh Nghiệp Đa Tầng (Granular RBAC)
 
-1. **Phân Quyền Theo Vai Trò (Role-Based Access Control - RBAC)**:
-   - Tách biệt rõ ràng quyền hạn giữa Quản trị viên (`super_admin`), Chuyên viên (`researcher`), và Khách (`guest`).
-2. **Cơ Chế Bắt Buộc Đổi Mật Khẩu Lần Đầu (`must_change_password`)**:
+Hệ thống chuyên nghiệp phải áp dụng ma trận phân quyền chi tiết đến từng phân hệ và tính năng con:
+
+1. **Phân Quyền Theo 4 Cấp Vai Trò (4-Tier RBAC)**:
+   - `super_admin`: Toàn quyền 100% hệ thống, bao gồm quản trị tài khoản, phân quyền, cấu hình khóa API, xem và quản lý toàn bộ cơ sở dữ liệu.
+   - `admin`: Quản lý dự án nghiên cứu, cấp phép tài khoản cấp dưới (`researcher`, `viewer`), giám sát nhật ký kiểm toán (Audit Logs).
+   - `researcher`: Toàn quyền thực hiện các nghiệp vụ nghiên cứu chuyên sâu (quét DOI, tương tác đồ thị mạng lưới phả hệ, điều tốc photon/laser, bóc tách bằng chứng APA 7, soạn thảo CARS, AI Copilot, xuất tệp). Bị chặn truy cập cổng quản trị user & cấu hình lõi.
+   - `viewer`: Chỉ xem (Read-Only) kết quả nghiên cứu, đồ thị và báo cáo. Bị khóa các hành vi tốn tài nguyên hoặc can thiệp dữ liệu: chạy quét đề tài mới, mở màn hình phụ $100\text{vh}$, xuất đồ thị HTML độc lập, đổi tham số phả hệ.
+
+2. **Ma Trận Phân Quyền Chi Tiết Đến Từng Tính Năng Con (Sub-Feature Granular Matrix)**:
+   - Trong mỗi phân hệ (đặc biệt là *Mạng lưới trích dẫn khoa học Synapse Academic*), từng nút bấm, thao tác hoặc cơ chế đồ họa (Laser Neon, điều tốc Photon $0\times \to 3\times$, bộ lọc bản thể học 4 loại mũi tên, tua dòng thời gian, tách cửa sổ độc lập) đều được kiểm soát bởi khóa quyền phân định `has_feature_access(user, feature_key)`.
+
+3. **Cơ Chế Bắt Buộc Đổi Mật Khẩu Lần Đầu (`must_change_password`)**:
    - Tài khoản cấp mới với mật khẩu tạm phải bị chặn truy cập nghiệp vụ cho đến khi hoàn tất đổi mật khẩu an toàn.
-3. **Nhật Ký Kiểm Toán Bất Biến (Immutable Audit Logging)**:
+
+4. **Nhật Ký Kiểm Toán Bất Biến (Immutable Audit Logging)**:
    - Ghi nhận mọi hành vi trọng yếu (Đăng nhập, Thay đổi cấu hình, Xuất dữ liệu, Phục hồi mật khẩu) kèm thời gian thực và định danh người dùng.
 
 ---
 
-## 🛠️ 6. Checklist Vàng Cho Kỹ Sư Phần Mềm (Pre-Commit Golden Checklist)
+## 🛡️ 6. Cách Ly Môi Trường Kép & Bảo Mật Trực Tuyến Tối Cao (Cloud vs Local Dual-Mode)
+
+Để đảm bảo vừa an toàn tuyệt đối khi triển khai trực tuyến (Online Cloud / Mobile), vừa giữ được trải nghiệm làm việc trơn tru, liền mạch cho nhà nghiên cứu trên máy cục bộ (Local Desktop):
+
+1. **Nguyên Tắc Cô Lập Bản Local (Zero-Friction Desktop Experience)**:
+   - Trên môi trường **Local** (`is_cloud == False`):
+     - Hệ thống tự động gán tài khoản Quản trị tối cao (`super_admin`).
+     - Tự động bỏ qua mọi rào cản đăng nhập, form nhập liệu mật khẩu hay kiểm tra quyền hạn.
+     - Bảo tồn 100% các tính năng đang hoạt động mượt mà, không gây phiền toái cho người dùng nội bộ.
+
+2. **Nguyên Tắc Bảo Mật Tối Cao Bản Online / Cloud / Mobile Web**:
+   - Trên môi trường **Online / Cloud** (`is_cloud == True`):
+     - **Triệt tiêu toàn bộ nút Bypass / Quick Login**: Tuyệt đối không để nút "Đăng nhập nhanh 1-Click quyền Super Admin" hoặc các nút autofill mật khẩu.
+     - **Bảo mật danh tính nhà phát triển (Zero Credential Leakage)**: Form đăng nhập, form khôi phục mật khẩu và chân trang (footer) tuyệt đối không được in sẵn địa chỉ email cá nhân của lập trình viên / Super Admin.
+     - **Phản hồi bảo mật an toàn (Generic Error Handling)**: Không trả về thông báo chi tiết giúp kẻ tấn công dò tìm tài khoản (User Enumeration).
+     - **Áp dụng nghiêm ngặt ma trận Granular RBAC**: Mọi tính năng con đều phải qua cổng kiểm duyệt quyền hạn trước khi hiển thị hoặc thực thi.
+
+---
+
+## 🛠️ 7. Checklist Vàng Cho Kỹ Sư Phần Mềm (Pre-Commit Golden Checklist)
 
 Trước khi xác nhận hoàn thành bất kỳ nhiệm vụ nào:
 - [ ] **1. Rà soát tương thích ngược**: Không sửa/xóa chữ ký hàm cũ, không xóa trường dữ liệu cũ.
 - [ ] **2. Kiểm tra chuỗi thoát ký**: Đảm bảo toàn bộ dấu `{`, `}` trong mã nhúng đã được thoát ký chính xác.
 - [ ] **3. Kiểm tra cú pháp toàn diện**: Chạy trình biên dịch bytecode cho 100% file mã nguồn.
 - [ ] **4. Chạy lại 100% bộ Test Suites**: Đảm bảo tất cả các bài kiểm thử cũ và mới đều đạt điểm xanh (All Passed).
-- [ ] **5. Kiểm tra trải nghiệm thực tế**: Thử nghiệm trên màn hình nhỏ (Mobile) và màn hình lớn (Desktop).
-- [ ] **6. Cập nhật tài liệu kỹ thuật**: Ghi chú rõ các thay đổi và gắn nhãn commit chuẩn mực.
+- [ ] **5. Kiểm tra tính an toàn bảo mật Cloud vs Local**: Đảm bảo bản Cloud bảo mật tối cao (không nút bypass, không lộ email dev, RBAC chi tiết) và bản Local không bị ảnh hưởng.
+- [ ] **6. Kiểm tra trải nghiệm thực tế**: Thử nghiệm trên màn hình nhỏ (Mobile) và màn hình lớn (Desktop).
+- [ ] **7. Cập nhật tài liệu kỹ thuật & SKILL**: Ghi chú rõ các thay đổi và gắn nhãn commit chuẩn mực.
+

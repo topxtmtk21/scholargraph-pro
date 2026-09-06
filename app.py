@@ -86,6 +86,9 @@ from utils.auth_manager import (
     SUPER_ADMIN_EMAIL,
     SECURITY_RECOVERY_EMAILS,
     DEFAULT_SUPER_ADMIN_PASS,
+    ROLE_PERMISSIONS,
+    has_feature_access,
+    get_user_permissions,
     authenticate_user,
     change_user_password,
     request_password_reset,
@@ -209,13 +212,13 @@ if IS_CLOUD_ENV and not st.session_state.auth_user:
     st.markdown("""
     <div style="max-width: 680px; margin: 20px auto 10px auto; text-align: center;">
         <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(56, 189, 248, 0.1); border:1px solid rgba(56, 189, 248, 0.3); padding:6px 16px; border-radius:24px; color:#38BDF8; font-size:12.5px; font-weight:700; margin-bottom:12px;">
-            🛡️ SCHOLARGRAPH PRO v3.5 ENTERPRISE • CỔNG XÁC THỰC BẢN QUYỀN
+            🛡️ SCHOLARGRAPH PRO ENTERPRISE • CỔNG XÁC THỰC BẢO MẬT CAO
         </div>
         <h1 style="font-size: 28px; font-weight: 900; color: var(--text-primary); margin-bottom: 6px; letter-spacing:-0.5px;">
             ĐĂNG NHẬP HỆ THỐNG HỌC THUẬT
         </h1>
         <p style="color: var(--text-secondary); font-size: 13.5px; margin: 0;">
-            Hệ thống quản lý truy cập khép kín theo tiêu chuẩn bảo mật Viện Nghiên cứu & Doanh nghiệp.
+            Hệ thống xác thực và phân quyền truy cập đa tầng (RBAC) theo tiêu chuẩn Viện Nghiên cứu & Doanh nghiệp.
         </p>
     </div>
     """, unsafe_allow_html=True)
@@ -231,82 +234,76 @@ if IS_CLOUD_ENV and not st.session_state.auth_user:
             ])
 
             with tab_login:
-                st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
+                st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
                 
-                # NÚT ĐĂNG NHẬP NHANH 1-CLICK DÀNH CHO ADMIN
-                if st.button("⚡ ĐĂNG NHẬP NHANH 1-CLICK (QUYỀN SUPER ADMIN)", type="primary", use_container_width=True, key="btn_quick_admin_login"):
-                    st.session_state.auth_user = {
-                        "id": 1,
-                        "email": "topxtmtk21@gmail.com",
-                        "full_name": "TRẦN DUY (Lead AI Research Engineer)",
-                        "role": "super_admin",
-                        "is_active": 1,
-                        "must_change_password": 0
-                    }
-                    st.success("✓ Đăng nhập thành công với quyền Super Admin!")
-                    st.rerun()
-
-                st.markdown("<div style='text-align:center; color:var(--text-muted); font-size:12px; margin:8px 0;'>— HOẶC ĐĂNG NHẬP BẰNG TÀI KHOẢN & MẬT KHẨU —</div>", unsafe_allow_html=True)
-
-                # Nút chọn nhanh tài khoản Super Admin
-                qc_col1, qc_col2 = st.columns(2)
-                with qc_col1:
-                    if st.button("👑 topxtmtk21@gmail.com", use_container_width=True, key="btn_fill_topxt"):
-                        st.session_state["login_email_val"] = "topxtmtk21@gmail.com"
-                        st.session_state["login_pass_val"] = "@123"
-                        st.rerun()
-                with qc_col2:
-                    if st.button("👑 tranduytno@gmail.com", use_container_width=True, key="btn_fill_tranduy"):
-                        st.session_state["login_email_val"] = "tranduytno@gmail.com"
-                        st.session_state["login_pass_val"] = "@123"
-                        st.rerun()
-
-                def_email = st.session_state.get("login_email_val", "topxtmtk21@gmail.com")
-                def_pass = st.session_state.get("login_pass_val", "@123")
-
-                login_email = st.text_input("📧 Địa chỉ Email tài khoản:", value=def_email, key="txt_login_email")
-                login_pass = st.text_input("🔑 Mật khẩu truy cập:", value=def_pass, type="password", key="txt_login_pass")
+                login_email = st.text_input(
+                    "📧 Địa chỉ Email tài khoản:",
+                    value="",
+                    placeholder="ten.nghiencuu@organization.edu.vn",
+                    key="txt_login_email"
+                )
+                login_pass = st.text_input(
+                    "🔑 Mật khẩu truy cập:",
+                    value="",
+                    type="password",
+                    placeholder="••••••••",
+                    key="txt_login_pass"
+                )
                 
-                if st.button("🚀 ĐĂNG NHẬP BẰNG MẬT KHẨU", use_container_width=True, key="btn_do_login"):
-                    success, user_obj, msg = authenticate_user(login_email, login_pass)
-                    if success and user_obj:
-                        st.session_state.auth_user = user_obj
-                        st.success(msg)
-                        st.rerun()
+                st.markdown("<div style='height: 6px;'></div>", unsafe_allow_html=True)
+                if st.button("🚀 ĐĂNG NHẬP HỆ THỐNG", type="primary", use_container_width=True, key="btn_do_login"):
+                    if not login_email.strip() or not login_pass.strip():
+                        st.warning("⚠️ Vui lòng nhập đầy đủ Email và Mật khẩu.")
                     else:
-                        st.error(f"❌ {msg}")
+                        success, user_obj, msg = authenticate_user(login_email, login_pass)
+                        if success and user_obj:
+                            st.session_state.auth_user = user_obj
+                            st.success(msg)
+                            st.rerun()
+                        else:
+                            st.error(f"❌ {msg}")
 
             with tab_forgot:
-                st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
+                st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
                 st.markdown("""
-                <div style="background:rgba(56, 189, 248, 0.06); border:1px solid rgba(56, 189, 248, 0.2); border-radius:10px; padding:12px 14px; font-size:12.5px; color:var(--text-secondary); margin-bottom:12px;">
-                    🛡️ <b>Quy trình bảo mật kép:</b> Khi yêu cầu đặt lại mật khẩu, một mã Token xác thực bảo mật 32-ký tự sẽ được tạo ra ngay lập tức và định tuyến bảo mật đến 2 hòm thư:<br/>
-                    1. <code>topxtmtk21@gmail.com</code> (hoặc <code>topxtmtkt21@gmail.com</code>)<br/>
-                    2. <code>tranduytno@gmail.com</code>
+                <div style="background:rgba(56, 189, 248, 0.06); border:1px solid rgba(56, 189, 248, 0.2); border-radius:10px; padding:12px 14px; font-size:12.5px; color:var(--text-secondary); margin-bottom:12px; line-height:1.5;">
+                    🛡️ <b>Quy trình bảo mật cấp cao:</b> Khi yêu cầu đặt lại mật khẩu, một mã Token xác thực bảo mật chuẩn 32-ký tự sẽ được khởi tạo và chuyển tiếp an toàn đến kênh quản trị ủy quyền của hệ thống.
                 </div>
                 """, unsafe_allow_html=True)
                 
-                req_email = st.text_input("Nhập email cần khôi phục mật khẩu:", value=login_email, key="txt_req_reset_email")
-                if st.button("📨 TẠO MÃ KHÔI PHỤC BẢO MẬT", type="primary", use_container_width=True, key="btn_send_reset_token"):
-                    ok_r, msg_r, token_val = request_password_reset(req_email)
-                    if ok_r:
-                        st.session_state["active_reset_token"] = token_val
-                        st.success(msg_r)
-                        if token_val:
-                            st.info(f"🔑 **MÃ TOKEN XÁC THỰC CỦA BẠN:** `{token_val}`")
-                            st.markdown("👉 **Hệ thống đã tự động lưu mã Token này! Bạn hãy chuyển sang Tab 3 'Nhập Token đặt lại mật khẩu' để đặt mật khẩu mới ngay.**")
+                req_email = st.text_input(
+                    "Nhập email tài khoản cần khôi phục mật khẩu:",
+                    value="",
+                    placeholder="ten.nghiencuu@organization.edu.vn",
+                    key="txt_req_reset_email"
+                )
+                if st.button("📨 GỬI LỆNH KHÔI PHỤC BẢO MẬT", type="primary", use_container_width=True, key="btn_send_reset_token"):
+                    if not req_email.strip() or "@" not in req_email:
+                        st.warning("Vui lòng nhập định dạng email hợp lệ.")
                     else:
-                        st.error(msg_r)
+                        ok_r, msg_r, token_val = request_password_reset(req_email)
+                        if ok_r:
+                            st.session_state["active_reset_token"] = token_val
+                            st.success(msg_r)
+                            if token_val:
+                                st.info("🔑 **Mã Token xác thực của bạn đã sẵn sàng trong phiên làm việc!**")
+                                st.markdown("👉 **Vui lòng chuyển sang Tab 3 'Nhập Token đặt lại mật khẩu' để thiết lập mật khẩu mới ngay.**")
+                        else:
+                            st.error(msg_r)
 
             with tab_reset:
-                st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
+                st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
                 default_tok = st.session_state.get("active_reset_token", "")
-                reset_tok_input = st.text_input("Mã Token xác thực:", value=default_tok, key="txt_reset_tok_val")
+                reset_tok_input = st.text_input("Mã Token xác thực bảo mật:", value=default_tok, placeholder="Dán mã Token 32 ký tự tại đây", key="txt_reset_tok_val")
                 new_p1 = st.text_input("Mật khẩu mới (Tối thiểu 6 ký tự):", type="password", key="txt_new_p1")
                 new_p2 = st.text_input("Xác nhận lại mật khẩu mới:", type="password", key="txt_new_p2")
 
                 if st.button("✓ XÁC NHẬN CẬP NHẬT MẬT KHẨU MỚI", type="primary", use_container_width=True, key="btn_submit_reset_pw"):
-                    if new_p1 != new_p2:
+                    if not reset_tok_input.strip():
+                        st.warning("Vui lòng cung cấp mã Token xác thực.")
+                    elif len(new_p1) < 6:
+                        st.error("Mật khẩu mới phải có tối thiểu 6 ký tự.")
+                    elif new_p1 != new_p2:
                         st.error("Mật khẩu xác nhận không khớp.")
                     else:
                         ok_reset, msg_reset = verify_and_reset_password(reset_tok_input, new_p1)
@@ -318,8 +315,8 @@ if IS_CLOUD_ENV and not st.session_state.auth_user:
 
     st.markdown("""
     <div style="text-align: center; color: var(--text-muted); font-size: 11.5px; margin-top: 40px; padding: 16px; border-top: 1px solid var(--border-subtle);">
-        SCHOLARGRAPH PRO &copy; 2026 Enterprise Edition. Phát triển bởi <b>TRẦN DUY (Lead AI Research Engineer)</b>.<br/>
-        Liên hệ hỗ trợ kỹ thuật và phân quyền tài khoản: <code>topxtmtkt21@gmail.com</code> | <code>tranduytno@gmail.com</code>
+        SCHOLARGRAPH PRO &copy; 2026 Enterprise Academic Edition.<br/>
+        Hệ thống phân quyền truy cập học thuật cấp Viện & Doanh nghiệp. Mọi yêu cầu cấp quyền vui lòng liên hệ Ban Quản Trị Hệ Thống.
     </div>
     """, unsafe_allow_html=True)
     st.stop()
@@ -424,18 +421,29 @@ with st.sidebar:
 
     st.markdown('<div class="menu-header-badge" style="margin-top:12px;">TRÌNH ĐƠN KHÔNG GIAN LÀM VIỆC</div>', unsafe_allow_html=True)
     
-    nav_options = [
-        "01. Khởi tạo & Nhập mã DOI",
-        "02. Mạng lưới trích dẫn khoa học",
-        "03. Bảng tổng hợp phương pháp (APA 7)",
-        "04. Tóm lược luận điểm song ngữ",
-        "05. Soạn thảo CARS & Phản biện mô phỏng",
-        "06. Tải về trọn bộ hồ sơ & AI Copilot",
-        "07. Cài đặt hệ thống & Gemini 2.0",
-        "08. Hướng dẫn sử dụng & Cẩm nang"
-    ]
-    if is_admin_or_super:
+    # Ma trận phân quyền động cho từng module
+    nav_options = []
+    if has_feature_access(cur_auth, "mod_01_doi_intake", IS_CLOUD_ENV):
+        nav_options.append("01. Khởi tạo & Nhập mã DOI")
+    if has_feature_access(cur_auth, "mod_02_citenet", IS_CLOUD_ENV):
+        nav_options.append("02. Mạng lưới trích dẫn khoa học")
+    if has_feature_access(cur_auth, "mod_03_apa_table", IS_CLOUD_ENV):
+        nav_options.append("03. Bảng tổng hợp phương pháp (APA 7)")
+    if has_feature_access(cur_auth, "mod_04_synthesis", IS_CLOUD_ENV):
+        nav_options.append("04. Tóm lược luận điểm song ngữ")
+    if has_feature_access(cur_auth, "mod_05_cars_draft", IS_CLOUD_ENV):
+        nav_options.append("05. Soạn thảo CARS & Phản biện mô phỏng")
+    if has_feature_access(cur_auth, "mod_06_downloads", IS_CLOUD_ENV):
+        nav_options.append("06. Tải về trọn bộ hồ sơ & AI Copilot")
+    if has_feature_access(cur_auth, "mod_07_settings", IS_CLOUD_ENV):
+        nav_options.append("07. Cài đặt hệ thống & Gemini 2.0")
+    if has_feature_access(cur_auth, "mod_08_guide", IS_CLOUD_ENV):
+        nav_options.append("08. Hướng dẫn sử dụng & Cẩm nang")
+    if has_feature_access(cur_auth, "mod_09_user_admin", IS_CLOUD_ENV):
         nav_options.append("09. Quản trị hệ thống & Phân quyền")
+
+    if not nav_options:
+        nav_options = ["02. Mạng lưới trích dẫn khoa học", "08. Hướng dẫn sử dụng & Cẩm nang"]
 
     # Xử lý điều hướng an toàn trước khi khởi tạo widget radio
     if st.session_state.get("target_nav"):
@@ -449,7 +457,7 @@ with st.sidebar:
         st.session_state["target_nav"] = None
 
     if "workspace_nav_radio" not in st.session_state:
-        st.session_state["workspace_nav_radio"] = "01. Khởi tạo & Nhập mã DOI"
+        st.session_state["workspace_nav_radio"] = nav_options[0]
         
     if st.session_state["workspace_nav_radio"] not in nav_options:
         matched = None
@@ -486,9 +494,10 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
     # QUẢN LÝ ĐỀ TÀI & DỰ ÁN (SQLITE DATABASE)
+    can_manage_proj = has_feature_access(cur_auth, "project_save_delete", IS_CLOUD_ENV)
     st.markdown('<div class="menu-header-badge" style="margin-top:16px;">QUẢN LÝ ĐỀ TÀI & DỰ ÁN (SQLITE)</div>', unsafe_allow_html=True)
     
-    if st.session_state.pipeline_results:
+    if st.session_state.pipeline_results and can_manage_proj:
         with st.expander("💾 Lưu đề tài hiện tại", expanded=False):
             save_name = st.text_input("Tên đề tài cần lưu:", value=f"Đề tài {time.strftime('%d/%m %H:%M')}", key="save_proj_name_input")
             if st.button("Lưu vào cơ sở dữ liệu", use_container_width=True, key="btn_save_proj"):
@@ -501,9 +510,25 @@ with st.sidebar:
         proj_map = {f"#{p['id']} • {p['name']} ({p['total_papers']} bài)": p['id'] for p in saved_projects}
         sel_proj_str = st.selectbox("Chọn đề tài đã lưu:", options=["-- Chọn đề tài để mở lại --"] + list(proj_map.keys()), label_visibility="collapsed")
         if sel_proj_str != "-- Chọn đề tài để mở lại --":
-            col_open, col_del = st.columns([2, 1])
-            with col_open:
-                if st.button("📂 Mở đề tài", use_container_width=True, key="btn_open_proj"):
+            if can_manage_proj:
+                col_open, col_del = st.columns([2, 1])
+                with col_open:
+                    if st.button("📂 Mở đề tài", use_container_width=True, key="btn_open_proj"):
+                        target_pid = proj_map[sel_proj_str]
+                        proj_data = load_project(target_pid)
+                        if proj_data and proj_data.get("pipeline_results"):
+                            st.session_state.pipeline_results = proj_data["pipeline_results"]
+                            st.session_state.doi_input_val = proj_data.get("dois_str", "")
+                            st.toast(f"Đã mở đề tài: {proj_data['name']}")
+                            st.rerun()
+                with col_del:
+                    if st.button("🗑️ Xóa", use_container_width=True, key="btn_del_proj"):
+                        target_pid = proj_map[sel_proj_str]
+                        delete_project(target_pid)
+                        st.toast("Đã xóa đề tài khỏi cơ sở dữ liệu.")
+                        st.rerun()
+            else:
+                if st.button("📂 Mở xem đề tài", use_container_width=True, key="btn_open_proj_viewer"):
                     target_pid = proj_map[sel_proj_str]
                     proj_data = load_project(target_pid)
                     if proj_data and proj_data.get("pipeline_results"):
@@ -511,12 +536,6 @@ with st.sidebar:
                         st.session_state.doi_input_val = proj_data.get("dois_str", "")
                         st.toast(f"Đã mở đề tài: {proj_data['name']}")
                         st.rerun()
-            with col_del:
-                if st.button("🗑️ Xóa", use_container_width=True, key="btn_del_proj"):
-                    target_pid = proj_map[sel_proj_str]
-                    delete_project(target_pid)
-                    st.toast("Đã xóa đề tài khỏi cơ sở dữ liệu.")
-                    st.rerun()
 
 # -----------------------------------------------------------------------------
 # THANH ĐIỀU HƯỚNG TRÊN CÙNG (GLOBAL SYNAPSE ACADEMIC HUD HEADER BAR)
@@ -1059,7 +1078,13 @@ if "01." in workspace_nav:
             """, unsafe_allow_html=True)
 
     with col_btn:
-        start_btn = st.button("🚀 BẮT ĐẦU PHÂN TÍCH KIM CƯƠNG 2 CHIỀU & SOẠN THẢO", type="primary", use_container_width=True)
+        can_run_pipe = has_feature_access(cur_auth, "pipeline_execute", IS_CLOUD_ENV)
+        if can_run_pipe:
+            start_btn = st.button("🚀 BẮT ĐẦU PHÂN TÍCH KIM CƯƠNG 2 CHIỀU & SOẠN THẢO", type="primary", use_container_width=True)
+        else:
+            start_btn = False
+            st.button("🔒 YÊU CẦU QUYỀN RESEARCHER ĐỂ QUÉT ĐỀ TÀI", disabled=True, use_container_width=True, help="Tài khoản Viewer chỉ có quyền xem dữ liệu đề tài có sẵn.")
+        
         current_doi_val = st.session_state.get("doi_input_val", "").strip()
         cached_pipe = get_cached_pipeline_execution(current_doi_val) if current_doi_val else None
         if cached_pipe and not st.session_state.pipeline_results:
@@ -1344,16 +1369,25 @@ document.getElementById('btnPopout').addEventListener('click', function() {{
 </script>
 </body>
 </html>"""
-            components.html(popout_btn_html, height=44)
+        with col_g2:
+            can_popout = has_feature_access(cur_auth, "synapse_standalone_popout", IS_CLOUD_ENV)
+            if can_popout:
+                components.html(popout_btn_html, height=44)
+            else:
+                st.button("🔒 MÀN HÌNH PHỤ (CẦN QUYỀN)", disabled=True, use_container_width=True, help="Yêu cầu quyền Researcher/Admin để mở màn hình phụ 100vh độc lập.")
         with col_g3:
-            st.download_button(
-                "📥 Tải tệp HTML",
-                data=active_network_html,
-                file_name="so_do_mang_luoi_kim_cuong.html",
-                mime="text/html",
-                use_container_width=True,
-                key="btn_dl_active_net_html"
-            )
+            can_export_html = has_feature_access(cur_auth, "synapse_export_html", IS_CLOUD_ENV)
+            if can_export_html:
+                st.download_button(
+                    "📥 Tải tệp HTML",
+                    data=active_network_html,
+                    file_name="so_do_mang_luoi_kim_cuong.html",
+                    mime="text/html",
+                    use_container_width=True,
+                    key="btn_dl_active_net_html"
+                )
+            else:
+                st.button("🔒 Tải tệp HTML", disabled=True, use_container_width=True, help="Yêu cầu quyền Researcher/Admin để tải HTML mạng lưới.")
 
         # Hiển thị sơ đồ tương tác chuẩn quốc tế (HUD Deck cao 890px đầy đủ các panel)
         components.html(active_network_html, height=890, scrolling=True)

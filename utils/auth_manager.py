@@ -26,6 +26,77 @@ SUPER_ADMIN_EMAIL = "tranduytno@gmail.com"
 SECURITY_RECOVERY_EMAILS = ["topxtmtk21@gmail.com", "topxtmtkt21@gmail.com", "tranduytno@gmail.com"]
 DEFAULT_SUPER_ADMIN_PASS = "@123"
 
+# ==============================================================================
+# MA TRẬN PHÂN QUYỀN ĐA TẦNG CHI TIẾT (GRANULAR RBAC PERMISSIONS MATRIX)
+# 4 CẤP VAI TRÒ: super_admin > admin > researcher > viewer
+# ==============================================================================
+ROLE_PERMISSIONS = {
+    # 1. Module-level Access
+    "mod_01_doi_intake": ["super_admin", "admin", "researcher"],
+    "mod_02_citenet": ["super_admin", "admin", "researcher", "viewer"],
+    "mod_03_apa_table": ["super_admin", "admin", "researcher", "viewer"],
+    "mod_04_synthesis": ["super_admin", "admin", "researcher", "viewer"],
+    "mod_05_cars_draft": ["super_admin", "admin", "researcher", "viewer"],
+    "mod_06_downloads": ["super_admin", "admin", "researcher", "viewer"],
+    "mod_07_settings": ["super_admin", "admin"],
+    "mod_08_guide": ["super_admin", "admin", "researcher", "viewer"],
+    "mod_09_user_admin": ["super_admin", "admin"],
+    "mod_09_audit_logs": ["super_admin", "admin"],
+
+    # 2. Phân vùng Mạng lưới trích dẫn khoa học (Synapse Academic Sub-Features)
+    "synapse_view_graph": ["super_admin", "admin", "researcher", "viewer"],
+    "synapse_search_focus": ["super_admin", "admin", "researcher", "viewer"],
+    "synapse_view_node_details": ["super_admin", "admin", "researcher", "viewer"],
+    "synapse_lineage_trace": ["super_admin", "admin", "researcher"],
+    "synapse_laser_beam": ["super_admin", "admin", "researcher"],
+    "synapse_photon_speed": ["super_admin", "admin", "researcher"],
+    "synapse_node_physics": ["super_admin", "admin", "researcher"],
+    "synapse_ontology_filter": ["super_admin", "admin", "researcher"],
+    "synapse_timeline_playback": ["super_admin", "admin", "researcher"],
+    "synapse_standalone_popout": ["super_admin", "admin", "researcher"],
+    "synapse_export_html": ["super_admin", "admin", "researcher"],
+    "synapse_export_bundle": ["super_admin", "admin", "researcher"],
+
+    # 3. Tính năng hành động nâng cao & Tốn tài nguyên
+    "pipeline_execute": ["super_admin", "admin", "researcher"],
+    "project_save_delete": ["super_admin", "admin", "researcher"],
+    "llm_deep_synthesis": ["super_admin", "admin", "researcher"],
+    "pdf_batch_download": ["super_admin", "admin", "researcher"],
+    "user_management_edit": ["super_admin", "admin"],
+    "audit_log_view": ["super_admin", "admin"]
+}
+
+def has_feature_access(user_or_role: Any, feature_key: str, is_cloud: bool = True) -> bool:
+    """
+    Kiểm tra quyền truy cập chi tiết đến từng module hoặc tính năng con.
+    - Bản LOCAL (is_cloud=False): Luôn trả về True (toàn quyền, không hạn chế).
+    - Bản ONLINE/CLOUD (is_cloud=True): Phân quyền nghiêm ngặt theo RBAC.
+    """
+    if not is_cloud:
+        return True
+    if not user_or_role:
+        return False
+    
+    role = "viewer"
+    if isinstance(user_or_role, dict):
+        role = user_or_role.get("role", "viewer")
+    elif isinstance(user_or_role, str):
+        role = user_or_role
+    
+    role = str(role).strip().lower()
+    if role == "super_admin":
+        return True
+        
+    allowed_roles = ROLE_PERMISSIONS.get(feature_key, [])
+    return role in allowed_roles
+
+def get_user_permissions(user_or_role: Any, is_cloud: bool = True) -> Dict[str, bool]:
+    """Trả về từ điển trạng thái quyền hạn của toàn bộ các tính năng con trong hệ thống."""
+    return {
+        f_key: has_feature_access(user_or_role, f_key, is_cloud=is_cloud)
+        for f_key in ROLE_PERMISSIONS.keys()
+    }
+
 DB_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
 AUTH_DB_PATH = os.path.join(DB_DIR, "scholargraph_auth.db")
 
@@ -253,14 +324,12 @@ def request_password_reset(target_email: str) -> Tuple[bool, str, Optional[str]]
     log_audit_event(
         target_email, 
         "RESET_REQUESTED", 
-        f"Yêu cầu cấp lại mật khẩu. Mã Token gửi về: {dispatched_str}"
+        f"Yêu cầu cấp lại mật khẩu cho {target_email}. Định tuyến bảo mật nội bộ."
     )
 
     msg = (
-        f"Đã phát lệnh đặt lại mật khẩu cho tài khoản: {target_email}.\n"
-        f"Liên kết và mã Token xác thực đã được định tuyến gửi về 2 hòm thư bảo mật tối cao:\n"
-        f"1. {SECURITY_RECOVERY_EMAILS[0]}\n"
-        f"2. {SECURITY_RECOVERY_EMAILS[1]}"
+        f"✓ Đã phát lệnh đặt lại mật khẩu cho tài khoản: {target_email}.\n"
+        f"Mã Token xác thực bảo mật đã được khởi tạo và định tuyến đến kênh bảo mật ủy quyền của Quản trị viên."
     )
     return True, msg, token
 
