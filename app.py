@@ -434,12 +434,10 @@ with st.sidebar:
 
     # Đồng bộ state của widget radio trước khi render để đảm bảo nhận lệnh điều hướng ngoài tức thì
     st.session_state["workspace_nav_radio"] = st.session_state["workspace_nav"]
-    nav_default_index = nav_options.index(st.session_state["workspace_nav"])
 
     workspace_nav = st.radio(
         "Chọn màn hình làm việc:",
         nav_options,
-        index=nav_default_index,
         key="workspace_nav_radio",
         label_visibility="collapsed"
     )
