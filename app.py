@@ -420,20 +420,16 @@ with st.sidebar:
     if is_admin_or_super:
         nav_options.append("09. Quản trị hệ thống & Phân quyền")
 
-    if "workspace_nav" not in st.session_state:
-        st.session_state["workspace_nav"] = "01. Khởi tạo & Nhập mã DOI"
+    if "workspace_nav_radio" not in st.session_state:
+        st.session_state["workspace_nav_radio"] = "01. Khởi tạo & Nhập mã DOI"
         
-    cur_nav_val = st.session_state["workspace_nav"]
-    if cur_nav_val not in nav_options:
+    if st.session_state["workspace_nav_radio"] not in nav_options:
         matched = None
         for opt in nav_options:
-            if cur_nav_val.split('.')[0] == opt.split('.')[0] or cur_nav_val.lower() in opt.lower() or opt.lower() in cur_nav_val.lower():
+            if st.session_state["workspace_nav_radio"].split('.')[0] == opt.split('.')[0]:
                 matched = opt
                 break
-        st.session_state["workspace_nav"] = matched if matched else nav_options[0]
-
-    # Đồng bộ state của widget radio trước khi render để đảm bảo nhận lệnh điều hướng ngoài tức thì
-    st.session_state["workspace_nav_radio"] = st.session_state["workspace_nav"]
+        st.session_state["workspace_nav_radio"] = matched if matched else nav_options[0]
 
     workspace_nav = st.radio(
         "Chọn màn hình làm việc:",
