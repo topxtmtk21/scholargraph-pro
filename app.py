@@ -501,10 +501,41 @@ st.markdown(f"""
             <span class="top-brand-text">SCHOLARGRAPH PRO</span>
             <span class="top-brand-ver">v3.5</span>
         </div>
-        <div class="top-brand-author">Tác giả: TRẦN DUY</div>
+<div class="top-brand-author">Tác giả: TRẦN DUY</div>
     </div>
 </div>
 """, unsafe_allow_html=True)
+
+# -----------------------------------------------------------------------------
+# THANH ĐIỀU HƯỚNG NHANH CẢM ỨNG (MOBILE & TABLET QUICK NAV CHIPS)
+# Giúp người dùng điện thoại / máy tính bảng chuyển sang "Mạng lưới trích dẫn" và các chức năng ngay trên màn hình mà không cần mở Sidebar
+# -----------------------------------------------------------------------------
+st.markdown("""
+<div style="display:flex; align-items:center; justify-content:space-between; margin: -6px 0 10px 0; padding: 6px 12px; background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: 10px;">
+    <div style="font-size:12px; font-weight:700; color:var(--primary-accent); display:flex; align-items:center; gap:6px;">
+        <span>🧭</span> <span>TRÌNH ĐƠN CHUYỂN NHANH (DI ĐỘNG & MÁY TÍNH BẢNG):</span>
+    </div>
+    <div style="font-size:11px; color:var(--text-muted);">Chạm để xem ngay ➔</div>
+</div>
+""", unsafe_allow_html=True)
+
+q_cols_mobile = st.columns(4)
+q_quick_targets = [
+    ("🚀 01. Nhập DOI", "01. Khởi tạo & Nhập mã DOI"),
+    ("🌐 02. Mạng Lưới Trích Dẫn", "02. Mạng lưới trích dẫn khoa học"),
+    ("📊 03. Ma Trận APA 7", "03. Bảng tổng hợp phương pháp (APA 7)"),
+    ("✍️ 05. Soạn Thảo CARS", "05. Soạn thảo CARS & Phản biện mô phỏng"),
+]
+
+for q_i, (q_txt, q_val) in enumerate(q_quick_targets):
+    with q_cols_mobile[q_i]:
+        is_cur = (q_val in workspace_nav)
+        if st.button(q_txt, type="primary" if is_cur else "secondary", use_container_width=True, key=f"btn_global_qnav_{q_i}"):
+            st.session_state["workspace_nav"] = q_val
+            st.session_state["workspace_nav_radio"] = q_val
+            st.rerun()
+
+st.markdown("<div style='height: 4px;'></div>", unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
 # QUY TRÌNH ĐIỀU PHỐI HỌC THUẬT TỰ ĐỘNG (SAFE PIPELINE)
@@ -1254,7 +1285,37 @@ elif "02." in workspace_nav:
                         unsafe_allow_html=True
                     )
     else:
-        st.info("💡 Vui lòng truy cập menu **'01. Khởi tạo & Nhập mã DOI'** và bấm Bắt đầu phân tích để xem sơ đồ mạng lưới tri thức.")
+        st.markdown("""
+        <div style="background:var(--bg-surface); border:1px solid var(--border-hover); border-radius:16px; padding:24px 20px; margin-bottom:20px; text-align:center; box-shadow:0 8px 30px rgba(0,0,0,0.12);">
+            <div style="font-size:36px; margin-bottom:8px;">🌐</div>
+            <h2 style="color:var(--text-primary); font-size:20px; margin:0 0 8px 0; font-weight:800;">
+                SƠ ĐỒ MẠNG LƯỚI TRÍCH DẪN KHOA HỌC (CITATION KNOWLEDGE GRAPH)
+            </h2>
+            <p style="color:var(--text-secondary); font-size:13.5px; max-width:700px; margin:0 auto 18px auto; line-height:1.6;">
+                Khám phá bản đồ tri thức tương tác đa chiều chuẩn quốc tế (VOSviewer, HistCite, CiteSpace) với phân tầng trích dẫn 2 thế hệ từ mạng lưới OpenAlex và thẩm định Scopus Q1/Q2.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        c_m2_1, c_m2_2 = st.columns([1.6, 1], gap="medium")
+        with c_m2_1:
+            if st.button("🚀 BẬT BẢN ĐỒ MẪU NGAY (20 BÀI BÁO BÁO CHÍ & AI - SCOPUS Q1)", type="primary", use_container_width=True, key="btn_m2_run_demo"):
+                demo_dois = ["10.1177/1464884918757072", "10.1080/17512786.2017.1320773"]
+                st.session_state.doi_input_val = ", ".join(demo_dois)
+                run_academic_pipeline(
+                    dois=demo_dois,
+                    g1_lim=gen1_limit,
+                    g2_lim=gen2_limit,
+                    target_synth=synth_target,
+                    llm_mode=llm_choice,
+                    api_key=api_key_val,
+                    email=email_val
+                )
+        with c_m2_2:
+            if st.button("📥 Hoặc nhập mã DOI riêng tại Menu 01 ➔", use_container_width=True, key="btn_m2_goto_m1"):
+                st.session_state["workspace_nav"] = "01. Khởi tạo & Nhập mã DOI"
+                st.session_state["workspace_nav_radio"] = "01. Khởi tạo & Nhập mã DOI"
+                st.rerun()
 
 # -----------------------------------------------------------------------------
 # MÀN HÌNH 3: BẢNG TỔNG HỢP PHƯƠNG PHÁP & KẾT QUẢ (CHUẨN APA 7 — CẤU TRÚC ĐOẠN ĐẸP)
