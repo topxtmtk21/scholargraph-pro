@@ -19,7 +19,9 @@ from utils.bib_formatter import (
     format_paper_citation,
     generate_multi_style_references_markdown,
     generate_notion_sync_payload,
-    generate_zotero_sync_payload
+    generate_zotero_sync_payload,
+    generate_latex_manuscript,
+    generate_latex_zip_bundle
 )
 from utils.packager import (
     create_research_bundle_zip,
@@ -47,7 +49,9 @@ from utils.pdf_parser import (
     extract_pdf_pages,
     extract_pdf_sections,
     extract_pdf_full_text,
-    is_mupdf_available
+    is_mupdf_available,
+    extract_empirical_metrics,
+    extract_deep_academic_profile
 )
 from agents.pdf_copilot import PDFCopilotAgent
 from utils.file_importer import (
@@ -58,13 +62,18 @@ from utils.file_importer import (
 )
 from utils.analytics_viz import (
     create_evolution_timeline_chart,
-    create_research_gap_heatmap
+    create_research_gap_heatmap,
+    compute_research_burst_trends
 )
 from utils.workspace_db import (
     save_project,
     list_projects,
     load_project,
-    delete_project
+    delete_project,
+    get_cached_pipeline_execution,
+    cache_pipeline_execution,
+    sync_to_zotero_api,
+    sync_to_notion_api
 )
 from utils.theme_manager import (
     THEMES,
@@ -700,6 +709,11 @@ def run_academic_pipeline(
                 "apa7_refs_md": apa7_refs_md,
                 "zip_bytes": zip_bytes
             }
+            try:
+                cache_pipeline_execution(", ".join(dois), st.session_state.pipeline_results)
+            except Exception:
+                pass
+
             st.session_state.show_completion_popup = True
             st.balloons()
             st.rerun()
@@ -1021,6 +1035,14 @@ if "01." in workspace_nav:
 
     with col_btn:
         start_btn = st.button("🚀 BẮT ĐẦU PHÂN TÍCH KIM CƯƠNG 2 CHIỀU & SOẠN THẢO", type="primary", use_container_width=True)
+        current_doi_val = st.session_state.get("doi_input_val", "").strip()
+        cached_pipe = get_cached_pipeline_execution(current_doi_val) if current_doi_val else None
+        if cached_pipe and not st.session_state.pipeline_results:
+            if st.button("⚡ TẢI LẠI TỨC THÌ TỪ CACHE CỤC BỘ (0.1 GIÂY)", use_container_width=True, help="Kết quả phân tích đã được lưu trong SQLite Cache"):
+                st.session_state.pipeline_results = cached_pipe
+                st.session_state.pipeline_results["zip_bytes"] = create_research_bundle_zip(cached_pipe.get("artifacts", {}))
+                st.toast("⚡ Đã nạp dữ liệu tức thì từ Cache cục bộ thành công!")
+                st.rerun()
 
     st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
 
@@ -1168,30 +1190,9 @@ elif "02." in workspace_nav:
 
         st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
 
-        with st.expander("🎛️ Bộ lọc động sơ đồ mạng lưới trích dẫn (Interactive Graph Filters)", expanded=False):
-            f_c1, f_c2, f_c3, f_c4 = st.columns(4)
-            with f_c1:
-                year_range = st.slider("Khoảng năm xuất bản:", min_value=2010, max_value=2026, value=(2015, 2026), key="flt_yr_slider")
-            with f_c2:
-                min_cite_filter = st.number_input("Số trích dẫn tối thiểu (Citations):", min_value=0, max_value=500, value=0, step=5, key="flt_cite_input")
-            with f_c3:
-                theme_filter = st.selectbox("Lọc theo trường phái nghiên cứu:", ["Tất cả chủ đề", "Newsroom & Workflow AI", "Ethical & Governance", "Audience & Trust", "Algorithmic & Tech", "Systematic Review"], key="flt_theme_sb")
-            with f_c4:
-                st.markdown("<div style='height:28px;'></div>", unsafe_allow_html=True)
-                oa_only_filter = st.checkbox("Chỉ hiện bài Full PDF Open Access", value=False, key="flt_oa_chk")
+        active_network_html = c_res.get("network_html", "")
 
-        citenet_agent_inst = CiteNetAgent(email=email_val)
-        active_network_html = citenet_agent_inst.filter_and_generate_network_html(
-            nodes=nodes_dict,
-            edges=c_res.get("edges", []),
-            min_year=year_range[0],
-            max_year=year_range[1],
-            min_citations=int(min_cite_filter),
-            study_type=theme_filter,
-            only_oa=oa_only_filter
-        )
-
-        col_g1, col_g2, col_g3 = st.columns([1.8, 1.1, 1.1], gap="small")
+        col_g1, col_g2 = st.columns([2.5, 1], gap="small")
         with col_g1:
             with st.expander("💡 Hướng dẫn & Quy ước Mạng lưới Kim Cương 2 Chiều", expanded=False):
                 st.markdown("""
@@ -1210,27 +1211,23 @@ elif "02." in workspace_nav:
                 use_container_width=True,
                 key="btn_dl_active_net_html"
             )
-        with col_g3:
-            if st.button("🪟 MỞ MÀN HÌNH PHỤ ↗", type="primary", use_container_width=True, key="btn_open_network_subscreen"):
-                if hasattr(st, "dialog"):
-                    show_network_modal(active_network_html)
-                else:
-                    st.info("💡 Màn hình phụ đang hiển thị trực tiếp bên dưới.")
 
         # Hiển thị sơ đồ tương tác chuẩn quốc tế
         components.html(active_network_html, height=730, scrolling=False)
 
         st.markdown("<div style='height: 18px;'></div>", unsafe_allow_html=True)
-        
+
         # Gom nhóm liệt kê phân loại quyền truy cập, Phân tích khoảng trống & Tra cứu chi tiết
         st.markdown("### 📊 Gom nhóm danh mục, Bản đồ khoảng trống & Quyền truy cập tài liệu:")
         
-        tab_diamond_layers, tab_oa_group, tab_paywall_group, tab_timeline, tab_heatmap, tab_single_lookup = st.tabs([
+        tab_diamond_layers, tab_oa_group, tab_paywall_group, tab_timeline, tab_burst, tab_heatmap, tab_compare, tab_single_lookup = st.tabs([
             f"💎 Phân tầng Kim Cương (R: {backward_count_val} • F: {forward_count_val})",
             f"🔓 Nhóm bản full PDF miễn phí (OA: {len(oa_papers)} bài)",
             f"🔒 Nhóm bản trả phí / Cần quyền (Paywall: {len(paywall_papers)} bài)",
             "📈 Dòng thời gian phát triển (Timeline)",
+            "🚀 Điểm bùng nổ xu hướng (Burst Trends)",
             "🎯 Bản đồ khoảng trống nghiên cứu (Gap Heatmap)",
+            "⚔️ Đối chiếu so sánh 2 bài báo song song",
             "🔍 Tra cứu chi tiết & Tóm tắt song ngữ"
         ])
 
@@ -1287,31 +1284,29 @@ elif "02." in workspace_nav:
         
         with tab_oa_group:
             st.markdown(f"""
-            <div style="background: rgba(52, 211, 153, 0.08); border: 1px solid rgba(52, 211, 153, 0.3); border-radius: 12px; padding: 14px 18px; margin-bottom: 14px;">
-                <div style="color: #34D399; font-weight: 700; font-size: 14px; margin-bottom: 4px;">
-                    ✓ Đã định vị {len(oa_papers)} tài liệu Open Access có sẵn liên kết tải toàn văn PDF miễn phí
+            <div style="background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 14px 18px; margin-bottom: 14px;">
+                <div style="color: var(--badge-green-text); font-weight: 800; font-size: 14.5px; margin-bottom: 4px;">
+                    🔓 DANH MỤC CÁC BÀI BÁO CÓ BẢN FULL PDF MIỄN PHÍ ({len(oa_papers)} BÀI)
                 </div>
-                <div style="color: #94A3B8; font-size: 13px;">
-                    Bạn có thể tải trực tiếp từng bài bên dưới hoặc chuyển sang <b>Menu 06</b> để tải trọn bộ hàng loạt vào thư mục trên máy tính.
+                <div style="color: var(--text-secondary); font-size: 13px; line-height: 1.5;">
+                    Bạn có thể tải trực tiếp toàn văn PDF hoặc mở trang Open Access của nhà xuất bản mà không bị giới hạn bởi Paywall.
                 </div>
             </div>
             """, unsafe_allow_html=True)
             
-            c_oa1, c_oa2 = st.columns(2, gap="medium")
+            oa_cols = st.columns(2, gap="medium")
             for idx, p in enumerate(oa_papers):
-                target_c = c_oa1 if idx % 2 == 0 else c_oa2
-                pdf_u = p.get("pdf_url") or p.get("oa_url") or ""
+                target_c = oa_cols[idx % 2]
+                pdf_u = p.get("pdf_url") or ""
                 doi_v = p.get("doi", "")
+                doi_u = p.get("doi_url") or (f"https://doi.org/{doi_v}" if doi_v else "")
+                landing_u = p.get("landing_url") or doi_u
+                
                 with target_c:
                     st.markdown(f"""
                     <div class="apa-ref-card" style="border-left: 3px solid #34D399;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                             <span style="color:#38BDF8; font-weight:700; font-size:12px;">#{idx+1} • {p.get('scopus_tier', 'Scopus')}</span>
-                            <span class="access-badge-oa">{get_svg_icon('lock-open', color='#34D399', size=12)} Full PDF Free</span>
-                        </div>
-                        <div class="apa-hanging-indent" style="font-size:13px; color:#F8FAFC;">
-                            {format_apa7_reference(p)}
-                        </div>
                     </div>
                     """, unsafe_allow_html=True)
                     if pdf_u:
@@ -1915,7 +1910,7 @@ elif "06." in workspace_nav:
                 topic_kw = st.session_state.get("custom_keywords", "Nghiên cứu Báo chí AI & Tòa soạn Tự động hóa")
                 pptx_bytes = create_presentation_deck(st.session_state.pipeline_results, topic_title=topic_kw)
                 st.download_button(
-                    label="📽️ TẢI BỘ SLIDE THUYẾT TRÌNH BÁO CÁO KHOA HỌC (.PPTX - 8 SLIDE CHUẨN QUỐC TẾ)",
+                    label="📽️ TẢI BỘ SLIDE THUYẾT TRÌNH BÁO CÁO KHOA HỌC (.PPTX - 12 SLIDE CHUẨN QUỐC TẾ)",
                     data=pptx_bytes,
                     file_name="Bao_cao_Thuyet_trinh_ScholarGraph.pptx",
                     mime="application/vnd.openxmlformats-officedocument.presentationml.presentation",
@@ -1924,6 +1919,51 @@ elif "06." in workspace_nav:
                 )
             except Exception as ex:
                 st.error(f"Lỗi tạo Slide PowerPoint: {ex}")
+
+            st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
+            
+            # LATEX / OVERLEAF EXPORT SECTION
+            st.markdown("##### 📄 Xuất Bản Thảo Mã Nguồn LaTeX / Overleaf (.ZIP):")
+            c_ltx1, c_ltx2 = st.columns([1.5, 2.5], gap="medium")
+            with c_ltx1:
+                ltx_tmpl_choice = st.selectbox(
+                    "Mẫu Template Nhà Xuất Bản:",
+                    [
+                        "Elsevier (elsarticle - Máy chủ Scopus Q1)",
+                        "IEEE Transactions (IEEEtran - Kỹ thuật & AI)",
+                        "Springer Nature (sn-jnl - Đa ngành)",
+                        "SAGE Publications (sagej - Báo chí & Truyền thông)",
+                        "APA 7th Edition Manuscript (Chuẩn Tâm lý - Xã hội)"
+                    ],
+                    key="sb_ltx_tmpl"
+                )
+                tmpl_key_map = {
+                    "Elsevier (elsarticle - Máy chủ Scopus Q1)": "elsevier",
+                    "IEEE Transactions (IEEEtran - Kỹ thuật & AI)": "ieee",
+                    "Springer Nature (sn-jnl - Đa ngành)": "springer",
+                    "SAGE Publications (sagej - Báo chí & Truyền thông)": "sage",
+                    "APA 7th Edition Manuscript (Chuẩn Tâm lý - Xã hội)": "apa7"
+                }
+                cur_tmpl_key = tmpl_key_map.get(ltx_tmpl_choice, "elsevier")
+
+            with c_ltx2:
+                st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
+                try:
+                    latex_zip = generate_latex_zip_bundle(
+                        st.session_state.pipeline_results,
+                        template=cur_tmpl_key,
+                        topic_title=st.session_state.get("custom_keywords", "TỔNG QUAN HỌC THUẬT & MẠNG LƯỚI TRI THỨC BÁO CHÍ AI")
+                    )
+                    st.download_button(
+                        label=f"📥 TẢI GÓI NGUỒN LATEX / OVERLEAF ({cur_tmpl_key.upper()} .ZIP)",
+                        data=latex_zip,
+                        file_name=f"ScholarGraph_LaTeX_{cur_tmpl_key}.zip",
+                        mime="application/zip",
+                        use_container_width=True,
+                        key="btn_dl_latex_zip"
+                    )
+                except Exception as ltx_err:
+                    st.error(f"Lỗi tạo gói LaTeX: {ltx_err}")
 
             st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
             st.download_button(
@@ -2088,6 +2128,31 @@ elif "06." in workspace_nav:
 
                 st.download_button("📊 Xuất file nạp Notion Database (.JSON)", data=notion_json, file_name="notion_papers_sync.json", mime="application/json", use_container_width=True)
                 st.download_button("📥 Xuất file nạp Zotero Collection (.JSON)", data=zotero_json, file_name="zotero_papers_sync.json", mime="application/json", use_container_width=True)
+
+                st.markdown("---")
+                st.markdown("##### ☁️ Đồng bộ Trực tiếp 1-Click qua API Đám Mây:")
+                sync_target = st.radio("Dịch vụ đám mây:", ["Zotero Web API", "Notion Database API"], horizontal=True, key="rad_cloud_sync_service")
+                
+                if sync_target == "Zotero Web API":
+                    z_api_key = st.text_input("Zotero API Key:", value=get_secret("ZOTERO_API_KEY", ""), type="password", key="txt_zotero_api_key")
+                    z_lib_id = st.text_input("Zotero User/Group ID:", value=get_secret("ZOTERO_USER_ID", ""), key="txt_zotero_lib_id")
+                    if st.button("🚀 ĐẨY TRỰC TIẾP VÀO THƯ VIỆN ZOTERO (1-CLICK)", type="primary", use_container_width=True, key="btn_sync_zotero_now"):
+                        with st.spinner("⏳ Đang kết nối Zotero API..."):
+                            z_res = sync_to_zotero_api(z_api_key, z_lib_id, "users", evidence_pool)
+                            if z_res.get("status") == "success":
+                                st.success(f"✓ {z_res.get('message')}")
+                            else:
+                                st.error(f"❌ {z_res.get('message')}")
+                else:
+                    n_token = st.text_input("Notion Integration Token:", value=get_secret("NOTION_TOKEN", ""), type="password", key="txt_notion_token")
+                    n_db_id = st.text_input("Notion Database ID:", value=get_secret("NOTION_DATABASE_ID", ""), key="txt_notion_db_id")
+                    if st.button("🚀 ĐẨY TRỰC TIẾP VÀO NOTION DATABASE (1-CLICK)", type="primary", use_container_width=True, key="btn_sync_notion_now"):
+                        with st.spinner("⏳ Đang kết nối Notion API..."):
+                            n_res = sync_to_notion_api(n_token, n_db_id, evidence_pool)
+                            if n_res.get("status") == "success":
+                                st.success(f"✓ {n_res.get('message')}")
+                            else:
+                                st.error(f"❌ {n_res.get('message')}")
 
             with c_style_col2:
                 st.markdown(f"##### 📚 Danh mục tài liệu theo chuẩn {chosen_style}:")
@@ -2277,6 +2342,54 @@ elif "06." in workspace_nav:
                         {ans_data['answer']}
                     </div>
                     """, unsafe_allow_html=True)
+
+            # DEEP FULL-TEXT EMPIRICAL MINING ENGINE
+            st.markdown("<div style='height: 22px;'></div>", unsafe_allow_html=True)
+            st.markdown("##### 🔬 Khai phá Chỉ số Thống kê Thực nghiệm & Giả thuyết Toàn văn (Deep Empirical Mining):")
+            
+            if existing_pdfs:
+                c_mine1, c_mine2 = st.columns([1.5, 2.5], gap="medium")
+                with c_mine1:
+                    sel_mine_pdf = st.selectbox("Chọn bài báo PDF để bóc tách thông số:", options=existing_pdfs, format_func=lambda p: os.path.basename(p), key="sb_mine_pdf_target")
+                    if st.button("🔬 BÓC TÁCH N, P-VALUE, R² & GIẢ THUYẾT", type="primary", use_container_width=True, key="btn_run_deep_mining"):
+                        with st.spinner("⏳ Đang quét cấu trúc thân bài và bóc tách ma trận thống kê..."):
+                            provider_m = "gemini" if "Gemini" in llm_choice and api_key_val else ("openai" if "OpenAI" in llm_choice and api_key_val else "mock")
+                            cop_llm = LLMHelper(provider=provider_m, api_key=api_key_val)
+                            cop_agent = PDFCopilotAgent(llm_helper=cop_llm)
+                            st.session_state["last_deep_dossier"] = cop_agent.extract_deep_empirical_dossier(sel_mine_pdf)
+
+                with c_mine2:
+                    if st.session_state.get("last_deep_dossier"):
+                        doss = st.session_state["last_deep_dossier"]
+                        m = doss.get("empirical_metrics", {})
+                        
+                        st.markdown(f"""
+                        <div style="background:var(--bg-surface); border:1px solid var(--badge-green-border); border-radius:12px; padding:16px 20px; margin-bottom:12px;">
+                            <div style="font-size:15px; font-weight:700; color:var(--primary-accent); margin-bottom:8px;">
+                                📊 BÁO CÁO THỐNG KÊ THỰC NGHIỆM: {doss.get('filename')}
+                            </div>
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; font-size:13px; color:var(--text-primary); margin-bottom:10px;">
+                                <div>👥 <b>Cỡ mẫu (N):</b> <span style="color:var(--badge-green-text); font-weight:700;">{m.get('sample_size')}</span></div>
+                                <div>📈 <b>Độ tin cậy (Alpha):</b> <span style="color:var(--primary-accent); font-weight:700;">{m.get('reliability_alpha')}</span></div>
+                                <div>🎯 <b>Mức ý nghĩa P:</b> {', '.join(m.get('p_values', []))}</div>
+                                <div>⚡ <b>Hệ số R² / Beta:</b> {', '.join(m.get('effect_sizes', []))}</div>
+                            </div>
+                            <div style="font-size:12.5px; color:var(--text-secondary); margin-bottom:6px;">
+                                <b>Biến số / Khung đo lường:</b> {', '.join(m.get('constructs', []))}
+                            </div>
+                            <div style="font-size:13px; color:var(--text-primary); background:var(--bg-surface-elevated); padding:10px 14px; border-radius:8px; border:1px solid var(--border-subtle); line-height:1.6;">
+                                <b>Thẩm định phương pháp luận AI:</b><br/>{doss.get('ai_methodology_assessment')}
+                            </div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                        
+                        if m.get("hypotheses"):
+                            st.markdown("<b>Kiểm định các giả thuyết nghiên cứu:</b>", unsafe_allow_html=True)
+                            for h_obj in m["hypotheses"]:
+                                h_color = "var(--badge-green-text)" if "chấp nhận" in h_obj.get("status", "").lower() or "supported" in h_obj.get("status", "").lower() else "var(--badge-rose-text)"
+                                st.markdown(f"• **{h_obj.get('code')}**: {h_obj.get('statement')} ➔ <b style='color:{h_color};'>{h_obj.get('status')}</b>", unsafe_allow_html=True)
+                    else:
+                        st.info("💡 Chọn một tệp PDF và nhấn nút bên trái để bóc tách chỉ số thống kê thực nghiệm tự động.")
     else:
         st.info("💡 Vui lòng phân tích bài báo từ Menu 1 để mở trung tâm xuất bản hồ sơ & AI Copilot.")
 

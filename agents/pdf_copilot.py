@@ -93,3 +93,72 @@ YÊU CẦU TRẢ LỜI:
             "retrieved_count": len(top_chunks),
             "context_used": context_str
         }
+
+    def extract_deep_empirical_dossier(self, pdf_path: str) -> Dict[str, Any]:
+        """
+        Deeply mine statistical metrics, hypotheses, and theoretical constructs from a single PDF.
+        """
+        from utils.pdf_parser import extract_deep_academic_profile
+        profile = extract_deep_academic_profile(pdf_path)
+        if profile.get("status") == "error":
+            return profile
+
+        metrics = profile.get("empirical_metrics", {})
+        sections = profile.get("sections", {})
+        fname = os.path.basename(pdf_path)
+
+        # Generate scholarly AI analysis summary
+        prompt = f"""Bạn là Chuyên gia Thẩm định Phương pháp Luận Scopus (Senior Methodologist).
+Dưới đây là các dữ liệu thực nghiệm bóc tách từ bài báo: {fname}
+
+- Cỡ mẫu (Sample Size): {metrics.get('sample_size')}
+- Giá trị P-values: {', '.join(metrics.get('p_values', []))}
+- Effect Size / R²: {', '.join(metrics.get('effect_sizes', []))}
+- Độ tin cậy thang đo (Alpha): {metrics.get('reliability_alpha')}
+- Giả thuyết: {metrics.get('hypotheses')}
+- Biến số / Khung khái niệm: {', '.join(metrics.get('constructs', []))}
+- Tóm tắt phương pháp: {sections.get('methodology', '')[:800]}
+
+YÊU CẦU:
+Đưa ra đánh giá chuyên sâu (2-3 đoạn văn tiếng Việt chuẩn mực) về:
+1. Độ tin cậy và giá trị nội tại (Internal Validity) của phương pháp nghiên cứu.
+2. Ý nghĩa thực tiễn của các phát hiện thống kê cốt lõi.
+3. Rủi ro sai số hoặc hạn chế mẫu cần lưu ý."""
+
+        ai_eval = self.llm.generate(prompt, temperature=0.2)
+
+        return {
+            "status": "success",
+            "filename": fname,
+            "pdf_path": pdf_path,
+            "total_pages": profile.get("total_pages", 0),
+            "total_words": profile.get("total_words", 0),
+            "empirical_metrics": metrics,
+            "sections": sections,
+            "ai_methodology_assessment": ai_eval
+        }
+
+    def synthesize_cross_pdf_empirical_matrix(self, pdf_paths: List[str]) -> List[Dict[str, Any]]:
+        """
+        Synthesize cross-comparative empirical matrix across all indexed full-text PDF files.
+        """
+        matrix = []
+        for p in pdf_paths:
+            if os.path.exists(p):
+                dossier = self.extract_deep_empirical_dossier(p)
+                if dossier.get("status") == "success":
+                    m = dossier.get("empirical_metrics", {})
+                    matrix.append({
+                        "filename": dossier.get("filename"),
+                        "pdf_path": p,
+                        "sample_size": m.get("sample_size", "N/A"),
+                        "p_values": ", ".join(m.get("p_values", [])) or "p < .05",
+                        "effect_sizes": ", ".join(m.get("effect_sizes", [])) or "N/A",
+                        "reliability": m.get("reliability_alpha", "N/A"),
+                        "hypotheses_count": len(m.get("hypotheses", [])),
+                        "hypotheses": m.get("hypotheses", []),
+                        "constructs": ", ".join(m.get("constructs", [])) or "N/A",
+                        "ai_assessment": dossier.get("ai_methodology_assessment", "")
+                    })
+        return matrix
+

@@ -51,6 +51,27 @@ class LLMHelper:
     def is_available(self) -> bool:
         return bool(self.api_key) or self.provider == "mock"
 
+    def generate(self, prompt: str, temperature: float = 0.2, is_json: bool = False) -> Optional[str]:
+        """Tổng quát hóa lời gọi LLM (Google Gemini / OpenAI) có cơ chế fallback an toàn."""
+        if not self.api_key:
+            return None
+        if self.provider == "gemini" or self.api_key.startswith("AIza") or os.environ.get("GEMINI_API_KEY"):
+            return self._call_gemini(prompt, is_json=is_json, temperature=temperature)
+        elif self.provider == "openai" or self.api_key.startswith("sk-"):
+            try:
+                import openai
+                client = openai.OpenAI(api_key=self.api_key)
+                response = client.chat.completions.create(
+                    model=self.model_name or "gpt-4o-mini",
+                    messages=[{"role": "user", "content": prompt}],
+                    temperature=temperature
+                )
+                return response.choices[0].message.content.strip()
+            except Exception as oe:
+                print(f"[LLMHelper] OpenAI call error: {oe}")
+                return None
+        return None
+
     def _call_gemini(self, prompt: str, is_json: bool = False, temperature: float = 0.2) -> Optional[str]:
         """Call Google Gemini API with smart model fallback hierarchy (Gemini 2.0 Flash -> 1.5 Flash -> 1.5 Pro)."""
         if not self.api_key:

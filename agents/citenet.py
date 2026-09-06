@@ -869,6 +869,21 @@ class CiteNetAgent:
                     <option value="nordic-light">🏛️ Nền: Bắc Âu Slate (Sáng)</option>
                 </select>
             </div>
+
+            <!-- Hàng 4: Bộ lọc Phân tầng Kim Cương & Quyền truy cập -->
+            <div class="hud-btn-row" style="margin-top:2px; display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
+                <select id="layerFilter" class="hud-search-box" onchange="applyGraphFilters()" style="width:100%; cursor:pointer; font-weight:600; background:#181B24; border-color:#262B38; color:#F8FAFC;" title="Lọc theo tầng tri thức">
+                    <option value="all">🌐 Tầng: Tất cả (Diamond)</option>
+                    <option value="seed">🔴 Chỉ Bài Gốc (F0)</option>
+                    <option value="backward">🟣 Chỉ Nền Tảng (R1-R3)</option>
+                    <option value="forward">🟢 Chỉ Kế Thừa (F1-F3)</option>
+                </select>
+                <select id="accessFilter" class="hud-search-box" onchange="applyGraphFilters()" style="width:100%; cursor:pointer; font-weight:600; background:#181B24; border-color:#262B38; color:#F8FAFC;" title="Lọc theo quyền truy cập">
+                    <option value="all">🔓 Quyền: Tất cả bài báo</option>
+                    <option value="oa">🔓 Chỉ Open Access (PDF)</option>
+                    <option value="paywall">🔒 Chỉ Bài Paywall</option>
+                </select>
+            </div>
         </div>
     </div>
 
@@ -1207,6 +1222,37 @@ class CiteNetAgent:
             network.setOptions(forceOptions);
             setTimeout(function() {{ fitView(); }}, 200);
         }}
+    }}
+
+    // Dynamic Graph Filters
+    function applyGraphFilters() {{
+        var layerVal = document.getElementById('layerFilter') ? document.getElementById('layerFilter').value : 'all';
+        var accessVal = document.getElementById('accessFilter') ? document.getElementById('accessFilter').value : 'all';
+
+        var updates = [];
+        rawNodes.forEach(function(n) {{
+            var p = metaDict[n.id] || {{}};
+            var isSeed = (n.level === 0 || n.layer === 'seed');
+            var isBackward = (n.level < 0 || n.layer === 'backward');
+            var isForward = (n.level > 0 || n.layer === 'forward');
+            var isOa = !!p.is_oa || !!p.pdf_url;
+
+            var matchLayer = true;
+            if (layerVal === 'seed') matchLayer = isSeed;
+            else if (layerVal === 'backward') matchLayer = isBackward;
+            else if (layerVal === 'forward') matchLayer = isForward;
+
+            var matchAccess = true;
+            if (accessVal === 'oa') matchAccess = isOa;
+            else if (accessVal === 'paywall') matchAccess = !isOa;
+
+            var isHidden = !(matchLayer && matchAccess);
+            updates.push({{
+                id: n.id,
+                hidden: isHidden
+            }});
+        }});
+        nodes.update(updates);
     }}
 
     // Hover Event

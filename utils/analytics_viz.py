@@ -227,3 +227,164 @@ def create_research_gap_heatmap(evidence_pool: List[Dict[str, Any]], theme_id: s
 """
 
     return fig, gap_report
+
+def compute_research_burst_trends(papers_list: List[Dict[str, Any]], theme_id: str = "obsidian_dark") -> Tuple[go.Figure, str, List[Dict[str, Any]]]:
+    """
+    Detect emerging academic trends and burst keywords across the timeline (R3 -> F0 -> F3).
+    Computes Citation Velocity, Acceleration, and Burst Weights.
+    Returns: (Plotly Figure, Analytical Report Markdown, List of Burst Indicators).
+    """
+    import math
+    layout_cfg = get_plotly_theme_layout(theme_id)
+    t = get_theme(theme_id)
+    c = t["colors"]
+
+    if not papers_list:
+        fig = go.Figure()
+        fig.update_layout(title="Không có dữ liệu bài báo", **layout_cfg)
+        return fig, "Không có đủ dữ liệu để tính toán xu hướng bùng nổ.", []
+
+    # Pre-defined scholarly keyword taxonomies for automated journalism & AI
+    taxonomy = {
+        "LLM & Tạo Sinh (Generative AI)": ["generative ai", "chatgpt", "gpt", "large language model", "llm", "tạo sinh", "mô hình ngôn ngữ"],
+        "Minh Bạch & Giải Trình (Algorithmic Accountability)": ["accountability", "transparency", "audit", "bias", "minh bạch", "giải trình", "kiểm toán"],
+        "Niềm Tin Độc Giả (Audience Trust & Perceptions)": ["credibility", "trust", "perception", "reader", "audience", "niềm tin", "độ tin cậy"],
+        "Cộng Tác Người - Máy (Human-in-the-Loop)": ["human-in-the-loop", "collaboration", "hybrid", "workflow", "cộng tác", "tòa soạn", "quy trình"],
+        "Đạo Đức & Pháp Lý (Ethics & Policy)": ["ethic", "copyright", "privacy", "regulation", "legal", "đạo đức", "bản quyền", "chính sách"],
+        "Tự Động Hóa Tin Tức Căn Bản (Classic Automated News)": ["robot journalism", "automated journalism", "natural language generation", "nlg", "tin tức tự động"]
+    }
+
+    current_year = 2026
+    keyword_stats = {k: {"total_citations": 0, "paper_count": 0, "years": [], "recent_citations": 0, "papers": []} for k in taxonomy}
+
+    for p in papers_list:
+        text = (p.get("title", "") + " " + p.get("abstract", "") + " " + p.get("study_type", "")).lower()
+        yr = int(p.get("year", 2020)) if str(p.get("year", "")).isdigit() else 2020
+        cites = p.get("citation_count", 0) or 0
+        age = max(1, current_year - yr + 1)
+
+        for tax_label, kw_list in taxonomy.items():
+            if any(kw in text for kw in kw_list):
+                keyword_stats[tax_label]["total_citations"] += cites
+                keyword_stats[tax_label]["paper_count"] += 1
+                keyword_stats[tax_label]["years"].append(yr)
+                keyword_stats[tax_label]["papers"].append(p.get("first_author", "Unknown"))
+                if yr >= (current_year - 3):  # Last 3 years
+                    keyword_stats[tax_label]["recent_citations"] += cites
+
+    # Compute Burst Score
+    burst_items = []
+    plot_data = []
+
+    for label, stat in keyword_stats.items():
+        count = stat["paper_count"]
+        if count == 0:
+            continue
+        avg_year = sum(stat["years"]) / count
+        tot_cites = stat["total_citations"]
+        rec_cites = stat["recent_citations"]
+        
+        # Velocity = Citations per paper
+        velocity = tot_cites / count
+        # Recency ratio
+        recency_ratio = (rec_cites / (tot_cites + 1))
+        # Burst index = count * (recency_ratio + 0.2) * log(tot_cites + 2)
+        burst_score = round(count * (recency_ratio + 0.3) * math.log(tot_cites + 2), 2)
+
+        tier = "🔥 Điểm Bùng Nổ Mới (Emerging Frontier)" if (avg_year >= 2022 and recency_ratio > 0.4) else (
+            "🏛️ Nền Tảng Lý Thuyết (Foundational Base)" if avg_year < 2020 else "📈 Tăng Trưởng Vững (Steady Growth)"
+        )
+
+        burst_items.append({
+            "topic": label,
+            "paper_count": count,
+            "total_citations": tot_cites,
+            "avg_year": round(avg_year, 1),
+            "burst_score": burst_score,
+            "tier": tier,
+            "sample_authors": ", ".join(list(dict.fromkeys(stat["papers"]))[:3])
+        })
+
+        plot_data.append({
+            "topic": label,
+            "avg_year": avg_year,
+            "burst_score": burst_score,
+            "paper_count": count,
+            "total_citations": tot_cites,
+            "tier": tier,
+            "bubble_size": max(18, min(65, count * 7 + 10))
+        })
+
+    burst_items.sort(key=lambda x: x["burst_score"], reverse=True)
+
+    if not plot_data:
+        fig = go.Figure()
+        fig.update_layout(title="Chưa đủ dữ liệu phân cụm từ khóa", **layout_cfg)
+        return fig, "Chưa đủ dữ liệu.", []
+
+    df_burst = pd.DataFrame(plot_data)
+
+    fig = px.scatter(
+        df_burst,
+        x="avg_year",
+        y="burst_score",
+        size="bubble_size",
+        color="tier",
+        text="topic",
+        hover_name="topic",
+        custom_data=["paper_count", "total_citations", "tier"],
+        title="🚀 Bản Đồ Điểm Bùng Nổ Xu Hướng Nghiên Cứu (Research Trend Burst Map)",
+        labels={
+            "avg_year": "Năm công bố trung bình của cụm chủ đề",
+            "burst_score": "Chỉ số Bùng nổ Học thuật (Academic Burst Score)",
+            "tier": "Phân loại trạng thái xu hướng"
+        },
+        color_discrete_map={
+            "🔥 Điểm Bùng Nổ Mới (Emerging Frontier)": "#F43F5E",
+            "📈 Tăng Trưởng Vững (Steady Growth)": "#38BDF8",
+            "🏛️ Nền Tảng Lý Thuyết (Foundational Base)": "#A78BFA"
+        }
+    )
+
+    fig.update_traces(
+        textposition="top center",
+        textfont=dict(size=12, color="white", family="Plus Jakarta Sans"),
+        hovertemplate="<b>%{hovertext}</b><br><br>" +
+                      "🏷️ <b>Trạng thái:</b> %{customdata[2]}<br>" +
+                      "📚 <b>Số lượng công trình:</b> %{customdata[0]} bài báo<br>" +
+                      "📊 <b>Tổng số trích dẫn:</b> %{customdata[1]} lượt<br>" +
+                      "🚀 <b>Chỉ số bùng nổ:</b> %{y}<extra></extra>"
+    )
+
+    fig.update_layout(**layout_cfg)
+    fig.update_layout(
+        title_font=dict(size=16, color=c["primary_accent"]),
+        xaxis=dict(
+            title=dict(text="Thời gian xuất bản trung bình", font=dict(size=13, color=c["text_secondary"])),
+            tickangle=0,
+            tickformat="d",
+            tickfont=dict(size=12, color=c["text_primary"])
+        ),
+        yaxis=dict(
+            title=dict(text="Chỉ số Bùng nổ (Burst Score)", font=dict(size=13, color=c["text_secondary"])),
+            tickfont=dict(size=11, color=c["text_secondary"])
+        )
+    )
+
+    # Generate analytical narrative
+    top_emerging = [b for b in burst_items if "Emerging" in b["tier"] or b["burst_score"] > 15]
+    foundational = [b for b in burst_items if "Foundational" in b["tier"]]
+
+    narrative = f"""### 🚀 Báo Cáo Phân Tích Điểm Bùng Nổ Xu Hướng (Burst Trend Intelligence):
+1. **Các chủ đề đang bùng nổ mạnh mẽ nhất (Emerging Research Frontiers):**
+{chr(10).join([f"• **{item['topic']}** (Điểm bùng nổ: **{item['burst_score']}** | {item['paper_count']} bài báo | Trích dẫn: {item['total_citations']} lượt — Tác giả tiêu biểu: {item['sample_authors']})" for item in top_emerging[:3]]) if top_emerging else "• Các chủ đề đang phân bố ở mức tăng trưởng ổn định."}
+
+2. **Các chủ đề đóng vai trò nền móng kinh điển (Theoretical Foundations):**
+{chr(10).join([f"• **{item['topic']}** ({item['paper_count']} bài báo | Trích dẫn tích lũy: {item['total_citations']} lượt — Tác giả: {item['sample_authors']})" for item in foundational[:2]]) if foundational else "• Mạng lưới tập trung chủ yếu vào các công trình hiện đại trong 5 năm gần đây."}
+
+3. **Khuyến nghị chiến lược cho đề tài mới:**
+• Khai thác giao thoa giữa **{top_emerging[0]['topic'] if top_emerging else 'Công nghệ AI mới'}** và việc kiểm định thực nghiệm định lượng để đạt khả năng được chấp nhận cao nhất tại các tạp chí ISI/Scopus Q1.
+"""
+
+    return fig, narrative, burst_items
+
