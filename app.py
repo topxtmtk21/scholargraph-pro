@@ -1188,19 +1188,57 @@ elif "02." in workspace_nav:
             </div>
             """, unsafe_allow_html=True)
 
+        st.markdown("<div style='height: 4px;'></div>", unsafe_allow_html=True)
+        
+        # Thanh đo lường Động học Dòng chảy & Topo Liên kết (Edge Topology Strip)
+        e1, e2, e3, e4 = st.columns(4)
+        with e1:
+            st.markdown(f"""
+            <div style="background:var(--bg-surface); border:1px solid var(--border-subtle); border-left:3px solid #38BDF8; border-radius:8px; padding:8px 12px;">
+                <div style="font-size:11px; font-weight:700; color:#38BDF8;">🔷 KẾ THỪA 1 CHIỀU (DIRECT)</div>
+                <div style="font-size:16px; font-weight:800; color:var(--text-primary); margin-top:2px;">{stats_data.get('direct_links_count', 0)} <span style="font-size:11px; font-weight:normal; color:var(--text-secondary);">liên kết</span></div>
+            </div>
+            """, unsafe_allow_html=True)
+        with e2:
+            st.markdown(f"""
+            <div style="background:var(--bg-surface); border:1px solid var(--border-subtle); border-left:3px solid #F59E0B; border-radius:8px; padding:8px 12px;">
+                <div style="font-size:11px; font-weight:700; color:#F59E0B;">🔶 ĐỐI THOẠI 2 CHIỀU (MUTUAL)</div>
+                <div style="font-size:16px; font-weight:800; color:var(--text-primary); margin-top:2px;">{stats_data.get('mutual_links_count', 0)} <span style="font-size:11px; font-weight:normal; color:var(--text-secondary);">liên kết ({stats_data.get('reciprocity_rate', 0)}%)</span></div>
+            </div>
+            """, unsafe_allow_html=True)
+        with e3:
+            st.markdown(f"""
+            <div style="background:var(--bg-surface); border:1px solid var(--border-subtle); border-left:3px solid #C084FC; border-radius:8px; padding:8px 12px;">
+                <div style="font-size:11px; font-weight:700; color:#C084FC;">🔮 BẮC CẦU XUYÊN TẦNG (BRIDGE)</div>
+                <div style="font-size:16px; font-weight:800; color:var(--text-primary); margin-top:2px;">{stats_data.get('cross_bridge_count', 0)} <span style="font-size:11px; font-weight:normal; color:var(--text-secondary);">liên kết</span></div>
+            </div>
+            """, unsafe_allow_html=True)
+        with e4:
+            st.markdown(f"""
+            <div style="background:var(--bg-surface); border:1px solid var(--border-subtle); border-left:3px solid #34D399; border-radius:8px; padding:8px 12px;">
+                <div style="font-size:11px; font-weight:700; color:#34D399;">🟢 CÙNG PHÂN TẦNG (INTRA)</div>
+                <div style="font-size:16px; font-weight:800; color:var(--text-primary); margin-top:2px;">{stats_data.get('intra_layer_count', 0)} <span style="font-size:11px; font-weight:normal; color:var(--text-secondary);">liên kết</span></div>
+            </div>
+            """, unsafe_allow_html=True)
+
         st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
 
         active_network_html = c_res.get("network_html", "")
 
         col_g1, col_g2 = st.columns([2.5, 1], gap="small")
         with col_g1:
-            with st.expander("💡 Hướng dẫn & Quy ước Mạng lưới Kim Cương 2 Chiều", expanded=False):
+            with st.expander("💡 Hướng dẫn & Quy ước Mạng lưới Kim Cương & Dòng Chảy Tri Thức", expanded=False):
                 st.markdown("""
-                - **🔴 Đỏ (F0):** Bài báo gốc đặt tại tâm điểm nghiên cứu.
-                - **🟣 Tím / Indigo (R1-R3):** Nền tảng tham chiếu quá khứ (Backward Roots) - cội nguồn lý thuyết.
-                - **🟢 Xanh dương / Ngọc lục bảo (F1-F3):** Kế thừa và phát triển tương lai (Forward Frontier) - bước tiến mở rộng.
-                - **Kích cỡ Node:** Tỷ lệ logarithm theo số trích dẫn Scopus (Price's Law).
-                - **Thao tác:** Bấm nút **🎛️ Bảng công cụ** ở góc trên sơ đồ để chuyển đổi 5 kiểu bố cục (Kim cương 2 chiều, Dòng thời gian, Cây phả hệ, Phân làn Scopus, Mạng cụm).
+                - **🔴 Nút Đỏ (F0):** Bài báo gốc đặt tại tâm điểm nghiên cứu.
+                - **🟣 Nút Tím / Indigo (R1-R3):** Nền tảng tham chiếu quá khứ (Backward Roots) - cội nguồn lý thuyết.
+                - **🟢 Nút Xanh / Ngọc lục bảo (F1-F3):** Kế thừa và phát triển tương lai (Forward Frontier) - bước tiến mở rộng.
+                - **Mã Hóa Mũi Tên:**
+                  - 🔷 **Xanh Sky:** Dòng kế thừa 1 chiều trực tiếp.
+                  - 🔶 **Vàng Kim (2 đầu):** Hai công trình đối thoại / trích dẫn chéo tương hỗ.
+                  - 🔮 **Tím Neon (Đứt):** Công trình mới bắc cầu neo trực tiếp vào cội nguồn lý thuyết.
+                  - 🟢 **Ngọc Lục (Chấm):** Liên kết nội bộ trong cùng một thế hệ.
+                  - ✨ **Hạt Sáng (60 FPS):** Mô phỏng trực tiếp tốc độ và hướng truyền tri thức.
+                - **Tương tác Đột phá:** Bấm nút **🧬 Truy Vết** trên thanh công cụ đồ thị rồi nhấp vào bất kỳ bài báo nào để **phát sáng toàn bộ chuỗi phả hệ cội nguồn** và làm mờ các bài không liên quan!
                 """)
         with col_g2:
             st.download_button(

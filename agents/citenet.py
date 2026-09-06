@@ -79,6 +79,30 @@ class CiteNetAgent:
         paywall_count = len(paywall_papers)
         oa_percent = round((oa_count / len(papers_list) * 100), 1) if papers_list else 0.0
 
+        # Phân loại và tính toán chỉ số Topo liên kết (Edge Ontology Metrics)
+        edge_set = set(edges_list)
+        direct_edges_cnt = 0
+        mutual_edges_cnt = 0
+        cross_bridge_cnt = 0
+        intra_layer_cnt = 0
+
+        for src, dst in edges_list:
+            s_node = nodes_dict.get(src, {})
+            d_node = nodes_dict.get(dst, {})
+            s_lvl = s_node.get("level", 0)
+            d_lvl = d_node.get("level", 0)
+            
+            if (dst, src) in edge_set and src != dst:
+                mutual_edges_cnt += 1
+            elif (s_lvl >= 2 and d_lvl <= -1) or (s_lvl <= -2 and d_lvl >= 1) or (s_lvl >= 1 and d_lvl <= -2) or (abs(s_lvl - d_lvl) >= 2 and s_lvl != 0 and d_lvl != 0):
+                cross_bridge_cnt += 1
+            elif s_lvl == d_lvl and s_lvl != 0:
+                intra_layer_cnt += 1
+            else:
+                direct_edges_cnt += 1
+
+        reciprocity_rate = round((mutual_edges_cnt / len(edges_list) * 100), 1) if edges_list else 0.0
+
         stats = {
             "total_papers": len(papers_list),
             "total_links": len(edges_list),
@@ -95,6 +119,12 @@ class CiteNetAgent:
             "f1_count": f1_count,
             "f2_count": f2_count,
             "f3_count": f3_count,
+            # Các chỉ số Topo liên kết mới
+            "direct_links_count": direct_edges_cnt,
+            "mutual_links_count": mutual_edges_cnt,
+            "cross_bridge_count": cross_bridge_cnt,
+            "intra_layer_count": intra_layer_cnt,
+            "reciprocity_rate": reciprocity_rate,
             # Giữ tương thích ngược với các trường cũ
             "gen0_count": seed_count,
             "gen1_count": f1_count if f1_count > 0 else forward_count,
@@ -242,16 +272,63 @@ class CiteNetAgent:
             }
             vis_nodes.append(node_item)
 
+        edge_set = set(edges)
         vis_edges = []
         for src, dst in edges:
             if src in nodes and dst in nodes:
+                s_node = nodes.get(src, {})
+                d_node = nodes.get(dst, {})
+                s_lvl = s_node.get("level", 0)
+                d_lvl = d_node.get("level", 0)
+                s_auth = s_node.get("first_author", "Paper")
+                d_auth = d_node.get("first_author", "Paper")
+                s_yr = s_node.get("year", "")
+                d_yr = d_node.get("year", "")
+
+                is_mutual = (dst, src) in edge_set and src != dst
+                is_cross_bridge = (s_lvl >= 2 and d_lvl <= -1) or (s_lvl <= -2 and d_lvl >= 1) or (s_lvl >= 1 and d_lvl <= -2) or (abs(s_lvl - d_lvl) >= 2 and s_lvl != 0 and d_lvl != 0)
+                is_intra = (s_lvl == d_lvl and s_lvl != 0)
+
+                if is_mutual:
+                    edge_type = "mutual"
+                    edge_color = {"color": "rgba(245, 158, 11, 0.85)", "highlight": "#F59E0B", "hover": "#FDE047"}
+                    edge_width = 2.6
+                    edge_dashes = False
+                    arrows = {"to": {"enabled": True, "scaleFactor": 0.95}, "from": {"enabled": True, "scaleFactor": 0.95}}
+                    edge_title = f"🔶 ĐỐI THOẠI HỌC THUẬT 2 CHIỀU:\n[{s_auth} ({s_yr})] ⟷ [{d_auth} ({d_yr})]\n(Hai nhóm nghiên cứu trích dẫn chéo lẫn nhau)"
+                elif is_cross_bridge:
+                    edge_type = "cross_bridge"
+                    edge_color = {"color": "rgba(192, 132, 252, 0.88)", "highlight": "#C084FC", "hover": "#E879F9"}
+                    edge_width = 2.2
+                    edge_dashes = [6, 4]
+                    arrows = {"to": {"enabled": True, "scaleFactor": 0.95}}
+                    edge_title = f"🔮 BẮC CẦU XUYÊN TẦNG CỘI NGUỒN:\n[{s_auth} ({s_yr})] ➔ [{d_auth} ({d_yr})]\n(Công trình kế thừa neo trực tiếp vào cội nguồn lý thuyết)"
+                elif is_intra:
+                    edge_type = "intra_layer"
+                    edge_color = {"color": "rgba(52, 211, 153, 0.80)", "highlight": "#34D399", "hover": "#6EE7B7"}
+                    edge_width = 1.6
+                    edge_dashes = [3, 3]
+                    arrows = {"to": {"enabled": True, "scaleFactor": 0.85}}
+                    edge_title = f"🟢 LIÊN KẾT NỘI BỘ CÙNG PHÂN TẦNG:\n[{s_auth} ({s_yr})] ➔ [{d_auth} ({d_yr})]\n(Đồng phát triển trong cùng thế hệ nghiên cứu)"
+                else:
+                    edge_type = "direct"
+                    edge_color = {"color": "rgba(56, 189, 248, 0.70)", "highlight": "#38BDF8", "hover": "#60A5FA"}
+                    edge_width = 1.8
+                    edge_dashes = False
+                    arrows = {"to": {"enabled": True, "scaleFactor": 0.90}}
+                    edge_title = f"🔷 KẾ THỪA 1 CHIỀU TRỰC TIẾP:\n[{s_auth} ({s_yr})] ➔ [{d_auth} ({d_yr})]\n(Dòng kế thừa tiêu chuẩn từ cội nguồn hoặc bài gốc)"
+
                 vis_edges.append({
+                    "id": f"e_{src}_{dst}",
                     "from": src,
                     "to": dst,
-                    "color": {"color": "rgba(100, 116, 139, 0.45)", "highlight": "#38BDF8", "hover": "#60A5FA"},
-                    "arrows": {"to": {"enabled": True, "scaleFactor": 0.85}},
-                    "width": 1.4,
-                    "smooth": {"type": "curvedCW", "roundness": 0.18}
+                    "edge_type": edge_type,
+                    "color": edge_color,
+                    "arrows": arrows,
+                    "width": edge_width,
+                    "dashes": edge_dashes,
+                    "title": edge_title,
+                    "smooth": {"type": "curvedCW", "roundness": 0.22 if is_mutual else 0.16}
                 })
 
         extended_meta = {}
@@ -840,12 +917,14 @@ class CiteNetAgent:
             <!-- Search Box -->
             <input type="text" id="nodeSearch" class="hud-search-box" style="width: 100%; box-sizing: border-box;" placeholder="🔍 Tìm tác giả / bài báo..." oninput="searchAndFocusNode(this.value)">
             
-            <!-- Hàng 1: Phóng to, Thu nhỏ, Căn giữa, Physics, Fullscreen, Popout -->
+            <!-- Hàng 1: Phóng to, Thu nhỏ, Căn giữa, Physics, Hạt sáng, Truy vết, Toàn màn hình -->
             <div class="hud-btn-row">
                 <button class="hud-btn" onclick="zoomIn()" title="Phóng to mạng lưới">🔍+ Phóng to</button>
                 <button class="hud-btn" onclick="zoomOut()" title="Thu nhỏ mạng lưới">🔍- Thu nhỏ</button>
                 <button class="hud-btn" onclick="fitView()" title="Căn giữa toàn cảnh">🎯 Căn giữa</button>
                 <button class="hud-btn" id="physicsBtn" onclick="togglePhysics()" title="Bật/Tắt mô phỏng vật lý">⚡ Tự sắp xếp</button>
+                <button class="hud-btn active" id="particlesBtn" onclick="toggleParticles()" title="Bật/Tắt luồng hạt photon chuyển động dọc theo mũi tên trích dẫn">✨ Hạt Sáng</button>
+                <button class="hud-btn" id="lineageBtn" onclick="toggleLineageMode()" title="Bật/Tắt chế độ phát sáng chuỗi phả hệ cội nguồn khi chọn bài báo">🧬 Truy Vết</button>
                 <button class="hud-btn" onclick="toggleFullScreen()" title="Phóng to toàn màn hình">⛶ Toàn màn hình</button>
                 <button class="hud-btn primary" onclick="popoutWindow()" title="Mở trong cửa sổ riêng để kéo sang màn hình phụ">🪟 Màn hình phụ</button>
             </div>
@@ -870,8 +949,8 @@ class CiteNetAgent:
                 </select>
             </div>
 
-            <!-- Hàng 4: Bộ lọc Phân tầng Kim Cương & Quyền truy cập -->
-            <div class="hud-btn-row" style="margin-top:2px; display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
+            <!-- Hàng 4: Bộ lọc Phân tầng Kim Cương, Quyền truy cập & Phân loại Mũi tên -->
+            <div class="hud-btn-row" style="margin-top:2px; display:grid; grid-template-columns: 1fr 1fr 1fr; gap:6px;">
                 <select id="layerFilter" class="hud-search-box" onchange="applyGraphFilters()" style="width:100%; cursor:pointer; font-weight:600; background:#181B24; border-color:#262B38; color:#F8FAFC;" title="Lọc theo tầng tri thức">
                     <option value="all">🌐 Tầng: Tất cả (Diamond)</option>
                     <option value="seed">🔴 Chỉ Bài Gốc (F0)</option>
@@ -882,6 +961,13 @@ class CiteNetAgent:
                     <option value="all">🔓 Quyền: Tất cả bài báo</option>
                     <option value="oa">🔓 Chỉ Open Access (PDF)</option>
                     <option value="paywall">🔒 Chỉ Bài Paywall</option>
+                </select>
+                <select id="edgeFilter" class="hud-search-box" onchange="applyGraphFilters()" style="width:100%; cursor:pointer; font-weight:600; background:#181B24; border-color:#38BDF8; color:#38BDF8;" title="Lọc theo kiểu mũi tên dòng chảy tri thức">
+                    <option value="all">🔗 Mũi tên: Tất cả (4 loại)</option>
+                    <option value="direct">🔷 Chỉ Kế thừa 1 chiều</option>
+                    <option value="mutual">🔶 Chỉ Đối thoại 2 chiều</option>
+                    <option value="cross_bridge">🔮 Chỉ Bắc cầu xuyên tầng</option>
+                    <option value="intra_layer">🟢 Chỉ Cùng phân tầng</option>
                 </select>
             </div>
         </div>
@@ -938,18 +1024,24 @@ class CiteNetAgent:
         </div>
     </div>
 
-    <!-- Chú thích Kim Cương Tri Thức 2 Chiều (Left Collapsible Legend) -->
+    <!-- Chú thích Kim Cương Tri Thức & Phân Loại Mũi Tên (Left Collapsible Legend) -->
     <div id="hud-legend-wrapper" class="hud-legend-drawer">
         <button id="legendToggleBtn" class="legend-toggle-btn" onclick="toggleLegendDrawer()" title="Bấm để mở rộng / thu gọn chú giải">
-            <span>📖 Chú thích Kim Cương Tri Thức</span>
+            <span>📖 Chú thích Kim Cương & Mũi Tên Tri Thức</span>
             <span id="legendArrowIcon">▸</span>
         </button>
         <div id="legendContentPanel" class="legend-content-panel" style="display: none;">
+            <div style="font-size:11px; font-weight:700; color:#38BDF8; margin-bottom:4px; text-transform:uppercase;">🏛️ Phân Tầng Nút Bài Báo (Nodes):</div>
             <div class="legend-item"><span class="legend-dot" style="background:#EA4335;"></span> <b>Bài báo gốc (F0):</b> Tâm điểm nghiên cứu</div>
             <div class="legend-item"><span class="legend-dot" style="background:#7C3AED;"></span> <b>Nền tảng (R1-R3):</b> Tham chiếu cội nguồn lý thuyết</div>
             <div class="legend-item"><span class="legend-dot" style="background:#0284C7;"></span> <b>Kế thừa (F1-F3):</b> Trích dẫn & phát triển tương lai</div>
-            <div class="legend-item" style="color:#38BDF8; margin-top:2px;">● <b>Kích cỡ Node:</b> Tỷ lệ logarit số trích dẫn</div>
-            <div class="legend-item" style="color:#94A3B8;">➔ <b>Đường mũi tên:</b> Dòng trích dẫn học thuật</div>
+            
+            <div style="font-size:11px; font-weight:700; color:#F59E0B; margin:8px 0 4px 0; text-transform:uppercase; border-top:1px solid rgba(255,255,255,0.08); padding-top:6px;">🔗 Dòng Chảy & Mũi Tên Liên Kết (Edges):</div>
+            <div class="legend-item"><span style="color:#38BDF8; font-weight:bold; font-size:13px;">—➔</span> <span style="color:#38BDF8; font-weight:700;">Kế thừa 1 chiều:</span> Dòng kế thừa trực tiếp</div>
+            <div class="legend-item"><span style="color:#F59E0B; font-weight:bold; font-size:13px;">⟷</span> <span style="color:#F59E0B; font-weight:700;">Đối thoại 2 chiều:</span> Trích dẫn chéo tương hỗ</div>
+            <div class="legend-item"><span style="color:#C084FC; font-weight:bold; font-size:13px;">┄➔</span> <span style="color:#C084FC; font-weight:700;">Bắc cầu xuyên tầng:</span> Kế thừa neo cội nguồn</div>
+            <div class="legend-item"><span style="color:#34D399; font-weight:bold; font-size:13px;">┈➔</span> <span style="color:#34D399; font-weight:700;">Cùng phân tầng:</span> Liên kết nội bộ thế hệ</div>
+            <div class="legend-item" style="color:#FDE047; font-size:10.5px; margin-top:2px;">✨ <b>Hạt photon sáng:</b> Dòng chuyển động tri thức (60 FPS)</div>
         </div>
     </div>
 
@@ -968,6 +1060,9 @@ class CiteNetAgent:
     var container = document.getElementById('network-container');
     var data = {{ nodes: nodes, edges: edges }};
     var isPhysicsOn = true;
+    var isParticlesOn = true;
+    var isLineageTracingOn = false;
+    var selectedLineageNodeId = null;
     var currentLayoutMode = 'force'; // 'force', 'timeline', 'concentric', 'hierarchical', 'quartile'
 
     var forceOptions = {{
@@ -1030,6 +1125,32 @@ class CiteNetAgent:
 
     function fitView() {{
         network.fit({{ animation: {{ duration: 500, easingFunction: 'easeInOutQuad' }} }});
+    }}
+
+    // Toggle Particle Photon Animation
+    function toggleParticles() {{
+        isParticlesOn = !isParticlesOn;
+        var btn = document.getElementById('particlesBtn');
+        if (btn) {{
+            btn.className = isParticlesOn ? 'hud-btn active' : 'hud-btn';
+            btn.innerHTML = isParticlesOn ? '✨ Hạt Sáng: Bật' : '✨ Hạt Sáng: Tắt';
+        }}
+        network.redraw();
+    }}
+
+    // Toggle Interactive Lineage Tracing Mode
+    function toggleLineageMode() {{
+        isLineageTracingOn = !isLineageTracingOn;
+        var btn = document.getElementById('lineageBtn');
+        if (btn) {{
+            btn.className = isLineageTracingOn ? 'hud-btn active' : 'hud-btn';
+            btn.innerHTML = isLineageTracingOn ? '🧬 Truy Vết: Bật' : '🧬 Truy Vết: Tắt';
+        }}
+        if (!isLineageTracingOn) {{
+            resetLineageHighlight();
+        }} else if (selectedLineageNodeId) {{
+            traceAncestryAndDescendants(selectedLineageNodeId);
+        }}
     }}
 
     // 5 International Scientometric Layouts Switcher
@@ -1224,12 +1345,15 @@ class CiteNetAgent:
         }}
     }}
 
-    // Dynamic Graph Filters
+    // Dynamic Graph & Edge Filters
     function applyGraphFilters() {{
         var layerVal = document.getElementById('layerFilter') ? document.getElementById('layerFilter').value : 'all';
         var accessVal = document.getElementById('accessFilter') ? document.getElementById('accessFilter').value : 'all';
+        var edgeVal = document.getElementById('edgeFilter') ? document.getElementById('edgeFilter').value : 'all';
 
-        var updates = [];
+        var nodeUpdates = [];
+        var visibleNodeIds = new Set();
+
         rawNodes.forEach(function(n) {{
             var p = metaDict[n.id] || {{}};
             var isSeed = (n.level === 0 || n.layer === 'seed');
@@ -1246,14 +1370,158 @@ class CiteNetAgent:
             if (accessVal === 'oa') matchAccess = isOa;
             else if (accessVal === 'paywall') matchAccess = !isOa;
 
-            var isHidden = !(matchLayer && matchAccess);
-            updates.push({{
+            var isVisible = (matchLayer && matchAccess);
+            if (isVisible) visibleNodeIds.add(n.id);
+            nodeUpdates.push({{
                 id: n.id,
-                hidden: isHidden
+                hidden: !isVisible
             }});
         }});
-        nodes.update(updates);
+        nodes.update(nodeUpdates);
+
+        var edgeUpdates = [];
+        rawEdges.forEach(function(e) {{
+            var matchType = (edgeVal === 'all' || e.edge_type === edgeVal);
+            var nodesVisible = visibleNodeIds.has(e.from) && visibleNodeIds.has(e.to);
+            edgeUpdates.push({{
+                id: e.id,
+                hidden: !(matchType && nodesVisible)
+            }});
+        }});
+        edges.update(edgeUpdates);
     }}
+
+    // Lineage Tracing (Ancestry & Descendants)
+    function traceAncestryAndDescendants(targetNodeId) {{
+        selectedLineageNodeId = targetNodeId;
+        var lineageNodes = new Set([targetNodeId]);
+        var lineageEdges = new Set();
+
+        // 1. Trace Ancestors (Backward via incoming edges)
+        var queueUp = [targetNodeId];
+        var visitedUp = new Set([targetNodeId]);
+        while (queueUp.length > 0) {{
+            var curr = queueUp.shift();
+            rawEdges.forEach(function(e) {{
+                if (e.to === curr && !visitedUp.has(e.from)) {{
+                    visitedUp.add(e.from);
+                    lineageNodes.add(e.from);
+                    lineageEdges.add(e.id);
+                    queueUp.push(e.from);
+                }}
+            }});
+        }}
+
+        // 2. Trace Descendants (Forward via outgoing edges)
+        var queueDown = [targetNodeId];
+        var visitedDown = new Set([targetNodeId]);
+        while (queueDown.length > 0) {{
+            var curr = queueDown.shift();
+            rawEdges.forEach(function(e) {{
+                if (e.from === curr && !visitedDown.has(e.to)) {{
+                    visitedDown.add(e.to);
+                    lineageNodes.add(e.to);
+                    lineageEdges.add(e.id);
+                    queueDown.push(e.to);
+                }}
+            }});
+        }}
+
+        // Update Nodes: Dim unrelated nodes, Highlight lineage
+        var nodeUpdates = [];
+        rawNodes.forEach(function(n) {{
+            var inLineage = lineageNodes.has(n.id);
+            var isTarget = (n.id === targetNodeId);
+            nodeUpdates.push({{
+                id: n.id,
+                opacity: inLineage ? 1.0 : 0.18,
+                borderWidth: isTarget ? 4.5 : (inLineage ? 3.0 : 1.0)
+            }});
+        }});
+        nodes.update(nodeUpdates);
+
+        // Update Edges: Dim unrelated edges, Brighten lineage
+        var edgeUpdates = [];
+        rawEdges.forEach(function(e) {{
+            var inLineage = lineageEdges.has(e.id);
+            edgeUpdates.push({{
+                id: e.id,
+                color: inLineage ? {{ color: '#F59E0B', opacity: 1.0, highlight: '#F59E0B' }} : {{ color: 'rgba(100,116,139,0.08)', opacity: 0.08 }},
+                width: inLineage ? 3.2 : 1.0
+            }});
+        }});
+        edges.update(edgeUpdates);
+    }}
+
+    function resetLineageHighlight() {{
+        selectedLineageNodeId = null;
+        var nodeUpdates = [];
+        rawNodes.forEach(function(n) {{
+            var isSeed = (n.level === 0 || n.layer === 'seed');
+            nodeUpdates.push({{
+                id: n.id,
+                opacity: 1.0,
+                borderWidth: isSeed ? 3.5 : (n.is_isolated ? 2.6 : 1.8)
+            }});
+        }});
+        nodes.update(nodeUpdates);
+
+        var edgeUpdates = [];
+        rawEdges.forEach(function(e) {{
+            edgeUpdates.push({{
+                id: e.id,
+                color: e.color,
+                width: e.width
+            }});
+        }});
+        edges.update(edgeUpdates);
+    }}
+
+    // Particle Photon Animation Loop
+    network.on('afterDrawing', function(ctx) {{
+        if (!isParticlesOn) return;
+        var now = Date.now() / 1100;
+        var positions = network.getPositions();
+
+        rawEdges.forEach(function(e, idx) {{
+            var p1 = positions[e.from];
+            var p2 = positions[e.to];
+            if (!p1 || !p2) return;
+
+            // Check if edge is currently hidden
+            var currentEdge = edges.get(e.id);
+            if (currentEdge && currentEdge.hidden) return;
+
+            var t = (now + (idx * 0.19)) % 1.0;
+            var x = p1.x + (p2.x - p1.x) * t;
+            var y = p1.y + (p2.y - p1.y) * t;
+
+            ctx.save();
+            ctx.beginPath();
+            var radius = (e.edge_type === 'mutual') ? 3.6 : ((e.edge_type === 'cross_bridge') ? 3.0 : 2.5);
+            ctx.arc(x, y, radius, 0, 2 * Math.PI, false);
+
+            var pColor = '#38BDF8';
+            if (e.edge_type === 'mutual') pColor = '#F59E0B';
+            else if (e.edge_type === 'cross_bridge') pColor = '#C084FC';
+            else if (e.edge_type === 'intra_layer') pColor = '#34D399';
+
+            ctx.fillStyle = pColor;
+            ctx.shadowColor = pColor;
+            ctx.shadowBlur = 8;
+            ctx.fill();
+            ctx.restore();
+        }});
+    }});
+
+    // Continuous 60 FPS animation loop when particles are on
+    function particleAnimationLoop() {{
+        if (isParticlesOn) {{
+            network.redraw();
+        }}
+        requestAnimationFrame(particleAnimationLoop);
+    }}
+    requestAnimationFrame(particleAnimationLoop);
 
     // Hover Event
     network.on('hoverNode', function(params) {{
@@ -1336,6 +1604,13 @@ class CiteNetAgent:
         if (params.nodes.length > 0) {{
             var nodeId = params.nodes[0];
             showPaperModal(nodeId);
+            if (isLineageTracingOn) {{
+                traceAncestryAndDescendants(nodeId);
+            }}
+        }} else {{
+            if (isLineageTracingOn) {{
+                resetLineageHighlight();
+            }}
         }}
     }});
 
@@ -1451,10 +1726,16 @@ class CiteNetAgent:
     function jumpToNode(nodeId) {{
         showPaperModal(nodeId);
         network.selectNodes([nodeId]);
+        if (isLineageTracingOn) {{
+            traceAncestryAndDescendants(nodeId);
+        }}
     }}
 
     function closePaperModal() {{
         document.getElementById('paper-modal').style.display = 'none';
+        if (isLineageTracingOn) {{
+            resetLineageHighlight();
+        }}
     }}
 
     function togglePhysics() {{
@@ -1497,6 +1778,9 @@ class CiteNetAgent:
         if (foundId) {{
             showPaperModal(foundId);
             network.selectNodes([foundId]);
+            if (isLineageTracingOn) {{
+                traceAncestryAndDescendants(foundId);
+            }}
         }}
     }}
 
