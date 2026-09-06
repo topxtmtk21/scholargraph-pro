@@ -246,11 +246,50 @@ class CiteNetAgent:
             position: relative;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #12141A 0%, #0B0C0E 100%);
             border-radius: 16px;
             border: 1px solid #262B38;
             overflow: hidden;
+            transition: background 0.3s ease;
         }}
+        /* Chế độ 1: Deep Obsidian vũ trụ mặc định */
+        #network-wrapper.bg-obsidian {{
+            background: radial-gradient(circle at center, #151822 0%, #0B0C0E 100%);
+        }}
+        /* Chế độ 2: Không gian Lưới 3D tương phản công nghệ (Cyber 3D Grid) */
+        #network-wrapper.bg-3d-grid {{
+            background-color: #06080F;
+            background-image: 
+                linear-gradient(rgba(56, 189, 248, 0.14) 1.5px, transparent 1.5px),
+                linear-gradient(90deg, rgba(56, 189, 248, 0.14) 1.5px, transparent 1.5px),
+                radial-gradient(circle at 50% 50%, rgba(37, 99, 235, 0.25) 0%, rgba(6, 8, 15, 0.96) 80%);
+            background-size: 38px 38px, 38px 38px, 100% 100%;
+            box-shadow: inset 0 0 100px rgba(6, 182, 212, 0.2);
+        }}
+        /* Chế độ 3: Bản vẽ Kỹ thuật Blueprint */
+        #network-wrapper.bg-blueprint {{
+            background-color: #0A192F;
+            background-image: 
+                linear-gradient(rgba(100, 255, 218, 0.15) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(100, 255, 218, 0.15) 1px, transparent 1px),
+                linear-gradient(rgba(100, 255, 218, 0.05) 5px, transparent 5px),
+                linear-gradient(90deg, rgba(100, 255, 218, 0.05) 5px, transparent 5px);
+            background-size: 20px 20px, 20px 20px, 100px 100px, 100px 100px;
+        }}
+        /* Chế độ 4: Bản thảo Giấy da Ngà sáng (Parchment Ivory) */
+        #network-wrapper.bg-parchment {{
+            background-color: #F8F5EC;
+            background-image: radial-gradient(#D3C7A1 1.2px, transparent 1.2px);
+            background-size: 24px 24px;
+        }}
+        /* Chế độ 5: Bắc Âu Glacier xám sáng sạch (Nordic Slate Light) */
+        #network-wrapper.bg-nordic-light {{
+            background-color: #F1F5F9;
+            background-image: 
+                linear-gradient(rgba(203, 213, 225, 0.6) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(203, 213, 225, 0.6) 1px, transparent 1px);
+            background-size: 32px 32px;
+        }}
+
         #network-container {{
             width: 100%;
             height: 100%;
@@ -323,22 +362,53 @@ class CiteNetAgent:
             box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
         }}
         
-        .hud-legend {{
+        /* Chú thích bên trái - Mặc định thu gọn gọn gàng (Collapsible Left Legend) */
+        .hud-legend-drawer {{
             position: absolute;
             bottom: 14px;
-            right: 14px;
-            z-index: 90;
+            left: 14px;
+            z-index: 95;
             background: rgba(18, 20, 26, 0.94);
             backdrop-filter: blur(14px);
-            padding: 10px 14px;
-            border-radius: 12px;
+            -webkit-backdrop-filter: blur(14px);
             border: 1px solid #262B38;
+            border-radius: 12px;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.5);
             font-size: 11.5px;
             font-weight: 600;
+            color: #F8FAFC;
+            transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            max-width: 320px;
+        }}
+        .legend-toggle-btn {{
             display: flex;
-            gap: 12px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
-            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            background: transparent;
+            border: none;
+            color: #38BDF8;
+            font-family: inherit;
+            font-size: 11.5px;
+            font-weight: 700;
+            padding: 8px 12px;
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+            outline: none;
+            transition: color 0.15s ease;
+        }}
+        .legend-toggle-btn:hover {{
+            color: #FFFFFF;
+            background: rgba(255,255,255,0.04);
+        }}
+        .legend-content-panel {{
+            padding: 8px 12px 10px 12px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
         }}
         .legend-item {{
             display: flex;
@@ -349,6 +419,7 @@ class CiteNetAgent:
             width: 10px;
             height: 10px;
             border-radius: 50%;
+            flex-shrink: 0;
         }}
 
         /* Timeline Axis Overlay */
@@ -661,7 +732,7 @@ class CiteNetAgent:
     </style>
 </head>
 <body>
-<div id="network-wrapper">
+<div id="network-wrapper" class="bg-obsidian">
     <!-- Floating HUD Controls Toolbar -->
     <div class="hud-toolbar">
         <input type="text" id="nodeSearch" class="hud-search-box" placeholder="🔍 Tìm tác giả / bài báo..." oninput="searchAndFocusNode(this.value)">
@@ -678,6 +749,15 @@ class CiteNetAgent:
         <button class="hud-btn" id="btnModeHierarchical" onclick="switchLayoutMode('hierarchical')" title="4. Chuẩn CiteSpace: Cây phả hệ phân tầng (Hierarchical DAG Tree)">🌳 Cây Phả hệ</button>
         <button class="hud-btn" id="btnModeQuartile" onclick="switchLayoutMode('quartile')" title="5. Chuẩn Clarivate / Scimago: Phân làn xếp hạng Scopus Q1/Q2 & Tạp chí (Journal Quartile Grid)">📊 Phân làn Scopus</button>
         
+        <!-- Background Style & 3D Selector -->
+        <select id="bgSelector" class="hud-search-box" onchange="switchCanvasBg(this.value)" style="width:auto; cursor:pointer; font-weight:700; background:#181B24; border-color:#38BDF8; color:#38BDF8;" title="Chọn kiểu nền hiển thị & không gian 3D tương phản cao">
+            <option value="obsidian">🌌 Nền: Vũ trụ Obsidian</option>
+            <option value="3d-grid">🧊 Nền: Không gian Lưới 3D (Cyber 3D)</option>
+            <option value="blueprint">📐 Nền: Bản vẽ Blueprint</option>
+            <option value="parchment">📜 Nền: Giấy da Ivory (Sáng)</option>
+            <option value="nordic-light">🏛️ Nền: Bắc Âu Slate (Sáng)</option>
+        </select>
+
         <!-- Physics & Window Controls -->
         <button class="hud-btn" id="physicsBtn" onclick="togglePhysics()" title="Bật/Tắt mô phỏng vật lý">⚡ Tự sắp xếp</button>
         <button class="hud-btn" onclick="toggleFullScreen()" title="Phóng to toàn màn hình">⛶ Toàn màn hình</button>
@@ -739,11 +819,19 @@ class CiteNetAgent:
         </div>
     </div>
 
-    <div class="hud-legend">
-        <div class="legend-item"><span class="legend-dot" style="background:#EA4335;"></span> Bài báo gốc (Seed Core)</div>
-        <div class="legend-item"><span class="legend-dot" style="background:#0284C7;"></span> Tham khảo trực tiếp (Gen-1)</div>
-        <div class="legend-item"><span class="legend-dot" style="background:#059669;"></span> Mở rộng chân trời (Gen-2)</div>
-        <div class="legend-item"><span style="color:#38BDF8; font-size:12px;">● Kích cỡ = Số trích dẫn (Impact)</span></div>
+    <!-- Chú thích chuyển sang bên trái - Mặc định thu gọn tinh gọn (Left Collapsible Legend) -->
+    <div id="hud-legend-wrapper" class="hud-legend-drawer">
+        <button id="legendToggleBtn" class="legend-toggle-btn" onclick="toggleLegendDrawer()" title="Bấm để mở rộng / thu gọn chú giải">
+            <span>📖 Chú thích & Quy ước</span>
+            <span id="legendArrowIcon">▸</span>
+        </button>
+        <div id="legendContentPanel" class="legend-content-panel" style="display: none;">
+            <div class="legend-item"><span class="legend-dot" style="background:#EA4335;"></span> <b>Bài báo gốc (Seed):</b> Tâm điểm nghiên cứu</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#0284C7;"></span> <b>Gen-1:</b> Tham khảo trực tiếp</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#059669;"></span> <b>Gen-2:</b> Mở rộng chân trời</div>
+            <div class="legend-item" style="color:#38BDF8; margin-top:2px;">● <b>Kích cỡ Node:</b> Tỷ lệ thuận với số trích dẫn</div>
+            <div class="legend-item" style="color:#94A3B8;">➔ <b>Đường mũi tên:</b> Dòng trích dẫn học thuật</div>
+        </div>
     </div>
 
     <div id="network-container"></div>
@@ -1227,6 +1315,54 @@ class CiteNetAgent:
             showPaperModal(foundId);
             network.selectNodes([foundId]);
         }}
+    }}
+
+    // Mở / Thu gọn chú thích bên trái
+    function toggleLegendDrawer() {{
+        var panel = document.getElementById('legendContentPanel');
+        var arrow = document.getElementById('legendArrowIcon');
+        if (!panel) return;
+        if (panel.style.display === 'none' || panel.style.display === '') {{
+            panel.style.display = 'flex';
+            if (arrow) arrow.innerText = '▾';
+        }} else {{
+            panel.style.display = 'none';
+            if (arrow) arrow.innerText = '▸';
+        }}
+    }}
+
+    // Thay đổi kiểu nền & Chế độ không gian 3D tương phản cao
+    function switchCanvasBg(bgName) {{
+        var wrapper = document.getElementById('network-wrapper');
+        if (!wrapper) return;
+        wrapper.className = 'bg-' + bgName;
+
+        var isLight = (bgName === 'parchment' || bgName === 'nordic-light');
+        var fontColor = isLight ? '#0F172A' : '#F8FAFC';
+        var strokeColor = isLight ? '#FFFFFF' : '#0B0C0E';
+        var strokeWidth = isLight ? 4 : 3;
+        var edgeColor = isLight ? 'rgba(71, 85, 105, 0.65)' : 'rgba(100, 116, 139, 0.45)';
+
+        var updates = [];
+        rawNodes.forEach(function(n) {{
+            updates.push({{
+                id: n.id,
+                font: {{
+                    size: (n.font && n.font.size) ? n.font.size : 11,
+                    color: fontColor,
+                    face: 'Plus Jakarta Sans, sans-serif',
+                    strokeWidth: strokeWidth,
+                    strokeColor: strokeColor
+                }}
+            }});
+        }});
+        nodes.update(updates);
+        
+        network.setOptions({{
+            edges: {{
+                color: {{ color: edgeColor, highlight: '#38BDF8', hover: '#60A5FA' }}
+            }}
+        }});
     }}
 </script>
 </body>
