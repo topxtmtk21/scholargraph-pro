@@ -1901,7 +1901,7 @@ class CiteNetAgent:
 
                 <!-- THANH TRƯỢT ĐIỀU TỐC PHOTON (DESKTOP) -->
                 <div class="speed-control-cluster desktop-only-btn" title="Điều chỉnh tốc độ di chuyển mũi tên nhân quả, hạt photon & tia sáng kết nối">
-                    <span style="font-size:10px; font-weight:700; color:var(--theme-accent);">⚡ Tốc độ:</span>
+                    <span style="font-size:11px; font-weight:700; color:var(--theme-accent);">⚡</span>
                     <input type="range" id="photonSpeedSlider" class="speed-slider-input" min="0" max="3" step="0.2" value="1.0" oninput="setPhotonSpeed(this.value)">
                     <span id="photonSpeedVal" style="font-size:10px; font-family:'JetBrains Mono', monospace; font-weight:700; color:#FDE047; min-width:20px;">1.0x</span>
                 </div>
@@ -2865,8 +2865,6 @@ class CiteNetAgent:
         stopPlaybackTimer();
     }}
 
-    // BẬT / TẮT POPOVER CHỌN TẦNG CHECKBOX
-    function toggleLayerFilterPopover() {{
     // XỬ LÝ CHỌN BẬT / TẮT TỪNG HIỆU ỨNG THỊ GIÁC (DROPDOWN SELECT)
     function handleEffectSelect(val) {{
         var sel = document.getElementById('effectsSelect');
